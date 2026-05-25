@@ -1,0 +1,1036 @@
+:root {
+  --primary-color: #ea580c; /* orange-600 */
+  --primary-hover: #c2410c; /* orange-700 */
+  --primary-light: #fff7ed; /* orange-50 */
+  --primary-bg: #fed7aa; /* orange-200 */
+  --gray-bg: #f9fafb; /* gray-50 */
+  --border-color: #e5e7eb; /* gray-200 */
+  --text-dark: #111827; /* gray-900 */
+  --text-muted: #4b5563; /* gray-600 */
+  --text-light: #9ca3af; /* gray-500 */
+}
+
+/* 레이아웃 구조 정의 */
+.mypage-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: sans-serif;
+  color: var(--text-dark);
+}
+
+/* 상단 프로필 카드 */
+.profile-card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.profile-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.profile-info-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.profile-avatar {
+  width: 6rem;
+  height: 6rem;
+  background-color: var(--primary-bg);
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-icon {
+  width: 3rem;
+  height: 3rem;
+  color: var(--primary-color);
+}
+
+.profile-name {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.profile-bio {
+  color: var(--text-muted);
+}
+
+.profile-stats {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-light);
+}
+
+/* 우측 상단 잔액(지갑) 박스 */
+.wallet-section {
+  background-color: var(--primary-light);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  min-width: 240px;
+}
+
+.wallet-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.wallet-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--primary-color);
+}
+
+.wallet-balance {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.75rem;
+}
+
+.btn-charge {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.btn-charge:hover {
+  background-color: var(--primary-hover);
+}
+
+/* 구독하기 버튼 (빨간색) */
+.btn-follow {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.btn-follow:hover {
+  background-color: #dc2626;
+}
+
+/* 구독중 버튼 (회색) */
+.btn-following {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background-color: #9ca3af;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.btn-following:hover {
+  background-color: #6b7280;
+}
+.btn-following:disabled,
+.btn-follow:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* 메인 2단 그리드 레이아웃 */
+.main-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .main-layout {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+/* 탭 메뉴 스타일 */
+.tabs-container {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.tabs-header {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tab-btn {
+  padding-bottom: 1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: color 0.2s;
+}
+
+.tab-btn:hover {
+  color: var(--text-dark);
+}
+
+.tab-btn.active {
+  border-bottom: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+/* 리스트 아이템 공통 (레시피 아이템) */
+.recipe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.recipe-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  transition: box-shadow 0.2s;
+}
+
+.recipe-item:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.posts-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.post-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .post-row {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.post-item-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.btn-post-edit,
+.btn-post-delete,
+.btn-create-post {
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.btn-post-edit {
+  background-color: white;
+  color: var(--primary-color);
+  border-color: rgba(234, 88, 12, 0.2);
+}
+
+.btn-post-edit:hover {
+  background-color: var(--primary-light);
+}
+
+.btn-post-delete {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn-post-delete:hover {
+  background-color: #dc2626;
+}
+
+.btn-create-post {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.85rem;
+  border-radius: 0.75rem;
+  min-width: auto;
+}
+
+.btn-create-post-small {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+}
+
+.btn-create-post:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-create-cancel {
+  background-color: #ef4444;
+  color: white;
+  border: 1px solid #ef4444;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.85rem;
+  border-radius: 0.75rem;
+  min-width: auto;
+}
+
+.btn-create-cancel:hover {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+.posts-create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.posts-create-textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  font-size: 0.95rem;
+  color: var(--text-dark);
+}
+
+.posts-create-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+}
+
+.posts-create-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.posts-create-panel {
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 8px 15px rgba(15, 23, 42, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+.posts-create-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.posts-create-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.file-input-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  color: var(--text-dark);
+  background-color: #ffffff;
+}
+
+.file-input {
+  display: none;
+}
+
+.image-preview {
+  margin-top: 0.75rem;
+}
+
+.image-preview img {
+  max-width: 100%;
+  border-radius: 0.75rem;
+  object-fit: cover;
+  max-height: 240px;
+}
+
+.guestbook-container {
+  margin-top: 1.5rem;
+}
+
+.guestbook-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.guestbook-textarea,
+.guestbook-edit-textarea {
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  font-size: 0.95rem;
+  color: var(--text-dark);
+}
+
+.guestbook-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.guestbook-item {
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.guestbook-item-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.guestbook-author {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.guestbook-date {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.guestbook-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.guestbook-action-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  min-width: 48px;
+}
+
+.guestbook-action-edit {
+  background-color: #ffedd5;
+  color: var(--primary-color);
+  border-color: rgba(234, 88, 12, 0.2);
+}
+
+.guestbook-action-delete {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.guestbook-action-save {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.guestbook-action-cancel {
+  background-color: #f3f4f6;
+  color: var(--text-dark);
+  border-color: var(--border-color);
+}
+
+.guestbook-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.btn-create-cancel {
+  background-color: #f3f4f6;
+  color: var(--text-dark);
+  border: 1px solid var(--border-color);
+}
+
+.btn-create-cancel:hover {
+  background-color: #e5e7eb;
+}
+
+/* 임시 이미지 상자 처리 */
+.fallback-image-box {
+  background-color: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recipe-img {
+  width: 8rem;
+  height: 8rem;
+  border-radius: 0.5rem;
+}
+
+.recipe-img-sm {
+  width: 6rem;
+  height: 6rem;
+  border-radius: 0.5rem;
+}
+
+.recipe-info {
+  flex: 1;
+}
+
+.recipe-title {
+  font-weight: 700;
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+}
+
+.recipe-meta {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.recipe-date {
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+
+/* 버튼 묶음 및 상태별 디자인 */
+.recipe-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-icon-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+.btn-edit {
+  height: 2.5rem;
+  padding: 0 1rem;
+  background-color: #3b82f6; /* blue-500 */
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-edit:hover {
+  background-color: #2563eb;
+}
+
+.btn-delete {
+  height: 2.5rem;
+  padding: 0 1rem;
+  background-color: #ef4444; /* red-500 */
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-delete:hover {
+  background-color: #dc2626;
+}
+
+.price-text {
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.action-buttons-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.btn-status-success {
+  padding: 0.5rem 1rem;
+  background-color: #10b981; /* green-500 */
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+}
+
+.btn-status-action {
+  padding: 0.5rem 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.btn-status-action:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-status-view {
+  padding: 0.5rem 1rem;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.btn-text-delete {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #ef4444;
+  background: none;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.btn-text-delete:hover {
+  background-color: #fef2f2;
+}
+
+/* 섹션 타이틀 서식 */
+.section-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.title-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--primary-color);
+}
+
+.section-title {
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+/* 구매 내역 탭 하단 합계 */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+}
+
+.history-name {
+  font-weight: 700;
+}
+.history-date {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+.history-right {
+  text-align: right;
+}
+.btn-link {
+  color: #3b82f6;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+.total-price-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.total-price-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.total-label {
+  font-weight: 700;
+}
+.total-amount {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+
+/* 방명록 스타일 */
+.guestbook-container {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.guestbook-form {
+  margin-bottom: 1.5rem;
+}
+
+.guestbook-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db; /* gray-300 */
+  border-radius: 0.5rem;
+  resize: none;
+  box-sizing: border-box;
+}
+
+.guestbook-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.2);
+}
+
+.btn-submit {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1.5rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.btn-submit:hover {
+  background-color: var(--primary-hover);
+}
+
+.guestbook-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.guestbook-item {
+  padding: 1rem;
+  background-color: var(--gray-bg);
+  border-radius: 0.5rem;
+}
+
+.guestbook-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.guestbook-author {
+  font-weight: 700;
+}
+.guestbook-date {
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+.guestbook-message {
+  color: #374151;
+  margin: 0;
+}
+
+/* 오른쪽 구독 목록 (Sticky 메뉴 고정) */
+.subscription-container {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .right-content {
+    position: sticky;
+    top: 6rem;
+    height: fit-content;
+  }
+}
+
+.subscription-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.subscription-item {
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  transition: box-shadow 0.2s;
+  cursor: pointer;
+}
+.subscription-item:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.sub-profile-flex {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.sub-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: var(--primary-bg);
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sub-avatar-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--primary-color);
+}
+.sub-name {
+  font-weight: 700;
+  margin: 0;
+}
+.sub-recipe-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+.sub-followers {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin: 0;
+}
+
+.btn-sub-profile {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.25rem 0.75rem;
+  background-color: #f3f4f6;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.btn-sub-profile:hover {
+  background-color: #e5e7eb;
+}
+
+.sub-avatar-img {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.btn-load-more {
+  margin-top: 0.75rem;
+  width: 100%;
+  padding: 0.4rem 0;
+  background-color: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.btn-load-more:hover {
+  background-color: #f9fafb;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* 모달 스타일 전체창 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  max-width: 28rem;
+  width: 100%;
+  margin: 0 1rem;
+  box-sizing: border-box;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  margin-top: 0;
+}
+.modal-balance-section {
+  margin-bottom: 1.5rem;
+}
+.modal-label {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+.modal-balance {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.modal-input-section {
+  margin-bottom: 1.5rem;
+}
+.modal-input-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.modal-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  box-sizing: border-box;
+}
+.modal-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.2);
+}
+
+.modal-preset-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.btn-preset {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  background-color: #f3f4f6;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+.btn-preset:hover {
+  background-color: #e5e7eb;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+.btn-modal-charge {
+  flex: 1;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.btn-modal-charge:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-modal-cancel {
+  padding: 0.75rem 1.5rem;
+  background-color: #e5e7eb;
+  color: #374151;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.btn-modal-cancel:hover {
+  background-color: #d1d5db;
+}

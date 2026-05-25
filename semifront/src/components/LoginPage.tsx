@@ -1,0 +1,73 @@
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.tsx";
+
+export default function LoginPage() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [id, setId] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      await login({ id, password });
+      navigate("/mypage");
+    } catch (err) {
+      console.error(err);
+      const message = err instanceof Error
+        ? err.message
+        : "로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.";
+      setError(message);
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-lg">
+      <h1 className="text-3xl font-bold text-center mb-6">로그인</h1>
+      {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label className="block text-sm font-medium mb-2">아이디</label>
+          <input
+            type="text"
+            value={id}
+            onChange={(e) => setId(e.target.value)}
+            className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            placeholder="아이디를 입력하세요"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">비밀번호</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            placeholder="비밀번호를 입력하세요"
+            required
+          />
+        </div>
+
+        <button
+          type="submit"
+          className="w-full bg-orange-600 text-white rounded-2xl py-3 font-semibold hover:bg-orange-700 transition-colors"
+        >
+          로그인
+        </button>
+      </form>
+
+      <p className="text-center text-sm text-gray-500 mt-6">
+        계정이 없으신가요?{' '}
+        <Link to="/signup" className="text-orange-600 font-semibold hover:underline">
+          회원가입
+        </Link>
+      </p>
+    </div>
+  );
+}
