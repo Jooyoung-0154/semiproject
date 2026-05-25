@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.cloud.mapper.PostCommentMapper">
+
+    <insert id="insertPost">
+        INSERT INTO post (WRITER_ID, CONTENT, POST_IMG)
+        VALUES (#{writerId}, #{content}, #{postImg})
+    </insert>
+
+    <update id="updatePost">
+        UPDATE post 
+        SET CONTENT = #{content}, POST_IMG = #{postImg}
+        WHERE POST_ID = #{postId}
+    </update>
+
+    <delete id="deletePost">
+        DELETE FROM post WHERE POST_ID = #{postId}
+    </delete>
+
+    <select id="getPostList" resultType="org.cloud.dto.Post">
+        SELECT * FROM post ORDER BY REG_DATE DESC
+    </select>
+
+
+    <insert id="insertComment">
+        INSERT INTO post_comment (POST_ID, WRITER_ID, CONTENT)
+        VALUES (#{postId}, #{writerId}, #{content})
+    </insert>
+
+    <update id="updateComment">
+        UPDATE post_comment SET CONTENT = #{content}
+        WHERE COMMENT_ID = #{commentId}
+    </update>
+
+    <delete id="deleteComment">
+        DELETE FROM post_comment WHERE COMMENT_ID = #{commentId}
+    </delete>
+
+    <select id="getCommentsByPostId" resultType="org.cloud.dto.PostComment">
+        SELECT * FROM post_comment 
+        WHERE POST_ID = #{postId}
+        ORDER BY REG_DATE ASC
+    </select>
+
+</mapper>

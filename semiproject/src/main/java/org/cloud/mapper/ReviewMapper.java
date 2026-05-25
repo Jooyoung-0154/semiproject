@@ -1,0 +1,19 @@
+package org.cloud.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.cloud.dto.Review;
+import java.util.List;
+
+@Mapper
+public interface ReviewMapper {
+
+    int insertReview(Review review);
+
+    int updateReview(Review review);
+
+    int deleteReview(int REVIEW_ID);
+
+    List<Review> getReviewsByRecipeCode(String RECIPE_CODE);
+
+    List<Review> getReviewsById(String ID);
+}

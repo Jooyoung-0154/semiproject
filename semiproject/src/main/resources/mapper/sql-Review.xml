@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.cloud.mapper.ReviewMapper">
+
+    <insert id="insertReview">
+        INSERT INTO review (RECIPE_CODE, ID, REVIEW_CONTENT, THUMBS_UP)
+        VALUES (#{RECIPE_CODE}, #{ID}, #{REVIEW_CONTENT}, #{THUMBS_UP})
+    </insert>
+
+    <update id="updateReview">
+        UPDATE review 
+        SET REVIEW_CONTENT = #{REVIEW_CONTENT}, 
+            THUMBS_UP = #{THUMBS_UP}
+        WHERE REVIEW_ID = #{REVIEW_ID}
+    </update>
+
+    <delete id="deleteReview">
+        DELETE FROM review WHERE REVIEW_ID = #{REVIEW_ID}
+    </delete>
+
+    <select id="getReviewsByRecipeCode" resultType="org.cloud.dto.Review">
+        SELECT * FROM review 
+        WHERE RECIPE_CODE = #{RECIPE_CODE}
+        ORDER BY REG_DATE DESC
+    </select>
+
+    <select id="getReviewsById" resultType="org.cloud.dto.Review">
+        SELECT * FROM review 
+        WHERE ID = #{ID}
+        ORDER BY REG_DATE DESC
+    </select>
+
+</mapper>

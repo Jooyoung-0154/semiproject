@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.cloud.mapper.MemberMapper">
+
+    <!-- 회원가입 -->
+    <insert id="insertMember">
+        INSERT INTO member (ID, PASSWORD, NICKNAME)
+        VALUES (#{id}, #{password}, #{nickname})
+    </insert>
+
+    <!-- 아이디 중복 확인 (존재하면 1, 없으면 0 반환) -->
+    <select id="checkId" resultType="int">
+        SELECT COUNT(*) FROM member WHERE ID = #{ID}
+    </select>
+
+    <!-- 닉네임 중복 확인 -->
+    <select id="checkNickname" resultType="int">
+        SELECT COUNT(*) FROM member WHERE NICKNAME = #{NICKNAME}
+    </select>
+
+    <!-- 닉네임 변경 -->
+    <update id="updateNickname">
+        UPDATE member SET NICKNAME = #{NICKNAME} WHERE ID = #{ID}
+    </update>
+
+    <!-- 비밀번호 확인 및 변경 -->
+    <update id="updatePassword">
+        UPDATE member SET PASSWORD = #{newPassword} WHERE ID = #{ID} AND PASSWORD = #{oldPassword}
+    </update>
+
+    <!-- 잔고 확인 -->
+    <select id="getBalance" resultType="int">
+        SELECT BALANCE FROM member WHERE ID = #{ID}
+    </select>
+
+    <!-- 잔고 충전/감소 (amount에 양수를 넣으면 충전, 음수를 넣으면 감소) -->
+    <update id="updateBalance">
+        UPDATE member SET BALANCE = BALANCE + #{amount} WHERE ID = #{ID}
+    </update>
+
+    <!-- 프로필 이미지 변경 -->
+    <update id="updateProfileImg">
+        UPDATE member SET PROFILE_IMG = #{PROFILE_IMG} WHERE ID = #{ID}
+    </update>
+    
+    <!-- 인트로 변경 -->
+    <update id="updateIntro">
+    	Update member set INTRO = #{INTRO} WHERE ID = #{ID}
+    </update>
+
+    <update id="addFollowCount">
+    	UPDATE member 
+    	SET ${column} = ${column} + #{amount} 
+    	WHERE ID = #{ID}
+	</update>
+	<select id="selectMemberById" resultType="org.cloud.dto.Member">
+    SELECT
+        ID as id,
+        PASSWORD as password,
+        BALANCE as balance,
+        NICKNAME as nickname,
+        PROFILE_IMG as profileImg,
+        INTRO as intro,
+        FOLLOWING_COUNT as followingCount,
+        FOLLOWER_COUNT as followerCount
+    FROM
+        member
+    WHERE
+        ID = #{id}
+	</select>
+
+</mapper>

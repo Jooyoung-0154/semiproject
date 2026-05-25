@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.cloud.mapper.TagMapper">
+
+    <!-- 태그 자체 CRUD -->
+    <insert id="insertTag">
+        INSERT INTO tag (TAG_NAME) VALUES (#{tagName})
+    </insert>
+
+    <update id="updateTag">
+        UPDATE tag SET TAG_NAME = #{tagName} WHERE TAG_ID = #{tagId}
+    </update>
+
+    <delete id="deleteTag">
+        DELETE FROM tag WHERE TAG_ID = #{tagId}
+    </delete>
+
+    <select id="getAllTags" resultType="org.cloud.dto.Tag">
+        SELECT 
+            TAG_ID as tagId,
+            TAG_NAME as tagName
+        FROM tag 
+        ORDER BY TAG_NAME ASC
+    </select>
+
+    <!-- 레시피와 태그 연결 (중간 테이블 저장) -->
+    <insert id="insertRecipeTag">
+    INSERT INTO recipe_tag (RECIPE_ID, TAG_ID)
+    VALUES (#{RECIPE_ID}, #{TAG_ID})
+</insert>
+
+    <!-- 레시피 수정 시 기존 태그 관계 끊기 -->
+    <delete id="deleteRecipeTags">
+        DELETE FROM recipe_tag WHERE RECIPE_ID = #{recipeId}
+    </delete>
+
+    <!-- 레시피 상세 조회 시 태그 정보 가져오기 (JOIN 활용) -->
+    <select id="getTagsByRecipeId" resultType="org.cloud.dto.Tag">
+    SELECT 
+        t.TAG_ID as tagId, 
+        t.TAG_NAME as tagName
+    FROM tag t
+    JOIN recipe_tag rt ON t.TAG_ID = rt.TAG_ID
+    WHERE rt.RECIPE_ID = #{RECIPE_ID}  </select>
+
+</mapper>

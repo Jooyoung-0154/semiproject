@@ -1,0 +1,102 @@
+package org.cloud.control;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import org.cloud.dto.Purchase;
+import org.cloud.dto.Recipe;
+import org.cloud.dto.RecipeSearchParams;
+import org.cloud.dto.Recipe_Info;
+import org.cloud.dto.Tag;
+import org.cloud.mapper.TagMapper;
+import org.cloud.service.PurchaseService;
+import org.cloud.service.RecipeService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/recipe")
+public class RecipeController {
+
+    @Autowired
+    private PurchaseService purchaseService;
+    @Autowired
+    private RecipeService recipeService;
+    @Autowired
+    private TagMapper tagMapper;
+
+    // 조회: /api/recipe/list?name=김치찌개&tagId=1
+    @GetMapping("/list")
+    public List<Recipe_Info> getList(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Integer tagId) {
+        return recipeService.searchRecipes(name, tagId);
+    }
+
+    // 작성자 ID로 레시피 목록 조회: /api/recipe/by-writer/{writerId}
+    @GetMapping("/by-writer/{writerId}")
+    public List<Recipe_Info> getByWriter(@PathVariable String writerId) {
+        return recipeService.getRecipesByWriterId(writerId);
+    }
+
+    // 둘러보기: /api/recipe/browse?name=&tagId=&level=&ingredients=고기,양파&page=1&size=12
+    @GetMapping("/browse")
+    public Map<String, Object> browse(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Integer tagId,
+            @RequestParam(required = false) String level,
+            @RequestParam(required = false) String ingredients,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "12") int size) {
+
+        RecipeSearchParams params = new RecipeSearchParams();
+        params.setRecipeNmKo(name);
+        params.setTagId(tagId);
+        params.setLevelNm(level);
+        params.setPage(page);
+        params.setSize(size);
+
+        if (ingredients != null && !ingredients.isBlank()) {
+            List<String> irdntList = Arrays.stream(ingredients.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+            params.setIrdntNms(irdntList);
+        }
+
+        return recipeService.searchRecipesPaged(params);
+    }
+
+    // 태그 전체 목록: /api/recipe/tags
+    @GetMapping("/tags")
+    public List<Tag> getAllTags() {
+        return tagMapper.getAllTags();
+    }
+
+    // 등록: /api/recipe/register → 생성된 RECIPE_ID(String) 반환
+    @PostMapping("/register")
+    public String register(@RequestBody Recipe recipe) {
+        return recipeService.registerRecipe(recipe);
+    }
+
+    // 삭제: /api/recipe/{recipeId}
+    @DeleteMapping("/{recipeId}")
+    public boolean delete(@PathVariable("recipeId") String recipeId) {
+        return recipeService.removeRecipe(recipeId);
+    }
+
+    // 구매
+    @PostMapping("/purchase")
+    public boolean processPurchase(@RequestBody Purchase purchase,
+                                   @RequestParam(defaultValue = "0") int cartId) {
+        return purchaseService.processPurchase(purchase, cartId);
+    }
+}

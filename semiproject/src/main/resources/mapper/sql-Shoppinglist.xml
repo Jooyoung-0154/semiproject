@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.cloud.mapper.ShoppingListMapper">
+
+    <!-- 장바구니 추가 -->
+    <insert id="insertCart">
+        INSERT INTO shopping_list (USER_ID, RECIPE_CODE)
+        VALUES (#{USER_ID}, #{RECIPE_CODE})
+    </insert>
+
+    <!-- 장바구니 개별 삭제 -->
+    <delete id="deleteCart">
+        DELETE FROM shopping_list WHERE CART_ID = #{CART_ID}
+    </delete>
+
+    <!-- 내 장바구니 보기 (최신순) -->
+    <select id="getCartListByUserId" resultType="org.cloud.dto.ShoppingList">
+        SELECT * FROM shopping_list 
+        WHERE USER_ID = #{USER_ID}
+        ORDER BY ADD_DATE DESC
+    </select>
+
+    <!-- 중복 체크 -->
+    <select id="checkCartExist" resultType="int">
+        SELECT COUNT(*) FROM shopping_list 
+        WHERE USER_ID = #{USER_ID} AND RECIPE_CODE = #{RECIPE_CODE}
+    </select>
+
+</mapper>

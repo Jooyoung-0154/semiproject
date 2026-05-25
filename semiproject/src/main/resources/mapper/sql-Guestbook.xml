@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.cloud.mapper.GuestbookMapper">
+
+    <!-- 방명록 작성 -->
+    <insert id="insertGuestbook">
+        INSERT INTO guestbook (HOST_ID, WRITER_ID, CONTENT)
+        VALUES (#{hostId}, #{writerId}, #{content})
+    </insert>
+
+    <!-- 방명록 수정 -->
+    <update id="updateGuestbook">
+        UPDATE guestbook 
+        SET CONTENT = #{content}
+        WHERE GUESTBOOK_ID = #{guestbookId}
+    </update>
+
+    <!-- 방명록 삭제 -->
+    <delete id="deleteGuestbook">
+        DELETE FROM guestbook WHERE GUESTBOOK_ID = #{guestbookId}
+    </delete>
+
+    <!-- 방명록 목록 조회 (최신순 + 페이징) -->
+    <select id="getGuestbookList" resultType="org.cloud.dto.Guestbook">
+    SELECT 
+        g.*, 
+        m.NICKNAME as writerNickname  FROM guestbook g
+    LEFT JOIN member m ON g.WRITER_ID = m.ID
+    WHERE g.HOST_ID = #{HOST_ID}
+    ORDER BY g.REG_DATE DESC
+    LIMIT #{offset}, #{limit}
+</select>
+
+    <!-- 전체 개수 조회 -->
+    <select id="getTotalCount" resultType="int">
+        SELECT COUNT(*) FROM guestbook 
+        WHERE HOST_ID = #{HOST_ID}  </select>
+
+</mapper>
