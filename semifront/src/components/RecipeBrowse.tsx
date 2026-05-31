@@ -340,13 +340,14 @@ export default function RecipeBrowse() {
       {/* ── 페이지네이션 ── */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2 mt-10">
-          <button
-            onClick={() => doSearch(page - 1)}
-            disabled={page <= 1}
-            className="px-4 py-2 rounded-lg border text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-          >
-            이전
+          {page > 1 && (
+            <button
+              onClick={() => doSearch(page - 1)}
+              className="px-4 py-2 rounded-lg border text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+            >
+              이전
           </button>
+          )}
 
           {getPageRange().map((p) => (
             <button
