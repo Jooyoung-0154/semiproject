@@ -5,7 +5,7 @@ import java.util.List;
 public class RecipeSearchParams {
 
     private String recipeNmKo;      // 이름 검색
-    private Integer tagId;           // 태그 필터
+    private List<Integer> tagIds;     // 태그 필터 (복수, OR 조건)
     private String levelNm;          // 난이도 필터 (상/중/하)
     private List<String> irdntNms;   // 재료 필터 (복수)
     private int page = 1;           // 페이지 번호 (1부터 시작)
@@ -14,8 +14,8 @@ public class RecipeSearchParams {
     public String getRecipeNmKo() { return recipeNmKo; }
     public void setRecipeNmKo(String recipeNmKo) { this.recipeNmKo = recipeNmKo; }
 
-    public Integer getTagId() { return tagId; }
-    public void setTagId(Integer tagId) { this.tagId = tagId; }
+    public List<Integer> getTagIds() { return tagIds; }
+    public void setTagIds(List<Integer> tagIds) { this.tagIds = tagIds; }
 
     public String getLevelNm() { return levelNm; }
     public void setLevelNm(String levelNm) { this.levelNm = levelNm; }

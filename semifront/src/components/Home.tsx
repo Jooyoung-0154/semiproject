@@ -267,7 +267,7 @@ function HomeRecipeCard({
           {recipe.cookingTime && (
             <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 font-medium">
               <Clock className="w-3 h-3" />
-              {recipe.cookingTime}분
+              {recipe.cookingTime}
             </span>
           )}
           {recipe.qnt && (

@@ -18,10 +18,17 @@ export default function RecipeBrowse() {
 
   // ── 검색 조건 state ──
   const [nameInput, setNameInput] = useState("");
+  const [debouncedName, setDebouncedName] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
-  const [selectedTagId, setSelectedTagId] = useState<number | undefined>();
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [ingredientInput, setIngredientInput] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([]);
+
+  // 이름 입력 debounce (500ms)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedName(nameInput), 500);
+    return () => clearTimeout(timer);
+  }, [nameInput]);
 
   // ── 결과/태그/페이징 state ──
   const [recipes, setRecipes] = useState<Recipe_Info[]>([]);
@@ -30,6 +37,7 @@ export default function RecipeBrowse() {
   const [page, setPage] = useState(1);
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [tagInput, setTagInput] = useState("");
 
   const PAGE_SIZE = 12;
 
@@ -47,8 +55,8 @@ export default function RecipeBrowse() {
       setIsLoading(true);
       try {
         const params: BrowseParams = {
-          name: nameInput || undefined,
-          tagId: selectedTagId,
+          name: debouncedName || undefined,
+          tagIds: selectedTagIds.length ? selectedTagIds : undefined,
           level: selectedLevel || undefined,
           ingredients: ingredients.length ? ingredients : undefined,
           page: targetPage,
@@ -65,14 +73,13 @@ export default function RecipeBrowse() {
         setIsLoading(false);
       }
     },
-    [nameInput, selectedLevel, selectedTagId, ingredients]
+    [debouncedName, selectedLevel, selectedTagIds, ingredients]
   );
 
-  // 최초 로드
+  // 필터 변경 시 자동 검색 (최초 로드 포함)
   useEffect(() => {
     doSearch(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [doSearch]);
 
   // 검색 버튼
   const handleSearch = () => doSearch(1);
@@ -96,11 +103,31 @@ export default function RecipeBrowse() {
   const removeIngredient = (item: string) =>
     setIngredients(ingredients.filter((i) => i !== item));
 
+  // 태그 토글
+  const toggleTag = (tag: Tag) => {
+    setSelectedTagIds((prev) =>
+      prev.includes(tag.tagId)
+        ? prev.filter((id) => id !== tag.tagId)
+        : [...prev, tag.tagId]
+    );
+  };
+
+  const clearTags = () => setSelectedTagIds([]);
+
+  // 입력값으로 필터링된 태그 목록
+  const filteredTags = tagInput.trim()
+    ? tags.filter((t) =>
+        t.tagName.toLowerCase().includes(tagInput.trim().toLowerCase())
+      )
+    : tags;
+
   // 필터 초기화
   const resetFilters = () => {
     setNameInput("");
+    setDebouncedName("");
     setSelectedLevel("");
-    setSelectedTagId(undefined);
+    setSelectedTagIds([]);
+    setTagInput("");
     setIngredients([]);
     setIngredientInput("");
     setTimeout(() => doSearch(1), 0);
@@ -117,7 +144,7 @@ export default function RecipeBrowse() {
   };
 
   const hasActiveFilter =
-    nameInput || selectedLevel || selectedTagId || ingredients.length > 0;
+    nameInput || selectedLevel || selectedTagIds.length > 0 || ingredients.length > 0;
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -178,22 +205,38 @@ export default function RecipeBrowse() {
               <TagIcon className="w-4 h-4 inline mr-1" />
               태그
             </label>
-            <select
-              value={selectedTagId ?? ""}
-              onChange={(e) =>
-                setSelectedTagId(
-                  e.target.value ? Number(e.target.value) : undefined
-                )
-              }
-              className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white text-sm"
-            >
-              <option value="">전체 태그</option>
-              {tags.map((tag) => (
-                <option key={tag.tagId} value={tag.tagId}>
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              placeholder="태그 검색..."
+              className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm mb-2"
+            />
+            <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
+              <button
+                onClick={clearTags}
+                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                  selectedTagIds.length === 0
+                    ? "bg-orange-600 text-white border-orange-600"
+                    : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"
+                }`}
+              >
+                전체
+              </button>
+              {filteredTags.map((tag) => (
+                <button
+                  key={tag.tagId}
+                  onClick={() => toggleTag(tag)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                    selectedTagIds.includes(tag.tagId)
+                      ? "bg-orange-600 text-white border-orange-600"
+                      : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"
+                  }`}
+                >
                   #{tag.tagName}
-                </option>
+                </button>
               ))}
-            </select>
+            </div>
           </div>
 
           {/* 재료 */}
@@ -379,7 +422,7 @@ function RecipeCard({ recipe }: { recipe: Recipe_Info }) {
           {recipe.cookingTime && (
             <span className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
-              {recipe.cookingTime}분
+              {recipe.cookingTime}
             </span>
           )}
         </div>

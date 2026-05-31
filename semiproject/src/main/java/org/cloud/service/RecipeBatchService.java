@@ -35,8 +35,25 @@ public class RecipeBatchService {
     private static final String BASIC_SERVICE_ID = "Grid_20150827000000000226_1";//재료정보 서비스 이름
     private static final String COOKING_SERVICE_ID = "Grid_20150827000000000228_1";//과정정보 서비스 이름
     private static final String IRDNT_SERVICE_ID = "Grid_20150827000000000227_1";//재료정보 서비스 이름
-
-
+    
+    //난이도 태그 잘못넘어오는거 normalize 하는 메서드
+    private String convertLevelNm(String apiLevel) {
+        if (apiLevel == null) {
+            return "중";
+        }
+        
+        switch (apiLevel.trim()) {
+            case "초보환영":
+                return "하";
+            case "보통":
+                return "중";
+            case "어려움":
+                return "상";
+            default:
+                return "중";
+        }
+    }
+    
     public void initBatch() {
 
         log.info(">>>> [시스템] 동기화 시작");
@@ -101,7 +118,8 @@ public class RecipeBatchService {
             info.setCookingTime(node.path("COOKING_TIME").asText());
             info.setCalorie(node.path("CALORIE").asText());
             info.setQnt(node.path("QNT").asText());
-            info.setLevelNm(node.path("LEVEL_NM").asText());
+            String rawLevel = node.path("LEVEL_NM").asText(); 
+            info.setLevelNm(convertLevelNm(rawLevel));
 
             r.setRecipeInfo(info); 
             

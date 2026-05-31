@@ -47,11 +47,11 @@ public class RecipeController {
         return recipeService.getRecipesByWriterId(writerId);
     }
 
-    // 둘러보기: /api/recipe/browse?name=&tagId=&level=&ingredients=고기,양파&page=1&size=12
+    // 둘러보기: /api/recipe/browse?name=&tagIds=1,2,3&level=&ingredients=고기,양파&page=1&size=12
     @GetMapping("/browse")
     public Map<String, Object> browse(
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) Integer tagId,
+            @RequestParam(required = false) String tagIds,
             @RequestParam(required = false) String level,
             @RequestParam(required = false) String ingredients,
             @RequestParam(defaultValue = "1") int page,
@@ -59,10 +59,18 @@ public class RecipeController {
 
         RecipeSearchParams params = new RecipeSearchParams();
         params.setRecipeNmKo(name);
-        params.setTagId(tagId);
         params.setLevelNm(level);
         params.setPage(page);
         params.setSize(size);
+
+        if (tagIds != null && !tagIds.isBlank()) {
+            List<Integer> tagIdList = Arrays.stream(tagIds.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(Integer::parseInt)
+                .toList();
+            params.setTagIds(tagIdList);
+        }
 
         if (ingredients != null && !ingredients.isBlank()) {
             List<String> irdntList = Arrays.stream(ingredients.split(","))

@@ -2,7 +2,7 @@ import api from "../api/axios";
 
 export interface BrowseParams {
   name?: string;
-  tagId?: number;
+  tagIds?: number[];
   level?: string;
   ingredients?: string[];
   page?: number;
@@ -22,7 +22,7 @@ const RecipeService = {
     const response = await api.get("/recipe/browse", {
       params: {
         name: params.name || undefined,
-        tagId: params.tagId || undefined,
+        tagIds: params.tagIds?.length ? params.tagIds.join(",") : undefined,
         level: params.level || undefined,
         ingredients: params.ingredients?.length
           ? params.ingredients.join(",")

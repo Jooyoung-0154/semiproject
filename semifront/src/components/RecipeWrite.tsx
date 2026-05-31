@@ -140,7 +140,9 @@ export default function RecipeWrite() {
 
       // 2. 레시피 전체 데이터 저장
       const fullRecipeData: Partial<Recipe> & { writerId?: string } = {
-        recipeInfo: recipeInfo,
+        recipeInfo: {
+          ...recipeInfo, cookingTime: `${recipeInfo.cookingTime}분`
+    },
         irdntInfo: irdntInfo,
         cookingInfo: updatedCookingInfo,
         price: Number(recipeInfo.pcNm) || 0,

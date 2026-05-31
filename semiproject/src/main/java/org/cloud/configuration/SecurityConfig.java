@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/api/tags/**").permitAll()
                 .requestMatchers("/error").permitAll()
+                .requestMatchers("/api/admin/**").permitAll()
                 
                 .anyRequest().authenticated()
             );

@@ -53,7 +53,7 @@
             r.WRITER_ID    AS writerId,
             (SELECT img_url FROM recipe_image WHERE recipe_code = r.RECIPE_ID ORDER BY sort_order ASC LIMIT 1) AS thumbImgUrl
         FROM RECIPE r
-        <if test="tagId != null">
+        <if test="tagIds != null and tagIds.size() &gt; 0">
             JOIN RECIPE_TAG rt ON r.recipe_id = rt.recipe_id
         </if>
         <if test="irdntNms != null and irdntNms.size() &gt; 0">
@@ -63,8 +63,11 @@
             <if test="recipeNmKo != null and recipeNmKo != ''">
                 AND r.recipe_nm_ko LIKE CONCAT('%', #{recipeNmKo}, '%')
             </if>
-            <if test="tagId != null">
-                AND rt.tag_id = #{tagId}
+            <if test="tagIds != null and tagIds.size() &gt; 0">
+                AND rt.tag_id IN
+                <foreach collection="tagIds" item="tid" open="(" separator="," close=")">
+                    #{tid}
+                </foreach>
             </if>
             <if test="levelNm != null and levelNm != ''">
                 AND r.level_nm = #{levelNm}
@@ -83,7 +86,7 @@
     <select id="countRecipeList" parameterType="org.cloud.dto.RecipeSearchParams" resultType="int">
         SELECT COUNT(DISTINCT r.recipe_id)
         FROM RECIPE r
-        <if test="tagId != null">
+        <if test="tagIds != null and tagIds.size() &gt; 0">
             JOIN RECIPE_TAG rt ON r.recipe_id = rt.recipe_id
         </if>
         <if test="irdntNms != null and irdntNms.size() &gt; 0">
@@ -93,8 +96,11 @@
             <if test="recipeNmKo != null and recipeNmKo != ''">
                 AND r.recipe_nm_ko LIKE CONCAT('%', #{recipeNmKo}, '%')
             </if>
-            <if test="tagId != null">
-                AND rt.tag_id = #{tagId}
+            <if test="tagIds != null and tagIds.size() &gt; 0">
+                AND rt.tag_id IN
+                <foreach collection="tagIds" item="tid" open="(" separator="," close=")">
+                    #{tid}
+                </foreach>
             </if>
             <if test="levelNm != null and levelNm != ''">
                 AND r.level_nm = #{levelNm}
