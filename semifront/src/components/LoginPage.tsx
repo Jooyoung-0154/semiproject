@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.tsx";
+import axios from "axios";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -18,9 +19,17 @@ export default function LoginPage() {
       navigate("/mypage");
     } catch (err) {
       console.error(err);
-      const message = err instanceof Error
-        ? err.message
-        : "로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.";
+      let message = "로그인에 실패했습니다. 다시 시도해주세요.";
+      if (axios.isAxiosError(err) && err.response) {
+      
+        if (err.response.status === 400) {
+          message = "잘못된 회원정보입니다. 아이디와 비밀번호를 확인해주세요.";
+        } else {
+          message = err.response.data?.message || message;
+        }
+        } else if (err instanceof Error) {
+          message = err.message;
+        }
       setError(message);
     }
   };

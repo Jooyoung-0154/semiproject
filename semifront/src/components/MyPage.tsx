@@ -509,7 +509,7 @@ export default function MyPage() {
               </p>
 
               <div className="profile-stats">
-                <span>{displayUser.myPosts?.length || 0}개</span>
+                <span>레시피 {displayUser.recipeCount || 0}개</span>
                 <span>팔로워 {displayUser.followerCount}명</span>
                 <span>팔로잉 {displayUser.followingCount}명</span>
               </div>
@@ -780,7 +780,7 @@ export default function MyPage() {
                               )}
                               {recipe.cookingTime && (
                                 <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium">
-                                  <Clock className="w-3 h-3" />{recipe.cookingTime}분
+                                  <Clock className="w-3 h-3" />{recipe.cookingTime}
                                 </span>
                               )}
                             </div>
@@ -790,7 +790,7 @@ export default function MyPage() {
                               <div className="flex flex-wrap gap-1 mb-3">
                                 {recipe.tags.map((tag) => (
                                   <span key={tag.tagId} className="px-1.5 py-0.5 bg-orange-50 text-orange-600 border border-orange-100 rounded-full text-xs font-medium">
-                                    # {tag.tagName}
+                                    {tag.tagName}
                                   </span>
                                 ))}
                               </div>

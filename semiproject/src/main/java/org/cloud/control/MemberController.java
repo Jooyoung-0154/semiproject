@@ -5,8 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import java.util.List;
+
 import org.cloud.dto.Member;
 import org.cloud.service.MemberService;
+import org.cloud.service.RecipeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,8 +27,15 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/member")
 public class MemberController {
 
+    private final RecipeService recipeService;
+
     @Autowired
     private MemberService memberService;
+
+
+    MemberController(RecipeService recipeService) {
+        this.recipeService = recipeService;
+    }
 
     
     @PostMapping("/register")
@@ -101,7 +111,12 @@ public class MemberController {
     public boolean deleteMember(@PathVariable String id) {
         return memberService.deleteMember(id);
     }
-    
+
+    @GetMapping("/search")
+    public List<Member> searchMembers(@RequestParam String keyword) {
+        return memberService.searchMembers(keyword);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Member> getMemberById(@PathVariable("id") String id) {
         
@@ -110,6 +125,7 @@ public class MemberController {
         if (member == null) {
             return ResponseEntity.notFound().build(); 
         }
+        member.setRecipeCount(recipeService.getRecipesCountByWriterId(id));
         
         return ResponseEntity.ok(member);
     }

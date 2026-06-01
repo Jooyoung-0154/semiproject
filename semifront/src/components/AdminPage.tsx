@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { ShieldCheck, RefreshCw, Tag as TagIcon, Plus, Trash2, CheckCircle2, XCircle } from "lucide-react";
+import { ShieldCheck, RefreshCw, Tag as TagIcon, Plus, Trash2, CheckCircle2, XCircle, UserPen } from "lucide-react";
 import { adminService } from "../service/etcService";
 import { tagService } from "../service/tagService";
-import { Tag } from "../types/type";
+import { Member, Tag } from "../types/type";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router";
+import { memberService } from "../service/memberService";
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -26,6 +27,11 @@ export default function AdminPage() {
   const [newTagName, setNewTagName] = useState("");
   const [tagLoading, setTagLoading] = useState(false);
   const [tagMsg, setTagMsg] = useState<{ ok: boolean; msg: string } | null>(null);
+  // ── 회원 검색/삭제 상태
+  const [memberKeyword, setMemberKeyword] = useState("");
+  const [memberResults, setMemberResults] = useState<Member[]>([]);
+  const [memberSearching, setMemberSearching] = useState(false);
+  const [memberMsg, setMemberMsg] = useState<{ ok: boolean; msg: string } | null>(null);
 
   // 태그 목록 로드
   const loadTags = () => {
@@ -81,6 +87,34 @@ export default function AdminPage() {
       loadTags();
     } catch {
       setTagMsg({ ok: false, msg: "태그 삭제 중 오류가 발생했습니다." });
+    }
+  };
+  // ── 회원 검색
+  const handleSearchMember = async () => {
+    const kw = memberKeyword.trim();
+    if (!kw) return;
+    setMemberSearching(true);
+    setMemberMsg(null);
+    try {
+      const res = await memberService.searchMembers(kw);
+      setMemberResults(res.data);
+      if (res.data.length === 0) setMemberMsg({ ok: true, msg: "검색 결과가 없습니다." });
+    } catch {
+      setMemberMsg({ ok: false, msg: "회원 검색 중 오류가 발생했습니다." });
+    } finally {
+      setMemberSearching(false);
+    }
+  };
+
+  // ── 회원 삭제
+  const handleDeleteMember = async (member: Member) => {
+    if (!window.confirm(`"${member.nickname}" (${member.id}) 회원을 삭제하시겠습니까?`)) return;
+    try {
+      await memberService.deleteMember(member.id);
+      setMemberResults((prev) => prev.filter((m) => m.id !== member.id));
+      setMemberMsg({ ok: true, msg: `"${member.nickname}" 회원이 삭제되었습니다.` });
+    } catch {
+      setMemberMsg({ ok: false, msg: "회원 삭제 중 오류가 발생했습니다." });
     }
   };
 
@@ -178,13 +212,72 @@ export default function AdminPage() {
                 key={tag.tagId}
                 className="flex items-center gap-1.5 px-3.5 py-1.5 bg-orange-50 border border-orange-200 rounded-full text-sm font-medium text-orange-700"
               >
-                <span># {tag.tagName}</span>
+                <span>{tag.tagName}</span>
                 <button
                   onClick={() => handleDeleteTag(tag)}
                   className="text-orange-400 hover:text-red-500 transition-colors ml-0.5"
                   title="삭제"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+      {/* ── 회원 관리 ── */}
+      <section className="bg-white rounded-2xl shadow-md p-6 space-y-5">
+        <h2 className="text-xl font-semibold text-gray-700 border-b pb-2 flex items-center gap-2">
+          <UserPen className="w-5 h-5 text-orange-500" />
+          회원 관리
+        </h2>
+
+        {/* 검색 입력 */}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={memberKeyword}
+            onChange={(e) => setMemberKeyword(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearchMember()}
+            placeholder="아이디 또는 닉네임으로 검색"
+            className="flex-1 px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm"
+          />
+          <button
+            onClick={handleSearchMember}
+            disabled={memberSearching || !memberKeyword.trim()}
+            className="flex items-center gap-1.5 px-5 py-2.5 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+          >
+            {memberSearching ? "검색 중..." : "검색"}
+          </button>
+        </div>
+
+        {/* 메시지 */}
+        {memberMsg && (
+          <div className={`flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-lg ${memberMsg.ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+            {memberMsg.ok ? <CheckCircle2 className="w-4 h-4 flex-shrink-0" /> : <XCircle className="w-4 h-4 flex-shrink-0" />}
+            {memberMsg.msg}
+          </div>
+        )}
+
+        {/* 검색 결과 목록 */}
+        {memberResults.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {memberResults.map((m) => (
+              <div
+                key={m.id}
+                className="flex items-center justify-between px-4 py-3 bg-orange-50 border border-orange-200 rounded-xl"
+              >
+                <div>
+                  <span className="font-semibold text-gray-800 text-sm">{m.nickname}</span>
+                  <span className="ml-2 text-xs text-gray-400">({m.id})</span>
+                </div>
+                <button
+                  onClick={() => handleDeleteMember(m)}
+                  className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition-colors font-medium"
+                  title="삭제"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  삭제
                 </button>
               </div>
             ))}

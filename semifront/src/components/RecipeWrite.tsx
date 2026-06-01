@@ -419,7 +419,7 @@ export default function RecipeWrite() {
                         : "bg-white text-gray-600 border-gray-300 hover:border-orange-400 hover:text-orange-500"
                     }`}
                   >
-                    # {tag.tagName}
+                    {tag.tagName}
                   </button>
                 ))}
               </div>
@@ -435,7 +435,7 @@ export default function RecipeWrite() {
                       key={t.tagId}
                       className="flex items-center gap-1 px-2.5 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold"
                     >
-                      # {t.tagName}
+                      {t.tagName}
                       <button
                         type="button"
                         onClick={() => toggleTag(t.tagId)}

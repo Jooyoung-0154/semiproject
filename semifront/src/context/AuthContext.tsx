@@ -73,6 +73,7 @@ export function normalizeMember(data: any): Member | null {
     myPosts: Array.isArray(member.myPosts) ? member.myPosts : [],
     followingCount: Number(member.followingCount) || 0,
     followerCount: Number(member.followerCount) || 0,
+    recipeCount: Number(member.recipeCount) || 0,
   };
 }
 

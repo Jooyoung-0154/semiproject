@@ -32,4 +32,6 @@ public interface RecipeMapper {
 
     // 삭제
     int deleteRecipe(String recipeId);
+    
+    int countRecipeById(String writerId);
 }

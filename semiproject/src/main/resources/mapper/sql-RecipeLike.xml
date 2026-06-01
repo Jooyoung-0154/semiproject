@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.cloud.mapper.RecipeLikeMapper">
+
+    <!-- 좋아요 추가 + RECIPE.LIKE_COUNT 증가 -->
+    <insert id="insertLike">
+        INSERT INTO recipe_like (USER_ID, RECIPE_CODE)
+        VALUES (#{userId}, #{recipeCode})
+    </insert>
+
+    <update id="incrementLikeCount">
+        UPDATE recipe SET LIKE_COUNT = LIKE_COUNT + 1 WHERE RECIPE_ID = #{recipeCode}
+    </update>
+
+    <!-- 좋아요 취소 + RECIPE.LIKE_COUNT 감소 -->
+    <delete id="deleteLike">
+        DELETE FROM recipe_like
+        WHERE USER_ID = #{userId} AND RECIPE_CODE = #{recipeCode}
+    </delete>
+
+    <update id="decrementLikeCount">
+        UPDATE recipe SET LIKE_COUNT = GREATEST(LIKE_COUNT - 1, 0) WHERE RECIPE_ID = #{recipeCode}
+    </update>
+
+    <!-- 좋아요 여부 확인 -->
+    <select id="checkLikeExist" resultType="int">
+        SELECT COUNT(*) FROM recipe_like
+        WHERE USER_ID = #{userId} AND RECIPE_CODE = #{recipeCode}
+    </select>
+
+    <!-- 레시피 좋아요 수 조회 -->
+    <select id="getLikeCount" resultType="int">
+        SELECT COUNT(*) FROM recipe_like
+        WHERE RECIPE_CODE = #{recipeCode}
+    </select>
+
+    <!-- 유저가 좋아요한 recipeCode 목록 -->
+    <select id="getLikedRecipeIdsByUser" resultType="string">
+        SELECT RECIPE_CODE FROM recipe_like
+        WHERE USER_ID = #{userId}
+    </select>
+
+</mapper>

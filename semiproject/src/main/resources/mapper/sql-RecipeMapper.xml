@@ -189,5 +189,10 @@
     <delete id="deleteRecipe">
         DELETE FROM RECIPE WHERE RECIPE_ID = #{recipeId}
     </delete>
+    
+    <select id = "countRecipeById">
+    	SELECT count(*) from recipe where WRITER_ID=#{writerId}
+    </select>
+    
 
 </mapper>

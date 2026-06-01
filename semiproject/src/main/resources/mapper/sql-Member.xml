@@ -53,6 +53,19 @@
     	SET ${column} = ${column} + #{amount} 
     	WHERE ID = #{ID}
 	</update>
+	<!-- 회원 삭제 -->
+	<delete id="deleteMember">
+		DELETE FROM member WHERE ID = #{ID}
+	</delete>
+
+	<select id="searchMembers" parameterType="String" resultType="org.cloud.dto.Member">
+		SELECT ID, NICKNAME, PROFILE_IMG
+		FROM member
+		WHERE CONCAT(ID, ' ', NICKNAME) LIKE CONCAT('%', #{keyword}, '%')
+		AND ID != 'Admin'
+		LIMIT 20
+	</select>
+
 	<select id="selectMemberById" resultType="org.cloud.dto.Member">
     SELECT
         ID as id,

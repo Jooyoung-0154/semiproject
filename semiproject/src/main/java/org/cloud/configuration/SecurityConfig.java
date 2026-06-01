@@ -39,6 +39,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/tags/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/api/admin/**").permitAll()
+                .requestMatchers("/api/like/**").permitAll()
+                .requestMatchers("/api/cart/**").permitAll()
+                .requestMatchers("/api/purchase/**").permitAll()
+                .requestMatchers("/api/review/**").permitAll()
                 
                 .anyRequest().authenticated()
             );

@@ -95,6 +95,11 @@ public class RecipeService {
         }
         return recipes;
     }
+    public int getRecipesCountByWriterId(String writerId) {
+    	int count = recipeMapper.countRecipeById(writerId);
+    			
+    	return count;
+    }
 
     // 3. 삭제
     @Transactional

@@ -1,5 +1,7 @@
 package org.cloud.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.cloud.dto.Member;
@@ -30,4 +32,6 @@ public interface MemberMapper {
     int deleteMember(@Param("ID") String ID);
     
     Member selectMemberById(String id);
+
+    List<Member> searchMembers(String keyword);
 }

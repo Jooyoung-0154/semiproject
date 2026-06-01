@@ -10,7 +10,7 @@ export interface Purchase {
 //멤버
 export interface Member {
   id: string;
-  password?: string; // 보안상 프론트에서는 생략될 수 있으므로 선택 사항(?) 표시
+  password?: string; // 보안상 선택 사항(?) 표시
   balance: number;
   nickname: string;
   profileImg: string;
@@ -114,7 +114,10 @@ export interface Recipe_Info {
   price?: number; // 가격 (조회 시 서버에서 채워짐)
   thumbImgUrl?: string; // 대표 이미지 URL (조회 시 서버에서 채워줌)
   writerId?: string; // 작성자 ID
+  writerNickname?: string; // 작성자 닉네임
   tags?: Tag[]; // 태그 목록 (조회 시 서버에서 채워줌)
+  likeCount?: number; // 좋아요 수
+  liked?: boolean;   // 현재 유저 좋아요 여부
 }
 
 //레시피 객체
@@ -157,5 +160,8 @@ export interface Review {
   reviewContent: string; // 리뷰 내용
   reviewHit: number; // 리뷰 조회수
   thumbsUp: boolean; // 추천 여부 (Java의 boolean 대응)
+  regDate: string; // 등록일
+}
+의 boolean 대응)
   regDate: string; // 등록일
 }

@@ -41,4 +41,7 @@ export const memberService = {
 
   // 회원 조회 by ID
   getMemberById: (id: string) => api.get<Member>(`/member/${id}`),
+
+  // 회원 검색 (관리자용)
+  searchMembers: (keyword: string) => api.get<Member[]>(`/member/search`, { params: { keyword } }),
 };
