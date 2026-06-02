@@ -1,6 +1,7 @@
 package org.cloud.dto;
 
 import java.util.List;
+import java.time.LocalDate;
 
 import lombok.Data;
 
@@ -13,6 +14,9 @@ public class Member {
 	private String nickname;
 	private String profileImg;
 	private String intro;
+	
+	private LocalDate birthDate;
+	private String gender;
 	
 	private List<String> followerIds;
 	private List<String> followingIds;

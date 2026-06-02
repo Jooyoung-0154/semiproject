@@ -10,13 +10,15 @@ export interface RegisterParams {
   id: string;
   password: string;
   nickname: string;
+  birthDate: string;
+  gender: string;
 }
 
 export const memberService = {
   // 회원가입
-  register: (member: RegisterParams) => api.post<RegisterResponse>("/member/register", member),
+  register: (member: RegisterParams) =>
+    api.post<RegisterResponse>("/member/register", member),
 
-  
   updateProfileImage: (id: string, file: File) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -43,5 +45,6 @@ export const memberService = {
   getMemberById: (id: string) => api.get<Member>(`/member/${id}`),
 
   // 회원 검색 (관리자용)
-  searchMembers: (keyword: string) => api.get<Member[]>(`/member/search`, { params: { keyword } }),
+  searchMembers: (keyword: string) =>
+    api.get<Member[]>(`/member/search`, { params: { keyword } }),
 };
