@@ -101,7 +101,24 @@ public class RecipeService {
     	return count;
     }
 
-    // 3. 삭제
+    // 3. 단건 상세 조회
+    public Recipe getRecipeById(String recipeId) {
+        Recipe_Info info = recipeMapper.selectRecipeInfoById(recipeId);
+        if (info == null) return null;
+
+        Recipe recipe = new Recipe();
+        recipe.setRecipeCode(recipeId);
+        recipe.setRecipeInfo(info);
+        recipe.setCookingInfo(recipeMapper.selectCookingInfoByRecipeId(recipeId));
+        recipe.setIrdntInfo(recipeMapper.selectIrdntInfoByRecipeId(recipeId));
+        recipe.setTags(tagMapper.getTagsByRecipeId(recipeId));
+        recipe.setLikeCount(info.getLikeCount());
+        recipe.setHit(info.getHit());
+        recipe.setPrice(info.getPrice());
+        return recipe;
+    }
+
+    // 4. 삭제
     @Transactional
     public boolean removeRecipe(String recipeId) {
         return recipeMapper.deleteRecipe(recipeId) > 0;

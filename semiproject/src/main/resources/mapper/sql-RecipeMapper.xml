@@ -190,9 +190,56 @@
         DELETE FROM RECIPE WHERE RECIPE_ID = #{recipeId}
     </delete>
     
-    <select id = "countRecipeById">
-    	SELECT count(*) from recipe where WRITER_ID=#{writerId}
+    <select id="countRecipeById">
+        SELECT count(*) from recipe where WRITER_ID=#{writerId}
     </select>
-    
+
+    <select id="selectRecipeInfoById" resultType="org.cloud.dto.Recipe_Info">
+        SELECT
+            r.RECIPE_ID    AS recipeId,
+            r.RECIPE_NM_KO AS recipeNmKo,
+            r.SUMRY        AS sumry,
+            r.NATION_CODE  AS nationCode,
+            r.NATION_NM    AS nationNm,
+            r.TY_CODE      AS tyCode,
+            r.TY_NM        AS tyNm,
+            r.COOKING_TIME AS cookingTime,
+            r.CALORIE      AS calorie,
+            r.QNT          AS qnt,
+            r.LEVEL_NM     AS levelNm,
+            r.HIT          AS hit,
+            r.LIKE_COUNT   AS likeCount,
+            r.PRICE        AS price,
+            r.WRITER_ID    AS writerId,
+            (SELECT img_url FROM recipe_image WHERE recipe_code = r.RECIPE_ID ORDER BY sort_order ASC LIMIT 1) AS thumbImgUrl
+        FROM RECIPE r
+        WHERE r.RECIPE_ID = #{recipeId}
+    </select>
+
+    <select id="selectCookingInfoByRecipeId" resultType="org.cloud.dto.Cooking_Info">
+        SELECT
+            RECIPE_ID    AS recipeId,
+            COOKING_NO   AS cookingNo,
+            COOKING_DC   AS cookingDc,
+            STEP_TIP     AS stepTip,
+            STEP_IMG_URL AS stepImgUrl,
+            IMG_TYPE     AS imgType
+        FROM COOKING_INFO
+        WHERE RECIPE_ID = #{recipeId}
+        ORDER BY COOKING_NO ASC
+    </select>
+
+    <select id="selectIrdntInfoByRecipeId" resultType="org.cloud.dto.Irdnt_Info">
+        SELECT
+            RECIPE_ID     AS recipeId,
+            IRDNT_SN      AS irdntSn,
+            IRDNT_NM      AS irdntNm,
+            IRDNT_CPCTY   AS irdntCpcty,
+            IRDNT_TY_CODE AS irdntTyCode,
+            IRDNT_TY_NM   AS irdntTyNm
+        FROM IRDNT_INFO
+        WHERE RECIPE_ID = #{recipeId}
+        ORDER BY IRDNT_SN ASC
+    </select>
 
 </mapper>

@@ -30,8 +30,13 @@ public interface RecipeMapper {
     // 작성자 ID로 레시피 목록 조회
     List<Recipe_Info> selectRecipesByWriterId(@Param("writerId") String writerId);
 
+    // 단건 조회
+    Recipe_Info selectRecipeInfoById(@Param("recipeId") String recipeId);
+    List<Cooking_Info> selectCookingInfoByRecipeId(@Param("recipeId") String recipeId);
+    List<Irdnt_Info> selectIrdntInfoByRecipeId(@Param("recipeId") String recipeId);
+
     // 삭제
     int deleteRecipe(String recipeId);
-    
+
     int countRecipeById(String writerId);
 }

@@ -83,6 +83,12 @@ public class RecipeController {
         return recipeService.searchRecipesPaged(params);
     }
 
+    // 단건 상세 조회: /api/recipe/{recipeId}
+    @GetMapping("/{recipeId}")
+    public Recipe getById(@PathVariable String recipeId) {
+        return recipeService.getRecipeById(recipeId);
+    }
+
     // 태그 전체 목록: /api/recipe/tags
     @GetMapping("/tags")
     public List<Tag> getAllTags() {

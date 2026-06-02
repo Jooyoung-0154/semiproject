@@ -4,14 +4,14 @@
 
     <insert id="insertReview">
         INSERT INTO review (RECIPE_CODE, ID, REVIEW_CONTENT, THUMBS_UP)
-        VALUES (#{RECIPE_CODE}, #{ID}, #{REVIEW_CONTENT}, #{THUMBS_UP})
+        VALUES (#{recipeCode}, #{id}, #{reviewContent}, #{thumbsUp})
     </insert>
 
     <update id="updateReview">
-        UPDATE review 
-        SET REVIEW_CONTENT = #{REVIEW_CONTENT}, 
-            THUMBS_UP = #{THUMBS_UP}
-        WHERE REVIEW_ID = #{REVIEW_ID}
+        UPDATE review
+        SET REVIEW_CONTENT = #{reviewContent},
+            THUMBS_UP = #{thumbsUp}
+        WHERE REVIEW_ID = #{reviewId}
     </update>
 
     <delete id="deleteReview">
@@ -19,13 +19,13 @@
     </delete>
 
     <select id="getReviewsByRecipeCode" resultType="org.cloud.dto.Review">
-        SELECT * FROM review 
+        SELECT * FROM review
         WHERE RECIPE_CODE = #{RECIPE_CODE}
         ORDER BY REG_DATE DESC
     </select>
 
     <select id="getReviewsById" resultType="org.cloud.dto.Review">
-        SELECT * FROM review 
+        SELECT * FROM review
         WHERE ID = #{ID}
         ORDER BY REG_DATE DESC
     </select>

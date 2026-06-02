@@ -68,7 +68,13 @@ const RecipeService = {
     return response.data;
   },
 
-  // 3. 레시피 삭제
+  // 3. 레시피 단건 상세 조회
+  getById: async (recipeId: string): Promise<import("../types/type").Recipe> => {
+    const response = await api.get(`/recipe/${recipeId}`);
+    return response.data;
+  },
+
+  // 4. 레시피 삭제
   deleteRecipe: async (recipeId: string) => {
     try {
       const response = await api.delete(`/recipe/${recipeId}`);
