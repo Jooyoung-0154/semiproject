@@ -14,6 +14,7 @@ local.properties
 .loadpath
 .recommenders
 
+
 # External tool builders
 .externalToolBuilders/
 
@@ -124,6 +125,7 @@ gradle-app.setting
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+.claude/
 
 ### Gradle Patch ###
 # Java heap dump
