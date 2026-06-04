@@ -2,10 +2,9 @@ package org.cloud.control;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import java.util.List;
 
 import org.cloud.dto.Member;
 import org.cloud.service.MemberService;
@@ -129,6 +128,7 @@ public class MemberController {
         
         return ResponseEntity.ok(member);
     }
+    
     // 멤버 로그인
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Member member) {
@@ -146,5 +146,10 @@ public class MemberController {
             response.put("message", "아이디 또는 비밀번호가 일치하지 않습니다.");
             return ResponseEntity.badRequest().body(response);
         }
+    }
+    
+    @PutMapping("/{id}/intro")
+    public boolean updateIntro(@PathVariable String id, @RequestParam String intro) {
+        return memberService.updateIntro(id, intro);
     }
 }

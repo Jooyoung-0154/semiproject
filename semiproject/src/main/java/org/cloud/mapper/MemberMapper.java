@@ -34,4 +34,6 @@ public interface MemberMapper {
     Member selectMemberById(String id);
 
     List<Member> searchMembers(String keyword);
+    
+    int updateIntro(@Param("id") String id, @Param("intro") String intro);
 }

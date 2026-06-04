@@ -26,6 +26,7 @@ import { socialService } from "../service/socialService.ts";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth, normalizeMember } from "../context/AuthContext.tsx";
 import { authService } from "../service/authService.ts";
+import likeService from "../service/likeService";
 
 export default function MyPage() {
   // user랑 로그인 정보 setting 과정
@@ -36,7 +37,7 @@ export default function MyPage() {
   const [myRecipes, setMyRecipes] = useState<Recipe_Info[]>([]);
   const [myRecipesLoading, setMyRecipesLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "recipes" | "basket" | "posts" | "purchases"
+    "recipes" | "liked" | "basket" | "posts" | "purchases"
   >("recipes");
   const [newGuestbook, setNewGuestbook] = useState("");
   const [balance, setBalance] = useState(0);
@@ -73,6 +74,8 @@ export default function MyPage() {
   );
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [likedRecipes, setLikedRecipes] = useState<Recipe_Info[]>([]);
+  const [likedRecipesLoading, setLikedRecipesLoading] = useState(false);
   const currentUserId = authUser?.id ?? "";
   const displayUser = user ?? authUser;
   const isOwnPage = Boolean(
@@ -153,6 +156,22 @@ export default function MyPage() {
     return parsed.toLocaleString();
   };
 
+  // 스크랩(좋아요) 레시피
+  const fetchLikedRecipes = async () => {
+    if (!currentUserId) return;
+
+    try {
+      setLikedRecipesLoading(true);
+      const recipes = await likeService.getMyLikedRecipes(currentUserId);
+      setLikedRecipes(recipes);
+    } catch (error) {
+      console.error("스크랩 레시피 불러오기 실패:", error);
+      setLikedRecipes([]);
+    } finally {
+      setLikedRecipesLoading(false);
+    }
+  };
+
   // 내 레시피 불러오기
   const fetchMyRecipes = async () => {
     if (!displayUser?.id) return;
@@ -174,6 +193,9 @@ export default function MyPage() {
     }
     if (activeTab === "posts") {
       fetchPosts();
+    }
+    if (activeTab === "liked") {
+      fetchLikedRecipes();
     }
   }, [activeTab, displayUser?.id]);
 
@@ -533,7 +555,15 @@ export default function MyPage() {
         <div className="profile-flex">
           <div className="profile-info-section">
             <div className="profile-avatar">
-              <User className="avatar-icon" />
+              {displayUser.profileImg ? (
+                <img
+                  src={`http://localhost:8080${displayUser.profileImg}`}
+                  alt="프로필"
+                  className="profile-avatar-img"
+                />
+              ) : (
+                <User className="avatar-icon" />
+              )}
             </div>
             <div>
               <h1 className="profile-name">{displayUser.nickname}</h1>
@@ -594,6 +624,12 @@ export default function MyPage() {
               >
                 작성 레시피
               </button>
+              <button
+                onClick={() => setActiveTab("liked")}
+                className={`tab-btn ${activeTab === "liked" ? "active" : ""}`}
+              >
+                스크랩 레시피
+              </button>
               {/* <button
                 onClick={() => setActiveTab("basket")}
                 className={`tab-btn ${activeTab === "basket" ? "active" : ""}`}
@@ -608,7 +644,6 @@ export default function MyPage() {
                 구매 내역
               </button> */}
             </div>
-
             {/* 게시판 탭 내용 */}
             {activeTab === "posts" && (
               <div className="posts-tab-content">
@@ -728,7 +763,6 @@ export default function MyPage() {
                 )}
               </div>
             )}
-
             {/* 내 레시피 탭 내용 */}
             {activeTab === "recipes" && (
               <div>
@@ -875,8 +909,107 @@ export default function MyPage() {
                 )}
               </div>
             )}
+            {/* 스크랩 레시피 탭 내용 */}
+            {activeTab === "liked" && (
+              <div>
+                {likedRecipesLoading ? (
+                  <div className="text-center py-12 text-gray-400">
+                    스크랩 레시피를 불러오는 중입니다...
+                  </div>
+                ) : likedRecipes.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                    <span className="text-5xl mb-3">🤍</span>
+                    <p className="font-medium">스크랩한 레시피가 없습니다.</p>
+                    <button
+                      onClick={() => navigate("/browse")}
+                      className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-full text-sm font-semibold hover:bg-orange-600 transition"
+                    >
+                      레시피 둘러보기
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {likedRecipes.map((recipe) => {
+                      const thumbSrc = recipe.thumbImgUrl
+                        ? `http://localhost:8080${recipe.thumbImgUrl}`
+                        : null;
 
-            {/* 장바구니 탭 내용 */}
+                      const levelColor =
+                        LEVEL_COLOR[recipe.levelNm] ??
+                        "bg-gray-100 text-gray-600";
+
+                      return (
+                        <div
+                          key={recipe.recipeId}
+                          className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group"
+                        >
+                          <div
+                            className="relative h-40 bg-orange-50 overflow-hidden cursor-pointer"
+                            onClick={() =>
+                              navigate(`/recipe/${recipe.recipeId}`)
+                            }
+                          >
+                            {thumbSrc ? (
+                              <img
+                                src={thumbSrc}
+                                alt={recipe.recipeNmKo}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <span className="text-5xl select-none">🍽️</span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="p-4">
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <h3
+                                className="font-bold text-gray-800 text-base line-clamp-1 flex-1 cursor-pointer hover:text-orange-500 transition"
+                                onClick={() =>
+                                  navigate(`/recipe/${recipe.recipeId}`)
+                                }
+                              >
+                                {recipe.recipeNmKo}
+                              </h3>
+
+                              <span className="text-xs font-bold text-pink-500">
+                                ♥ {recipe.likeCount ?? 0}
+                              </span>
+                            </div>
+
+                            {recipe.sumry && (
+                              <p className="text-gray-400 text-xs mb-2 line-clamp-1">
+                                {recipe.sumry}
+                              </p>
+                            )}
+
+                            <div className="flex items-center gap-1.5 text-xs flex-wrap mb-2">
+                              {recipe.levelNm && (
+                                <span
+                                  className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full font-medium ${levelColor}`}
+                                >
+                                  <ChefHat className="w-3 h-3" />
+                                  {recipe.levelNm}
+                                </span>
+                              )}
+
+                              {recipe.cookingTime && (
+                                <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium">
+                                  <Clock className="w-3 h-3" />
+                                  {recipe.cookingTime}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab === "basket" && (
               <div>
                 {/* 타이틀 영역: 아이콘과 주황색 포인트 폰트 */}
@@ -956,7 +1089,6 @@ export default function MyPage() {
                 </div>
               </div>
             )}
-
             {/* 구매 내역 탭 내용 */}
             {activeTab === "purchases" && (
               <div>
