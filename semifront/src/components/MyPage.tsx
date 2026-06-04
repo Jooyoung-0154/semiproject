@@ -76,6 +76,8 @@ export default function MyPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [likedRecipes, setLikedRecipes] = useState<Recipe_Info[]>([]);
   const [likedRecipesLoading, setLikedRecipesLoading] = useState(false);
+  const [likedPage, setLikedPage] = useState(1);
+  const LIKED_PAGE_SIZE = 6;
   const currentUserId = authUser?.id ?? "";
   const displayUser = user ?? authUser;
   const isOwnPage = Boolean(
@@ -549,6 +551,13 @@ export default function MyPage() {
     }
   };
 
+  const likedTotalPages = Math.ceil(likedRecipes.length / LIKED_PAGE_SIZE);
+
+  const pagedLikedRecipes = likedRecipes.slice(
+    (likedPage - 1) * LIKED_PAGE_SIZE,
+    likedPage * LIKED_PAGE_SIZE,
+  );
+
   return (
     <div className="mypage-container">
       <div className="profile-card">
@@ -625,7 +634,10 @@ export default function MyPage() {
                 작성 레시피
               </button>
               <button
-                onClick={() => setActiveTab("liked")}
+                onClick={() => {
+                  setActiveTab("liked");
+                  setLikedPage(1);
+                }}
                 className={`tab-btn ${activeTab === "liked" ? "active" : ""}`}
               >
                 스크랩 레시피
@@ -929,7 +941,7 @@ export default function MyPage() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {likedRecipes.map((recipe) => {
+                    {pagedLikedRecipes.map((recipe) => {
                       const thumbSrc = recipe.thumbImgUrl
                         ? `http://localhost:8080${recipe.thumbImgUrl}`
                         : null;
