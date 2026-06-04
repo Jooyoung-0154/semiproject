@@ -24,8 +24,15 @@ public interface RecipeMapper {
     // 조리 과정 등록
     int insertCookingInfo(List<Cooking_Info> cookingList);
 
-    // 수정
+    // 수정 (기본 4개 필드)
     int updateRecipeInfo(Recipe_Info info);
+
+    // 수정 (전체 필드 + 가격)
+    int updateFullRecipe(Recipe recipe);
+
+    // 재료/조리과정 전체 삭제 (수정 시 delete-insert 방식)
+    int deleteIrdntInfo(@Param("recipeId") String recipeId);
+    int deleteCookingInfo(@Param("recipeId") String recipeId);
 
     // 작성자 ID로 레시피 목록 조회
     List<Recipe_Info> selectRecipesByWriterId(@Param("writerId") String writerId);

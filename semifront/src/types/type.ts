@@ -115,8 +115,10 @@ export interface Recipe_Info {
   pcNm: string; // 가격대
   price?: number; // 가격 (조회 시 서버에서 채워짐)
   thumbImgUrl?: string; // 대표 이미지 URL (조회 시 서버에서 채워줌)
+  hit?: number; // 조회수
   writerId?: string; // 작성자 ID
   writerNickname?: string; // 작성자 닉네임
+  writerProfileImg?: string; // 작성자 프로필 이미지
   tags?: Tag[]; // 태그 목록 (조회 시 서버에서 채워줌)
   likeCount?: number; // 좋아요 수
   liked?: boolean;   // 현재 유저 좋아요 여부
