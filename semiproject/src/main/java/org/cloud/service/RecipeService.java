@@ -118,7 +118,40 @@ public class RecipeService {
         return recipe;
     }
 
-    // 4. 삭제
+    // 4. 수정 (delete-insert 방식)
+    @Transactional
+    public void updateRecipe(Recipe recipe) {
+        String recipeId = recipe.getRecipeCode();
+
+        recipeMapper.updateFullRecipe(recipe);
+
+        recipeMapper.deleteIrdntInfo(recipeId);
+        if (recipe.getIrdntInfo() != null && !recipe.getIrdntInfo().isEmpty()) {
+            int sn = 1;
+            for (Irdnt_Info item : recipe.getIrdntInfo()) {
+                item.setRecipeId(recipeId);
+                item.setIrdntSn(sn++);
+            }
+            recipeMapper.insertIrdntInfo(recipe.getIrdntInfo());
+        }
+
+        recipeMapper.deleteCookingInfo(recipeId);
+        if (recipe.getCookingInfo() != null && !recipe.getCookingInfo().isEmpty()) {
+            for (Cooking_Info item : recipe.getCookingInfo()) {
+                item.setRecipeId(recipeId);
+            }
+            recipeMapper.insertCookingInfo(recipe.getCookingInfo());
+        }
+
+        tagMapper.deleteRecipeTags(recipeId);
+        if (recipe.getTags() != null && !recipe.getTags().isEmpty()) {
+            for (Tag tag : recipe.getTags()) {
+                tagMapper.insertRecipeTag(recipeId, tag.getTagId());
+            }
+        }
+    }
+
+    // 5. 삭제
     @Transactional
     public boolean removeRecipe(String recipeId) {
         return recipeMapper.deleteRecipe(recipeId) > 0;
