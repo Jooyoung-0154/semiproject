@@ -2,14 +2,15 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
 import {
   Heart, ThumbsUp, ThumbsDown, Clock, ChefHat, Users,
-  Flame, User, ArrowLeft
+  Flame, User, ArrowLeft, ChevronLeft, ChevronRight
 } from "lucide-react";
 import RecipeService from "../service/recipeService";
 import { reviewService } from "../service/reviewService";
 import { memberService } from "../service/memberService";
 import likeService from "../service/likeService";
+import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
-import { Recipe, Irdnt_Info, Review, Member } from "../types/type";
+import { Recipe, Irdnt_Info, Review, Member, RECIPE_IMAGE } from "../types/type";
 
 const BASE_URL = "http://localhost:8080";
 
@@ -21,6 +22,8 @@ export default function RecipeDetail() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [writer, setWriter] = useState<Member | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [images, setImages] = useState<RECIPE_IMAGE[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
@@ -29,18 +32,39 @@ export default function RecipeDetail() {
   const [reviewThumbsUp, setReviewThumbsUp] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const REVIEWS_PER_PAGE = 5;
+  const [reviewerProfiles, setReviewerProfiles] = useState<Map<string, Member>>(new Map());
+  const [reviewPage, setReviewPage] = useState(1);
+
+  const loadReviewerProfiles = async (reviewList: Review[]) => {
+    const uniqueIds = [...new Set(reviewList.map((r) => r.id))];
+    const results = await Promise.allSettled(
+      uniqueIds.map((id) => memberService.getMemberById(id))
+    );
+    const profileMap = new Map<string, Member>();
+    results.forEach((result, i) => {
+      if (result.status === "fulfilled") profileMap.set(uniqueIds[i], result.value.data);
+    });
+    setReviewerProfiles(profileMap);
+  };
+
   useEffect(() => {
     if (!recipeId) return;
     const load = async () => {
       setIsLoading(true);
       try {
-        const [recipeData, reviewRes] = await Promise.all([
+        const [recipeData, reviewRes, imagesRes] = await Promise.all([
           RecipeService.getById(recipeId),
           reviewService.getRecipeReviews(recipeId),
+          api.get(`/recipe-images/${recipeId}`),
         ]);
         setRecipe(recipeData);
         setLikeCount(recipeData.recipeInfo?.likeCount ?? 0);
         setReviews(reviewRes.data);
+        setImages(imagesRes.data ?? []);
+        setCurrentImageIndex(0);
+        setReviewPage(1);
+        loadReviewerProfiles(reviewRes.data);
 
         if (recipeData.recipeInfo?.writerId) {
           memberService
@@ -85,6 +109,8 @@ export default function RecipeDetail() {
       setReviewContent("");
       const updated = await reviewService.getRecipeReviews(recipeId);
       setReviews(updated.data);
+      setReviewPage(1);
+      loadReviewerProfiles(updated.data);
     } finally {
       setIsSubmitting(false);
     }
@@ -103,14 +129,17 @@ export default function RecipeDetail() {
     return map;
   }, [recipe?.irdntInfo]);
 
+  const totalReviewPages = Math.max(1, Math.ceil(reviews.length / REVIEWS_PER_PAGE));
+  const pagedReviews = reviews.slice((reviewPage - 1) * REVIEWS_PER_PAGE, reviewPage * REVIEWS_PER_PAGE);
+
   const thumbsUpCount = reviews.filter((r) => r.thumbsUp).length;
   const thumbsUpRatio = reviews.length > 0 ? Math.round((thumbsUpCount / reviews.length) * 100) : null;
   const sentimentLabel = thumbsUpRatio === null ? null
-    : thumbsUpRatio >= 90 ? { text: "매우 긍정적", color: "text-blue-600", bar: "bg-blue-500" }
-    : thumbsUpRatio >= 80 ? { text: "긍정적",     color: "text-blue-400", bar: "bg-blue-400" }
-    : thumbsUpRatio >= 60 ? { text: "보통",        color: "text-gray-500", bar: "bg-gray-400" }
-    : thumbsUpRatio >= 40 ? { text: "부정적",      color: "text-orange-500", bar: "bg-orange-400" }
-    :                        { text: "매우 부정적", color: "text-red-500",  bar: "bg-red-500" };
+    : thumbsUpRatio >= 90 ? { text: "😍 매우 긍정적", color: "text-blue-600", bar: "bg-blue-500" }
+    : thumbsUpRatio >= 80 ? { text: "😄 긍정적",     color: "text-blue-400", bar: "bg-blue-400" }
+    : thumbsUpRatio >= 60 ? { text: "😐 복합적",        color: "text-gray-500", bar: "bg-gray-400" }
+    : thumbsUpRatio >= 40 ? { text: "😞 부정적",      color: "text-orange-500", bar: "bg-orange-400" }
+    :                        { text: "😨 매우 부정적", color: "text-red-500",  bar: "bg-red-500" };
 
   /* ── 로딩 ── */
   if (isLoading) {
@@ -143,6 +172,7 @@ export default function RecipeDetail() {
 
   const info = recipe.recipeInfo;
   const heroImg = info?.thumbImgUrl ? `${BASE_URL}${info.thumbImgUrl}` : null;
+  const hasGallery = images.length > 0;
 
   return (
     <div className="max-w-4xl mx-auto pb-16 space-y-8">
@@ -155,8 +185,49 @@ export default function RecipeDetail() {
         <ArrowLeft className="w-4 h-4" />뒤로 가기
       </button>
 
-      {/* 대표 이미지 */}
-      {heroImg && (
+      {/* 대표 이미지 / 갤러리 */}
+      {hasGallery ? (
+        <div className="relative w-full h-72 md:h-96 rounded-2xl overflow-hidden shadow-lg bg-gray-100">
+          <img
+            src={`${BASE_URL}${images[currentImageIndex].imgUrl}`}
+            alt={`${info.recipeNmKo} ${currentImageIndex + 1}`}
+            className="w-full h-full object-cover"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+          />
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={() => setCurrentImageIndex((prev) => Math.max(0, prev - 1))}
+                disabled={currentImageIndex === 0}
+                className="absolute left-3 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 hover:bg-opacity-60 text-white rounded-full w-9 h-9 flex items-center justify-center disabled:opacity-30 transition-all"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setCurrentImageIndex((prev) => Math.min(images.length - 1, prev + 1))}
+                disabled={currentImageIndex === images.length - 1}
+                className="absolute right-3 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 hover:bg-opacity-60 text-white rounded-full w-9 h-9 flex items-center justify-center disabled:opacity-30 transition-all"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {images.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentImageIndex(i)}
+                    className={`h-2 rounded-full transition-all ${
+                      i === currentImageIndex ? "bg-white w-4" : "bg-white bg-opacity-60 w-2"
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="absolute top-3 right-3 bg-black bg-opacity-40 text-white text-xs px-2 py-1 rounded-full">
+                {currentImageIndex + 1} / {images.length}
+              </span>
+            </>
+          )}
+        </div>
+      ) : heroImg ? (
         <div className="w-full h-72 md:h-96 rounded-2xl overflow-hidden shadow-lg">
           <img
             src={heroImg}
@@ -165,7 +236,7 @@ export default function RecipeDetail() {
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
           />
         </div>
-      )}
+      ) : null}
 
       {/* 제목 + 요약 + 태그 + 좋아요 */}
       <div>
@@ -334,7 +405,6 @@ export default function RecipeDetail() {
           <div className="mb-5 p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <ThumbsUp className="w-5 h-5 text-blue-400" />
                 <span className={`text-lg font-bold ${sentimentLabel.color}`}>{sentimentLabel.text}</span>
               </div>
               <span className={`text-2xl font-extrabold ${sentimentLabel.color}`}>{thumbsUpRatio}%</span>
@@ -350,35 +420,117 @@ export default function RecipeDetail() {
         )}
 
         {/* 후기 목록 */}
-        <div className="space-y-3 mb-6">
+        <div className="space-y-3 mb-4">
           {reviews.length === 0 ? (
             <p className="text-center text-gray-400 py-10">
               아직 후기가 없어요. 첫 번째로 후기를 남겨보세요!
             </p>
           ) : (
-            reviews.map((review) => (
-              <div
-                key={review.reviewId}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    {review.thumbsUp ? (
-                      <ThumbsUp className="w-5 h-5 text-blue-500 shrink-0" />
-                    ) : (
-                      <ThumbsDown className="w-5 h-5 text-red-400 shrink-0" />
-                    )}
-                    <span className="font-semibold text-gray-700 text-sm">{review.id}</span>
+            pagedReviews.map((review) => {
+              const profile = reviewerProfiles.get(review.id);
+              return (
+                <div
+                  key={review.reviewId}
+                  className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      {/* 프로필 이미지 */}
+                      <button
+                        onClick={() => navigate(`/profile/${review.id}`)}
+                        className="shrink-0"
+                      >
+                        {profile?.profileImg ? (
+                          <img
+                            src={`${BASE_URL}${profile.profileImg}`}
+                            alt={profile.nickname}
+                            className="w-9 h-9 rounded-full object-cover border border-gray-200 hover:ring-2 hover:ring-orange-300 transition-all"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                          />
+                        ) : (
+                          <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center hover:ring-2 hover:ring-orange-300 transition-all">
+                            <User className="w-4 h-4 text-orange-400" />
+                          </div>
+                        )}
+                      </button>
+                      {/* 닉네임 + 추천 아이콘 */}
+                      <div>
+                        <button
+                          onClick={() => navigate(`/profile/${review.id}`)}
+                          className="font-semibold text-gray-800 text-sm hover:text-orange-500 transition-colors"
+                        >
+                          {profile?.nickname ?? review.id}
+                        </button>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          {review.thumbsUp ? (
+                            <ThumbsUp className="w-3.5 h-3.5 text-blue-500" />
+                          ) : (
+                            <ThumbsDown className="w-3.5 h-3.5 text-red-400" />
+                          )}
+                          <span className={`text-xs font-medium ${review.thumbsUp ? "text-blue-500" : "text-red-400"}`}>
+                            {review.thumbsUp ? "추천" : "비추천"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-400 shrink-0 mt-1">
+                      {review.regDate ? review.regDate.slice(0, 10) : ""}
+                    </span>
                   </div>
-                  <span className="text-xs text-gray-400">
-                    {review.regDate ? review.regDate.slice(0, 10) : ""}
-                  </span>
+                  <p className="text-gray-600 leading-relaxed text-sm mt-3 pl-12">
+                    {review.reviewContent}
+                  </p>
                 </div>
-                <p className="text-gray-600 leading-relaxed text-sm pl-7">{review.reviewContent}</p>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
+
+        {/* 페이지네이션 */}
+        {reviews.length > REVIEWS_PER_PAGE && (
+          <div className="flex items-center justify-center gap-1 mb-6">
+            <button
+              onClick={() => setReviewPage((p) => Math.max(1, p - 1))}
+              disabled={reviewPage === 1}
+              className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            {Array.from({ length: totalReviewPages }, (_, i) => i + 1)
+              .filter((p) => p === 1 || p === totalReviewPages || Math.abs(p - reviewPage) <= 1)
+              .reduce<(number | "...")[]>((acc, p, idx, arr) => {
+                if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push("...");
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((item, idx) =>
+                item === "..." ? (
+                  <span key={`ellipsis-${idx}`} className="w-8 h-8 flex items-center justify-center text-gray-400 text-sm">
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={item}
+                    onClick={() => setReviewPage(item as number)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-all ${
+                      reviewPage === item
+                        ? "bg-orange-500 text-white"
+                        : "border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-500"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                )
+              )}
+            <button
+              onClick={() => setReviewPage((p) => Math.min(totalReviewPages, p + 1))}
+              disabled={reviewPage === totalReviewPages}
+              className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* 후기 작성 */}
         {user ? (

@@ -19,7 +19,7 @@ export const router = createBrowserRouter([
       { path: "browse", Component: RecipeBrowse },
       { path: "write", Component: RecipeWrite },
       { path: "recipe/:recipeId", Component: RecipeDetail },
-      { path: "mypage", Component: MyPage },
+      { path: "mypage/:userId?", Component: MyPage },
       { path: "login", Component: LoginPage },
       { path: "signup", Component: Signup },
       { path: "profile/:id", Component: ProfilePage },

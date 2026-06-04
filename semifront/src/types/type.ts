@@ -162,6 +162,3 @@ export interface Review {
   thumbsUp: boolean; // 추천 여부 (Java의 boolean 대응)
   regDate: string; // 등록일
 }
-의 boolean 대응)
-  regDate: string; // 등록일
-}

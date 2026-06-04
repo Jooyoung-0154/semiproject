@@ -23,7 +23,7 @@ import RecipeService from "../service/recipeService";
 import { guestbookService } from "../service/guestbookService.ts";
 import { postService } from "../service/postService.ts";
 import { socialService } from "../service/socialService.ts";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth, normalizeMember } from "../context/AuthContext.tsx";
 
 
