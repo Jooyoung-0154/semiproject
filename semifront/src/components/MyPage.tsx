@@ -68,6 +68,9 @@ export default function MyPage() {
   const [newPostImagePreview, setNewPostImagePreview] = useState<string>("");
   const [isPostCreateMode, setIsPostCreateMode] = useState(false);
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
+  const [commentInputs, setCommentInputs] = useState<Record<number, string>>(
+    {},
+  );
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const currentUserId = authUser?.id ?? "";
