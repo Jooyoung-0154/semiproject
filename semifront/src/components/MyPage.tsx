@@ -1,15 +1,12 @@
 import { useState, useEffect } from "react";
 import {
   User,
-  Trash2,
   ShoppingCart,
   Users,
   MessageSquare,
-  Wallet,
   DollarSign,
-  Clock,
-  ChefHat,
 } from "lucide-react";
+import RecipeCard from "./RecipeCard";
 import "./MyPage.css";
 import {
   Recipe_Info,
@@ -78,6 +75,7 @@ export default function MyPage() {
   const [likedRecipesLoading, setLikedRecipesLoading] = useState(false);
   const [likedPage, setLikedPage] = useState(1);
   const LIKED_PAGE_SIZE = 6;
+  const { userId } = useParams<{ userId: string }>();
   const currentUserId = authUser?.id ?? "";
   const displayUser = user ?? authUser;
   const isOwnPage = Boolean(
@@ -86,6 +84,23 @@ export default function MyPage() {
 
   useEffect(() => {
     const fetchMemberData = async () => {
+      // 다른 유저 프로필 조회
+      if (userId && userId !== authUser?.id) {
+        setIsLoading(true);
+        try {
+          const response = await memberService.getMemberById(userId);
+          const normalized = normalizeMember(response.data);
+          setUser(normalized ?? null);
+        } catch (error) {
+          console.error("유저 정보를 불러오는데 실패했습니다.", error);
+          setUser(null);
+        } finally {
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      // 내 페이지
       if (!authUser) {
         setIsLoading(false);
         setUser(null);
@@ -112,7 +127,7 @@ export default function MyPage() {
     };
 
     fetchMemberData();
-  }, [authUser]);
+  }, [authUser, userId]);
 
   useEffect(() => {
     if (user) {
@@ -310,7 +325,7 @@ export default function MyPage() {
     return <div className="text-center py-8">유저 정보가 없습니다.</div>;
 
   const handleSubscriptionClick = (subscriberId: string) => {
-    navigate(`/profile/${subscriberId}`);
+    navigate(`/mypage/${subscriberId}`);
   };
 
   const handleGuestbookSubmit = async (e: React.FormEvent) => {
@@ -435,11 +450,6 @@ export default function MyPage() {
     }
   };
 
-  const LEVEL_COLOR: Record<string, string> = {
-    상: "bg-red-100 text-red-700",
-    중: "bg-yellow-100 text-yellow-700",
-    하: "bg-green-100 text-green-700",
-  };
   const handleDeleteRecipe = async (recipeId: string) => {
     const isConfirmed = window.confirm(
       "정말 이 레시피를 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.",
@@ -806,117 +816,14 @@ export default function MyPage() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {myRecipes.map((recipe) => {
-                      const thumbSrc = recipe.thumbImgUrl
-                        ? `http://localhost:8080${recipe.thumbImgUrl}`
-                        : null;
-                      const levelColor =
-                        LEVEL_COLOR[recipe.levelNm] ??
-                        "bg-gray-100 text-gray-600";
-                      return (
-                        <div
-                          key={recipe.recipeId}
-                          className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group"
-                        >
-                          {/* 썸네일 */}
-                          <div
-                            className="relative h-40 bg-orange-50 overflow-hidden cursor-pointer"
-                            onClick={() =>
-                              navigate(`/recipe/${recipe.recipeId}`)
-                            }
-                          >
-                            {thumbSrc ? (
-                              <img
-                                src={thumbSrc}
-                                alt={recipe.recipeNmKo}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <span className="text-5xl select-none">🍽️</span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* 정보 */}
-                          <div className="p-4">
-                            {/* 제목 + 가격 */}
-                            <div className="flex items-center justify-between gap-2 mb-1">
-                              <h3
-                                className="font-bold text-gray-800 text-base line-clamp-1 flex-1 cursor-pointer hover:text-orange-500 transition"
-                                onClick={() =>
-                                  navigate(`/recipe/${recipe.recipeId}`)
-                                }
-                              >
-                                {recipe.recipeNmKo}
-                              </h3>
-                              {recipe.price != null &&
-                                (recipe.price > 0 ? (
-                                  <span className="flex-shrink-0 text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200">
-                                    {recipe.price.toLocaleString()}원
-                                  </span>
-                                ) : (
-                                  <span className="flex-shrink-0 text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-200">
-                                    Free
-                                  </span>
-                                ))}
-                            </div>
-
-                            {recipe.sumry && (
-                              <p className="text-gray-400 text-xs mb-2 line-clamp-1">
-                                {recipe.sumry}
-                              </p>
-                            )}
-
-                            {/* 뱃지 */}
-                            <div className="flex items-center gap-1.5 text-xs flex-wrap mb-2">
-                              {recipe.levelNm && (
-                                <span
-                                  className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full font-medium ${levelColor}`}
-                                >
-                                  <ChefHat className="w-3 h-3" />
-                                  {recipe.levelNm}
-                                </span>
-                              )}
-                              {recipe.cookingTime && (
-                                <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium">
-                                  <Clock className="w-3 h-3" />
-                                  {recipe.cookingTime}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* 태그 */}
-                            {recipe.tags && recipe.tags.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mb-3">
-                                {recipe.tags.map((tag) => (
-                                  <span
-                                    key={tag.tagId}
-                                    className="px-1.5 py-0.5 bg-orange-50 text-orange-600 border border-orange-100 rounded-full text-xs font-medium"
-                                  >
-                                    {tag.tagName}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-
-                            {/* 삭제 버튼 (본인일때) */}
-                            {isOwnPage && (
-                              <div className="flex gap-2 pt-1 border-t border-gray-100">
-                                <button
-                                  onClick={() =>
-                                    handleDeleteRecipe(recipe.recipeId)
-                                  }
-                                  className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition font-medium"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" /> 삭제
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                    {myRecipes.map((recipe) => (
+                      <RecipeCard
+                        key={recipe.recipeId}
+                        recipe={recipe}
+                        onDelete={isOwnPage ? handleDeleteRecipe : undefined}
+                        onEdit={isOwnPage ? (id) => navigate(`/write?edit=${id}`) : undefined}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
