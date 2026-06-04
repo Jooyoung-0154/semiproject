@@ -1,62 +1,125 @@
 package org.cloud.control;
 
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
 
 import org.cloud.dto.Post;
 import org.cloud.dto.PostComment;
 import org.cloud.service.PostCommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/posts")
+@CrossOrigin(origins = "http://localhost:5173")
 public class PostController {
 
-    @Autowired
-    private PostCommentService postService;
+	@Autowired
+	private PostCommentService postService;
 
-    @GetMapping
-    public List<Post> getList() {
-        return postService.getAllPosts();
-    }
+	// WebMvcConfig의 /uploads/** 매핑과 같은 폴더를 사용함
+	private final String uploadPath = System.getProperty("user.dir") + "/src/main/resources/static/uploads/";
 
-    @GetMapping("/{postId}")
-    public Post getDetail(@PathVariable int postId) {
-        return postService.getPost(postId);
-    }
+	@GetMapping
+	public Object getList(@RequestParam(required = false) String writerId) {
+		if (writerId != null && !writerId.isBlank()) {
+			return postService.getPostsByWriter(writerId);
+		}
+		return postService.getAllPosts();
+	}
 
-    @PostMapping
-    public boolean write(@RequestBody Post post) {
-        return postService.writePost(post);
-    }
+	@GetMapping("/{postId}")
+	public Post getDetail(@PathVariable int postId) {
+		return postService.getPost(postId);
+	}
 
-    @PostMapping("/comment")
-    public boolean addComment(@RequestBody PostComment comment) {
-        return postService.writeComment(comment);
-    }
+	@PostMapping("/json")
+	public boolean writeJson(@RequestBody Post post) {
+		return postService.writePost(post);
+	}
 
-    @DeleteMapping("/comment/{commentId}")
-    public boolean deleteComment(@PathVariable int commentId) {
-        return postService.removeComment(commentId);
-    }
+	@PostMapping
+	public boolean write(@ModelAttribute Post post,
+			@RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
 
+		if (image != null && !image.isEmpty()) {
+			String savedFileName = saveImage(image);
+			post.setPostImg(savedFileName);
+		}
+		return postService.writePost(post);
+	}
+	
     @PutMapping("/{postId}")
-    public boolean modify(@PathVariable int postId, @RequestBody Post post) {
-        post.setPostId(postId); 
+    public boolean modify(
+            @PathVariable int postId,
+            @RequestBody Post post
+    ) {
+        post.setPostId(postId);
         return postService.modifyPost(post);
     }
 
+    @PutMapping("/{postId}/image")
+    public boolean modifyWithImage(
+            @PathVariable int postId,
+            @ModelAttribute Post post,
+            @RequestParam(value = "image", required = false) MultipartFile image
+    ) throws IOException {
+
+        post.setPostId(postId);
+
+        if (image != null && !image.isEmpty()) {
+            String savedFileName = saveImage(image);
+            post.setPostImg(savedFileName);
+        }
+
+        return postService.modifyPost(post);
+    }
 
     @DeleteMapping("/{postId}")
-    public boolean deletePost(@PathVariable("postId") int postId) {
+    public boolean deletePost(@PathVariable int postId) {
         return postService.removePost(postId);
     }
-    
+
+	@PostMapping("/comment")
+	public boolean addComment(@RequestBody PostComment comment) {
+		return postService.writeComment(comment);
+	}
+
+	@DeleteMapping("/comment/{commentId}")
+	public boolean deleteComment(@PathVariable int commentId) {
+		return postService.removeComment(commentId);
+	}
+
+	private String saveImage(MultipartFile image) throws IOException {
+        File folder = new File(uploadPath);
+
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
+        
+        String originalName = image.getOriginalFilename();
+        String ext = "";
+
+        if (originalName != null && originalName.contains(".")) {
+            ext = originalName.substring(originalName.lastIndexOf("."));
+        }
+
+        String savedFileName = UUID.randomUUID().toString() + ext;
+        File saveFile = new File(uploadPath + savedFileName);
+        image.transferTo(saveFile);
+
+        return savedFileName;
+	}
 }
