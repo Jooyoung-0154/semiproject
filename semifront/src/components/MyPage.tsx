@@ -25,7 +25,7 @@ import { postService } from "../service/postService.ts";
 import { socialService } from "../service/socialService.ts";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth, normalizeMember } from "../context/AuthContext.tsx";
-
+import { authService } from "../service/authService.ts";
 
 export default function MyPage() {
   // user랑 로그인 정보 setting 과정
@@ -53,7 +53,9 @@ export default function MyPage() {
   >([]);
   const [purchaseHistory, setPurchaseHistory] = useState<Purchase[]>([]);
   const [guestbookMessages, setGuestbookMessages] = useState<Guestbook[]>([]);
-  const [editingGuestbookId, setEditingGuestbookId] = useState<number | null>(null);
+  const [editingGuestbookId, setEditingGuestbookId] = useState<number | null>(
+    null,
+  );
   const [editedGuestbookText, setEditedGuestbookText] = useState("");
   const [subscriptions, setSubscriptions] = useState<Member[]>([]);
   const [visibleSubCount, setVisibleSubCount] = useState(5);
@@ -66,9 +68,16 @@ export default function MyPage() {
   const [newPostImagePreview, setNewPostImagePreview] = useState<string>("");
   const [isPostCreateMode, setIsPostCreateMode] = useState(false);
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
+  const [commentInputs, setCommentInputs] = useState<Record<number, string>>(
+    {},
+  );
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
   const currentUserId = authUser?.id ?? "";
   const displayUser = user ?? authUser;
-  const isOwnPage = Boolean(authUser?.id && displayUser?.id && authUser.id === displayUser.id);
+  const isOwnPage = Boolean(
+    authUser?.id && displayUser?.id && authUser.id === displayUser.id,
+  );
 
   useEffect(() => {
     const fetchMemberData = async () => {
@@ -133,7 +142,9 @@ export default function MyPage() {
 
   const formatGuestbookDate = (dateString: string | undefined): string => {
     if (!dateString) return "";
-    const normalized = dateString.trim().replace(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})$/, "$1T$2");
+    const normalized = dateString
+      .trim()
+      .replace(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})$/, "$1T$2");
     let parsed = new Date(normalized);
     if (Number.isNaN(parsed.getTime())) {
       parsed = new Date(`${normalized}Z`);
@@ -201,7 +212,10 @@ export default function MyPage() {
     if (!currentUserId || !displayUser?.id) return;
     setIsFollowLoading(true);
     try {
-      const followPayload = { followerId: currentUserId, followingId: displayUser.id };
+      const followPayload = {
+        followerId: currentUserId,
+        followingId: displayUser.id,
+      };
       if (isFollowing) {
         await socialService.unfollow(followPayload);
         setIsFollowing(false);
@@ -251,7 +265,6 @@ export default function MyPage() {
         purchaseDate: "2026-05-12",
       },
     ]);
-
   }, [currentUserId]);
 
   //예외처리
@@ -380,6 +393,24 @@ export default function MyPage() {
     setShowChargeModal(false);
     console.log("Charged:", chargeAmount);
   };
+
+  const handlePasswordConfirm = async () => {
+    if (!authUser) return;
+
+    try {
+      await authService.login({
+        id: authUser.id,
+        password: confirmPassword,
+      });
+
+      setShowPasswordModal(false);
+      setConfirmPassword("");
+      navigate("/mypage/info");
+    } catch (error) {
+      alert("비밀번호가 일치하지 않습니다.");
+    }
+  };
+
   const LEVEL_COLOR: Record<string, string> = {
     상: "bg-red-100 text-red-700",
     중: "bg-yellow-100 text-yellow-700",
@@ -485,7 +516,9 @@ export default function MyPage() {
       if (user && user.id === currentUserId) {
         setUser({
           ...user,
-          myPosts: (user.myPosts ?? []).filter((post) => post.postId !== postId),
+          myPosts: (user.myPosts ?? []).filter(
+            (post) => post.postId !== postId,
+          ),
         });
       }
     } catch (error) {
@@ -518,17 +551,11 @@ export default function MyPage() {
           {/* 내 페이지: 잔액 표시 / 타인 페이지: 구독 버튼 */}
           {isOwnPage ? (
             <div className="wallet-section">
-              <div className="wallet-title">
-                <Wallet className="wallet-icon" />
-                <span>내 잔액</span>
-              </div>
-              <p className="wallet-balance">{Number.isFinite(balance) ? balance.toLocaleString() : "0"}원</p>
               <button
-                onClick={() => setShowChargeModal(true)}
+                onClick={() => setShowPasswordModal(true)}
                 className="btn-charge"
               >
-                <DollarSign className="btn-icon" />
-                충전하기
+                <User className="btn-icon" />내 정보
               </button>
             </div>
           ) : (
@@ -538,7 +565,11 @@ export default function MyPage() {
                 disabled={isFollowLoading}
                 className={isFollowing ? "btn-following" : "btn-follow"}
               >
-                {isFollowLoading ? "처리중..." : isFollowing ? "구독중" : "구독하기"}
+                {isFollowLoading
+                  ? "처리중..."
+                  : isFollowing
+                    ? "구독중"
+                    : "구독하기"}
               </button>
             </div>
           )}
@@ -563,7 +594,7 @@ export default function MyPage() {
               >
                 작성 레시피
               </button>
-              <button
+              {/* <button
                 onClick={() => setActiveTab("basket")}
                 className={`tab-btn ${activeTab === "basket" ? "active" : ""}`}
               >
@@ -575,7 +606,7 @@ export default function MyPage() {
                 className={`tab-btn ${activeTab === "purchases" ? "active" : ""}`}
               >
                 구매 내역
-              </button>
+              </button> */}
             </div>
 
             {/* 게시판 탭 내용 */}
@@ -611,7 +642,10 @@ export default function MyPage() {
                         목록 보기
                       </button>
                     </div>
-                    <form onSubmit={handleSubmitPost} className="posts-create-form">
+                    <form
+                      onSubmit={handleSubmitPost}
+                      className="posts-create-form"
+                    >
                       <textarea
                         value={newPostContent}
                         onChange={(e) => setNewPostContent(e.target.value)}
@@ -654,10 +688,15 @@ export default function MyPage() {
                 {postList.length > 0 ? (
                   <div className="recipe-list flex flex-col gap-4">
                     {postList.map((post) => (
-                      <div key={post.postId} className="recipe-item bg-white rounded-xl p-4 shadow-sm">
+                      <div
+                        key={post.postId}
+                        className="recipe-item bg-white rounded-xl p-4 shadow-sm"
+                      >
                         <div className="post-row flex items-start justify-between gap-4">
                           <div className="flex-1">
-                            <p className="recipe-title text-lg font-bold">{post.content}</p>
+                            <p className="recipe-title text-lg font-bold">
+                              {post.content}
+                            </p>
                             <p className="recipe-meta text-xs text-gray-400 mt-2">
                               작성일 {post.regDate} · 좋아요 {post.likeCount}개
                             </p>
@@ -696,7 +735,10 @@ export default function MyPage() {
                 {myRecipesLoading ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {Array.from({ length: 4 }).map((_, i) => (
-                      <div key={i} className="bg-white rounded-2xl shadow animate-pulse overflow-hidden">
+                      <div
+                        key={i}
+                        className="bg-white rounded-2xl shadow animate-pulse overflow-hidden"
+                      >
                         <div className="h-40 bg-gray-200" />
                         <div className="p-4 space-y-2">
                           <div className="h-4 bg-gray-200 rounded w-3/4" />
@@ -722,15 +764,21 @@ export default function MyPage() {
                       const thumbSrc = recipe.thumbImgUrl
                         ? `http://localhost:8080${recipe.thumbImgUrl}`
                         : null;
-                      const levelColor = LEVEL_COLOR[recipe.levelNm] ?? "bg-gray-100 text-gray-600";
+                      const levelColor =
+                        LEVEL_COLOR[recipe.levelNm] ??
+                        "bg-gray-100 text-gray-600";
                       return (
                         <div
                           key={recipe.recipeId}
                           className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group"
                         >
                           {/* 썸네일 */}
-                          <div className="relative h-40 bg-orange-50 overflow-hidden cursor-pointer"
-                            onClick={() => navigate(`/recipe/${recipe.recipeId}`)}>
+                          <div
+                            className="relative h-40 bg-orange-50 overflow-hidden cursor-pointer"
+                            onClick={() =>
+                              navigate(`/recipe/${recipe.recipeId}`)
+                            }
+                          >
                             {thumbSrc ? (
                               <img
                                 src={thumbSrc}
@@ -750,12 +798,14 @@ export default function MyPage() {
                             <div className="flex items-center justify-between gap-2 mb-1">
                               <h3
                                 className="font-bold text-gray-800 text-base line-clamp-1 flex-1 cursor-pointer hover:text-orange-500 transition"
-                                onClick={() => navigate(`/recipe/${recipe.recipeId}`)}
+                                onClick={() =>
+                                  navigate(`/recipe/${recipe.recipeId}`)
+                                }
                               >
                                 {recipe.recipeNmKo}
                               </h3>
-                              {recipe.price != null && (
-                                recipe.price > 0 ? (
+                              {recipe.price != null &&
+                                (recipe.price > 0 ? (
                                   <span className="flex-shrink-0 text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200">
                                     {recipe.price.toLocaleString()}원
                                   </span>
@@ -763,24 +813,29 @@ export default function MyPage() {
                                   <span className="flex-shrink-0 text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-200">
                                     Free
                                   </span>
-                                )
-                              )}
+                                ))}
                             </div>
 
                             {recipe.sumry && (
-                              <p className="text-gray-400 text-xs mb-2 line-clamp-1">{recipe.sumry}</p>
+                              <p className="text-gray-400 text-xs mb-2 line-clamp-1">
+                                {recipe.sumry}
+                              </p>
                             )}
 
                             {/* 뱃지 */}
                             <div className="flex items-center gap-1.5 text-xs flex-wrap mb-2">
                               {recipe.levelNm && (
-                                <span className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full font-medium ${levelColor}`}>
-                                  <ChefHat className="w-3 h-3" />{recipe.levelNm}
+                                <span
+                                  className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full font-medium ${levelColor}`}
+                                >
+                                  <ChefHat className="w-3 h-3" />
+                                  {recipe.levelNm}
                                 </span>
                               )}
                               {recipe.cookingTime && (
                                 <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium">
-                                  <Clock className="w-3 h-3" />{recipe.cookingTime}
+                                  <Clock className="w-3 h-3" />
+                                  {recipe.cookingTime}
                                 </span>
                               )}
                             </div>
@@ -789,7 +844,10 @@ export default function MyPage() {
                             {recipe.tags && recipe.tags.length > 0 && (
                               <div className="flex flex-wrap gap-1 mb-3">
                                 {recipe.tags.map((tag) => (
-                                  <span key={tag.tagId} className="px-1.5 py-0.5 bg-orange-50 text-orange-600 border border-orange-100 rounded-full text-xs font-medium">
+                                  <span
+                                    key={tag.tagId}
+                                    className="px-1.5 py-0.5 bg-orange-50 text-orange-600 border border-orange-100 rounded-full text-xs font-medium"
+                                  >
                                     {tag.tagName}
                                   </span>
                                 ))}
@@ -800,7 +858,9 @@ export default function MyPage() {
                             {isOwnPage && (
                               <div className="flex gap-2 pt-1 border-t border-gray-100">
                                 <button
-                                  onClick={() => handleDeleteRecipe(recipe.recipeId)}
+                                  onClick={() =>
+                                    handleDeleteRecipe(recipe.recipeId)
+                                  }
                                   className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition font-medium"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" /> 삭제
@@ -824,7 +884,9 @@ export default function MyPage() {
                   <ShoppingCart className="title-icon w-5 h-5 text-orange-500" />
                   <h3 className="section-title text-xl font-bold flex items-center gap-1">
                     장바구니
-                    <span className="text-orange-500">({savedRecipes.length})</span>
+                    <span className="text-orange-500">
+                      ({savedRecipes.length})
+                    </span>
                   </h3>
                 </div>
 
@@ -851,7 +913,10 @@ export default function MyPage() {
                           </p>
                           {recipe.price > 0 && (
                             <p className="price-text text-base font-bold text-orange-500 mt-1">
-                              {recipe.price ? recipe.price.toLocaleString() : "0"}원
+                              {recipe.price
+                                ? recipe.price.toLocaleString()
+                                : "0"}
+                              원
                             </p>
                           )}
                         </div>
@@ -903,12 +968,17 @@ export default function MyPage() {
                   {purchaseHistory.map((purchase) => (
                     <div key={purchase.purchaseId} className="history-item">
                       <div>
-                        <p className="history-name">레시피 코드 {purchase.recipeCode}</p>
+                        <p className="history-name">
+                          레시피 코드 {purchase.recipeCode}
+                        </p>
                         <p className="history-date">{purchase.purchaseDate}</p>
                       </div>
                       <div className="history-right">
                         <p className="price-text">
-                          {purchase.purchasePrice ? purchase.purchasePrice.toLocaleString() : "0"}원
+                          {purchase.purchasePrice
+                            ? purchase.purchasePrice.toLocaleString()
+                            : "0"}
+                          원
                         </p>
                         <button className="btn-link">레시피 보기</button>
                       </div>
@@ -985,7 +1055,9 @@ export default function MyPage() {
                       <div className="guestbook-edit-panel">
                         <textarea
                           value={editedGuestbookText}
-                          onChange={(e) => setEditedGuestbookText(e.target.value)}
+                          onChange={(e) =>
+                            setEditedGuestbookText(e.target.value)
+                          }
                           className="guestbook-edit-textarea"
                           rows={3}
                         />
@@ -1029,9 +1101,13 @@ export default function MyPage() {
             </div>
             <div className="subscription-list">
               {isLoadingSubscriptions ? (
-                <p className="text-sm text-gray-400 text-center py-4">불러오는 중...</p>
+                <p className="text-sm text-gray-400 text-center py-4">
+                  불러오는 중...
+                </p>
               ) : subscriptions.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-4">구독 중인 유저가 없습니다.</p>
+                <p className="text-sm text-gray-400 text-center py-4">
+                  구독 중인 유저가 없습니다.
+                </p>
               ) : (
                 <>
                   {subscriptions.slice(0, visibleSubCount).map((sub) => (
@@ -1043,8 +1119,13 @@ export default function MyPage() {
                             alt={sub.nickname}
                             className="sub-avatar-img"
                             onError={(e) => {
-                              (e.currentTarget as HTMLImageElement).style.display = "none";
-                              (e.currentTarget.nextElementSibling as HTMLElement).style.display = "flex";
+                              (
+                                e.currentTarget as HTMLImageElement
+                              ).style.display = "none";
+                              (
+                                e.currentTarget
+                                  .nextElementSibling as HTMLElement
+                              ).style.display = "flex";
                             }}
                           />
                         ) : null}
@@ -1056,10 +1137,14 @@ export default function MyPage() {
                         </div>
                         <div className="sub-info">
                           <p className="sub-name">{sub.nickname}</p>
-                          <p className="sub-recipe-count">레시피 {sub.recipeCount ?? 0}개</p>
+                          <p className="sub-recipe-count">
+                            레시피 {sub.recipeCount ?? 0}개
+                          </p>
                         </div>
                       </div>
-                      <p className="sub-followers">팔로워 {sub.followerCount}명</p>
+                      <p className="sub-followers">
+                        팔로워 {sub.followerCount}명
+                      </p>
                       <button
                         className="btn-sub-profile"
                         onClick={() => handleSubscriptionClick(sub.id)}
@@ -1082,14 +1167,51 @@ export default function MyPage() {
           </div>
         </div>
 
+        {showPasswordModal && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h2 className="modal-title">비밀번호 확인</h2>
+
+              <input
+                type="password"
+                placeholder="비밀번호 입력"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="modal-input"
+              />
+
+              <div className="modal-actions">
+                <button
+                  onClick={handlePasswordConfirm}
+                  className="btn-modal-charge"
+                >
+                  확인
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowPasswordModal(false);
+                    setConfirmPassword("");
+                  }}
+                  className="btn-modal-cancel"
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 충전 모달창 */}
-        {showChargeModal && (
+        {/* {showChargeModal && (
           <div className="modal-overlay">
             <div className="modal-content">
               <h2 className="modal-title">잔액 충전</h2>
               <div className="modal-balance-section">
                 <p className="modal-label">현재 잔액</p>
-                <p className="modal-balance">{Number.isFinite(balance) ? balance.toLocaleString() : "0"}원</p>
+                <p className="modal-balance">
+                  {Number.isFinite(balance) ? balance.toLocaleString() : "0"}원
+                </p>
               </div>
               <div className="modal-input-section">
                 <label className="modal-input-label">충전 금액</label>
@@ -1126,7 +1248,7 @@ export default function MyPage() {
               </div>
             </div>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

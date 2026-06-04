@@ -1,7 +1,6 @@
 package org.cloud.configuration;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -10,9 +9,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		// TODO Auto-generated method stub
 		String projectPath = System.getProperty("user.dir");
 		System.out.println("프로젝트 경로 : " + projectPath);
+
 		String uploadPath = "file:///" + projectPath + "/src/main/resources/static/uploads/";
 		String imagePath = "file:///" + projectPath + "/src/main/resources/static/image/";
 		
@@ -20,5 +19,5 @@ public class WebMvcConfig implements WebMvcConfigurer {
 		registry.addResourceHandler("/image/**").addResourceLocations(imagePath).setCachePeriod(3600).resourceChain(true);
 		registry.addResourceHandler("/resources/static/image/**").addResourceLocations(imagePath).setCachePeriod(3600).resourceChain(true);
 	}
-	
+
 }

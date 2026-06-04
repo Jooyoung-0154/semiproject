@@ -8,15 +8,14 @@ export const postService = {
   // 개인 게시글 조회
   getByWriter: (writerId: string) =>
     api.get<Post[]>(`/posts?writerId=${encodeURIComponent(writerId)}`),
-  // 백엔드에서 GET /posts?writerId=<writerId> 요청을 처리하여 특정 작성자의 게시글 목록을 반환하도록 구현되어야 합니다.
 
   // 게시글 상세 조회
   getDetail: (postId: number) => api.get<Post>(`/posts/${postId}`),
 
-  // 게시글 작성
-  write: (post: Post) => api.post("/posts", post),
+  // 일반 게시글 작성
+  write: (post: Post) => api.post("/posts/json", post),
 
-  // 이미지가 포함된 게시글 작성
+  // 이미지 포함 게시글 작성
   writeWithImage: (formData: FormData) =>
     api.post("/posts", formData, {
       headers: {
@@ -24,8 +23,16 @@ export const postService = {
       },
     }),
 
-  // 게시글 수정
+  // 일반 게시글 수정
   modify: (postId: number, post: Post) => api.put(`/posts/${postId}`, post),
+
+  // 이미지 포함 게시글 수정
+  modifyWithImage: (postId: number, formData: FormData) =>
+    api.put(`/posts/${postId}/image`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
 
   // 게시글 삭제
   deletePost: (postId: number) => api.delete(`/posts/${postId}`),
@@ -37,4 +44,3 @@ export const postService = {
   deleteComment: (commentId: number) =>
     api.delete(`/posts/comment/${commentId}`),
 };
-

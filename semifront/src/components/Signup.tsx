@@ -8,6 +8,8 @@ export default function Signup() {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [gender, setGender] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -19,12 +21,17 @@ export default function Signup() {
         id,
         password,
         nickname,
+        birthDate,
+        gender,
       });
       alert("회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.");
       navigate("/login");
     } catch (err) {
       console.error(err);
-      const message = err instanceof Error ? err.message : "회원가입에 실패했습니다. 입력 정보를 확인해주세요.";
+      const message =
+        err instanceof Error
+          ? err.message
+          : "회원가입에 실패했습니다. 입력 정보를 확인해주세요.";
       setError(message);
     }
   };
@@ -70,6 +77,31 @@ export default function Signup() {
           />
         </div>
 
+        <div>
+          <label className="block text-sm font-medium mb-2">생년월일</label>
+          <input
+            type="date"
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+            className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">성별</label>
+          <select
+            value={gender}
+            onChange={(e) => setGender(e.target.value)}
+            className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            required
+          >
+            <option value="">성별 선택</option>
+            <option value="남성">남성</option>
+            <option value="여성">여성</option>
+          </select>
+        </div>
+
         <button
           type="submit"
           className="w-full bg-orange-600 text-white rounded-2xl py-3 font-semibold hover:bg-orange-700 transition-colors"
@@ -79,8 +111,11 @@ export default function Signup() {
       </form>
 
       <p className="text-center text-sm text-gray-500 mt-6">
-        이미 계정이 있으신가요?{' '}
-        <Link to="/login" className="text-orange-600 font-semibold hover:underline">
+        이미 계정이 있으신가요?{" "}
+        <Link
+          to="/login"
+          className="text-orange-600 font-semibold hover:underline"
+        >
           로그인
         </Link>
       </p>

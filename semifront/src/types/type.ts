@@ -11,6 +11,8 @@ export interface Purchase {
 export interface Member {
   id: string;
   password?: string; // 보안상 선택 사항(?) 표시
+  birthDate?: string;
+  gender?: string;
   balance: number;
   nickname: string;
   profileImg: string;

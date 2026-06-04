@@ -12,6 +12,8 @@ interface RegisterParams {
   id: string;
   password: string;
   nickname: string;
+  birthDate: string;
+  gender: string;
 }
 
 interface AuthContextValue {
@@ -53,16 +55,18 @@ export function normalizeMember(data: any): Member | null {
     typeof member.id === "string"
       ? member.id
       : typeof member.userId === "string"
-      ? member.userId
-      : typeof member.memberId === "string"
-      ? member.memberId
-      : undefined;
+        ? member.userId
+        : typeof member.memberId === "string"
+          ? member.memberId
+          : undefined;
 
   if (!id) return null;
 
   return {
     id,
     password: undefined,
+    birthDate: String(member.birthDate ?? ""),
+    gender: String(member.gender ?? ""),
     balance: Number(member.balance) || 0,
     nickname: String(member.nickname ?? member.name ?? ""),
     profileImg: String(member.profileImg ?? ""),
@@ -111,10 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value = useMemo(
-    () => ({ user, login, logout, register }),
-    [user],
-  );
+  const value = useMemo(() => ({ user, login, logout, register }), [user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
@@ -122,7 +123,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === defaultAuthContext) {
-    console.warn("useAuth is being used outside AuthProvider. Default auth context will be used.");
+    console.warn(
+      "useAuth is being used outside AuthProvider. Default auth context will be used.",
+    );
   }
   return context;
 }
