@@ -14,16 +14,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
 		String uploadPath = "file:///" + projectPath + "/src/main/resources/static/uploads/";
 		String imagePath = "file:///" + projectPath + "/src/main/resources/static/image/";
-
-		registry.addResourceHandler("/uploads/**").addResourceLocations(uploadPath).setCachePeriod(3600)
-				.resourceChain(true);
-
-		// 기존 코드에서 /upload 경로를 쓰는 경우도 대비
-		registry.addResourceHandler("/upload/**").addResourceLocations(uploadPath).setCachePeriod(3600)
-				.resourceChain(true);
-
-		registry.addResourceHandler("/image/**").addResourceLocations(imagePath).setCachePeriod(3600)
-				.resourceChain(true);
+		
+		registry.addResourceHandler("/uploads/**").addResourceLocations(uploadPath).setCachePeriod(3600).resourceChain(true);
+		registry.addResourceHandler("/image/**").addResourceLocations(imagePath).setCachePeriod(3600).resourceChain(true);
+		registry.addResourceHandler("/resources/static/image/**").addResourceLocations(imagePath).setCachePeriod(3600).resourceChain(true);
 	}
 
 }

@@ -43,6 +43,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/cart/**").permitAll()
                 .requestMatchers("/api/purchase/**").permitAll()
                 .requestMatchers("/api/review/**").permitAll()
+                .requestMatchers("/api/reviews/**").permitAll()
+                .requestMatchers("/resources/static/image/**").permitAll()
+                
                 
                 .anyRequest().authenticated()
             );
