@@ -86,4 +86,8 @@ import org.springframework.stereotype.Service;
 	    public List<Member> searchMembers(String keyword) {
 	        return memberMapper.searchMembers(keyword);
 	    }
+	    
+	    public boolean updateIntro(String id, String intro) {
+	        return memberMapper.updateIntro(id, intro) > 0;
+	    }
 }

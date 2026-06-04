@@ -45,8 +45,8 @@
     
     <!-- 인트로 변경 -->
     <update id="updateIntro">
-    	Update member set INTRO = #{INTRO} WHERE ID = #{ID}
-    </update>
+    UPDATE member SET INTRO = #{intro} WHERE ID = #{id}
+	</update>
 
     <update id="addFollowCount">
     	UPDATE member 
