@@ -21,8 +21,10 @@ public class Recipe_Info {
     private int    hit;
     private int    likeCount;     // DB: LIKE_COUNT
     private int    price;         // DB: PRICE
-    private String thumbImgUrl;   // 조회 시 서브쿼리로 채워짐
-    private String writerId;      // 작성자 ID
+    private String thumbImgUrl;       // 조회 시 서브쿼리로 채워짐
+    private String writerId;          // 작성자 ID
+    private String writerNickname;    // 작성자 닉네임 (MEMBER JOIN)
+    private String writerProfileImg;  // 작성자 프로필 이미지 (MEMBER JOIN)
     private List<Tag> tags = new ArrayList<>();  // 태그 목록
 
     public String getRecipeId() { return recipeId; }
@@ -78,6 +80,12 @@ public class Recipe_Info {
 
     public String getWriterId() { return writerId; }
     public void setWriterId(String writerId) { this.writerId = writerId; }
+
+    public String getWriterNickname() { return writerNickname; }
+    public void setWriterNickname(String writerNickname) { this.writerNickname = writerNickname; }
+
+    public String getWriterProfileImg() { return writerProfileImg; }
+    public void setWriterProfileImg(String writerProfileImg) { this.writerProfileImg = writerProfileImg; }
 
     public List<Tag> getTags() { return tags; }
     public void setTags(List<Tag> tags) { this.tags = tags; }
