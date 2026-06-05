@@ -76,13 +76,6 @@
 		VALUES (#{postId}, #{writerId}, #{content})
 	</insert>
 
-	<update id="updateComment">
-		UPDATE post_comment
-		SET CONTENT = #{content}
-		WHERE
-		COMMENT_ID = #{commentId}
-	</update>
-
 	<delete id="deleteComment">
 		DELETE FROM post_comment
 		WHERE COMMENT_ID = #{commentId}
