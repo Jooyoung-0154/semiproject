@@ -8,6 +8,8 @@ import {
   Clock,
   ChefHat,
   Heart,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import RecipeCard from "./RecipeCard";
 import "./MyPage.css";
@@ -73,7 +75,7 @@ export default function MyPage() {
   const [likedRecipes, setLikedRecipes] = useState<Recipe_Info[]>([]);
   const [likedRecipesLoading, setLikedRecipesLoading] = useState(false);
   const [likedPage, setLikedPage] = useState(1);
-  const LIKED_PAGE_SIZE = 6;
+  const LIKED_PAGE_SIZE = 4;
   const { userId } = useParams<{ userId: string }>();
   const currentUserId = authUser?.id ?? "";
   const displayUser = user ?? authUser;
@@ -608,6 +610,8 @@ export default function MyPage() {
       alert("댓글 삭제에 실패했습니다. 다시 시도해주세요.");
     }
   };
+  const likedTotalPages = Math.ceil(likedRecipes.length / LIKED_PAGE_SIZE);
+
   const pagedLikedRecipes = likedRecipes.slice(
     (likedPage - 1) * LIKED_PAGE_SIZE,
     likedPage * LIKED_PAGE_SIZE,
@@ -1047,33 +1051,103 @@ export default function MyPage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {pagedLikedRecipes.map((recipe) => {
-                      const isMyRecipe = recipe.writerId === currentUserId;
-                      return (
-                        <RecipeCard
-                          key={recipe.recipeId}
-                          recipe={recipe}
-                          userId={currentUserId || undefined}
-                          onLikeChange={(recipeId, liked, likeCount) =>
-                            setLikedRecipes((prev) =>
-                              prev.map((r) =>
-                                r.recipeId === recipeId
-                                  ? { ...r, liked, likeCount }
-                                  : r,
-                              ),
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {pagedLikedRecipes.map((recipe) => {
+                        const isMyRecipe = recipe.writerId === currentUserId;
+                        return (
+                          <RecipeCard
+                            key={recipe.recipeId}
+                            recipe={recipe}
+                            userId={currentUserId || undefined}
+                            onLikeChange={(recipeId, liked, likeCount) =>
+                              setLikedRecipes((prev) =>
+                                prev.map((r) =>
+                                  r.recipeId === recipeId
+                                    ? { ...r, liked, likeCount }
+                                    : r,
+                                ),
+                              )
+                            }
+                            onDelete={
+                              isMyRecipe ? handleDeleteRecipe : undefined
+                            }
+                            onEdit={
+                              isMyRecipe
+                                ? (id) => navigate(`/write?edit=${id}`)
+                                : undefined
+                            }
+                          />
+                        );
+                      })}
+                    </div>
+
+                    {likedRecipes.length > LIKED_PAGE_SIZE && (
+                      <div className="flex items-center justify-center gap-1 mt-8">
+                        <button
+                          onClick={() =>
+                            setLikedPage((p) => Math.max(1, p - 1))
+                          }
+                          disabled={likedPage === 1}
+                          className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+
+                        {Array.from(
+                          { length: likedTotalPages },
+                          (_, i) => i + 1,
+                        )
+                          .filter(
+                            (p) =>
+                              p === 1 ||
+                              p === likedTotalPages ||
+                              Math.abs(p - likedPage) <= 1,
+                          )
+                          .reduce<(number | "...")[]>((acc, p, idx, arr) => {
+                            if (idx > 0 && p - (arr[idx - 1] as number) > 1) {
+                              acc.push("...");
+                            }
+                            acc.push(p);
+                            return acc;
+                          }, [])
+                          .map((item, idx) =>
+                            item === "..." ? (
+                              <span
+                                key={`ellipsis-${idx}`}
+                                className="w-8 h-8 flex items-center justify-center text-gray-400 text-sm"
+                              >
+                                …
+                              </span>
+                            ) : (
+                              <button
+                                key={item}
+                                onClick={() => setLikedPage(item as number)}
+                                className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-all ${
+                                  likedPage === item
+                                    ? "bg-orange-500 text-white"
+                                    : "border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-500"
+                                }`}
+                              >
+                                {item}
+                              </button>
+                            ),
+                          )}
+
+                        <button
+                          onClick={() =>
+                            setLikedPage((p) =>
+                              Math.min(likedTotalPages, p + 1),
                             )
                           }
-                          onDelete={isMyRecipe ? handleDeleteRecipe : undefined}
-                          onEdit={
-                            isMyRecipe
-                              ? (id) => navigate(`/write?edit=${id}`)
-                              : undefined
-                          }
-                        />
-                      );
-                    })}
-                  </div>
+                          disabled={likedPage === likedTotalPages}
+                          className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
