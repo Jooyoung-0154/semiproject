@@ -151,7 +151,7 @@ export default function MyPage() {
     try {
       setLikedRecipesLoading(true);
       const recipes = await likeService.getMyLikedRecipes(currentUserId);
-      setLikedRecipes(recipes);
+      setLikedRecipes(recipes.map((r) => ({ ...r, liked: true })));
     } catch (error) {
       console.error("스크랩 레시피 불러오기 실패:", error);
       setLikedRecipes([]);
