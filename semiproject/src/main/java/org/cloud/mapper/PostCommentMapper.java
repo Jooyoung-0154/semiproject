@@ -23,8 +23,6 @@ public interface PostCommentMapper {
 
 	int insertComment(PostComment comment);
 
-	int updateComment(PostComment comment);
-
     int deleteComment(int commentId);
 
     int deleteCommentsByPostId(int postId);

@@ -24,9 +24,6 @@ public interface RecipeMapper {
     // 조리 과정 등록
     int insertCookingInfo(List<Cooking_Info> cookingList);
 
-    // 수정 (기본 4개 필드)
-    int updateRecipeInfo(Recipe_Info info);
-
     // 수정 (전체 필드 + 가격)
     int updateFullRecipe(Recipe recipe);
 

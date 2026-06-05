@@ -186,15 +186,6 @@
         </foreach>
     </insert>
 
-    <update id="updateRecipeInfo" parameterType="org.cloud.dto.Recipe_Info">
-        UPDATE RECIPE
-        SET RECIPE_NM_KO = #{recipeNmKo},
-            SUMRY        = #{sumry},
-            COOKING_TIME = #{cookingTime},
-            LEVEL_NM     = #{levelNm}
-        WHERE RECIPE_ID = #{recipeId}
-    </update>
-
     <update id="updateFullRecipe" parameterType="org.cloud.dto.Recipe">
         UPDATE RECIPE
         SET RECIPE_NM_KO = #{recipeInfo.recipeNmKo},

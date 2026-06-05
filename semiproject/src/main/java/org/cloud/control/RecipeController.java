@@ -4,13 +4,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.cloud.dto.Purchase;
 import org.cloud.dto.Recipe;
 import org.cloud.dto.RecipeSearchParams;
 import org.cloud.dto.Recipe_Info;
 import org.cloud.dto.Tag;
 import org.cloud.mapper.TagMapper;
-import org.cloud.service.PurchaseService;
 import org.cloud.service.RecipeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,8 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/recipe")
 public class RecipeController {
 
-    @Autowired
-    private PurchaseService purchaseService;
     @Autowired
     private RecipeService recipeService;
     @Autowired
@@ -115,10 +111,4 @@ public class RecipeController {
         return recipeService.removeRecipe(recipeId);
     }
 
-    // 구매
-    @PostMapping("/purchase")
-    public boolean processPurchase(@RequestBody Purchase purchase,
-                                   @RequestParam(defaultValue = "0") int cartId) {
-        return purchaseService.processPurchase(purchase, cartId);
-    }
 }
