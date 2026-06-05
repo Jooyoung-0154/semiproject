@@ -1,14 +1,20 @@
 import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { Upload, Plus, X, Tag as TagIcon } from "lucide-react";
 import api from "../api/axios";
-import { useNavigate } from "react-router-dom";
-import { Recipe, Recipe_Info, Cooking_Info, Irdnt_Info, Tag } from "../types/type";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Recipe_Info, Cooking_Info, Irdnt_Info, Tag } from "../types/type";
 import { useAuth } from "../context/AuthContext";
 import { tagService } from "../service/tagService";
+import RecipeService from "../service/recipeService";
+
+const BASE_URL = "http://localhost:8080";
 
 export default function RecipeWrite() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const editRecipeId = searchParams.get("edit");
+  const isEditMode = !!editRecipeId;
 
   // 1. 기본 정보
   const [recipeInfo, setRecipeInfo] = useState<Recipe_Info>({
@@ -21,7 +27,7 @@ export default function RecipeWrite() {
     tyNm: "한식",
     cookingTime: "30",
     calorie: "0",
-    qnt: "2인분",
+    qnt: "2",
     levelNm: "중",
     irdntCode: "",
     pcNm: "0",
@@ -50,10 +56,48 @@ export default function RecipeWrite() {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingEdit, setIsLoadingEdit] = useState(isEditMode);
+  const [existingMainImgUrls, setExistingMainImgUrls] = useState<string[]>([]);
+  const [existingStepImgUrls, setExistingStepImgUrls] = useState<string[]>([""]);
 
   useEffect(() => {
     tagService.getAllTags().then((res) => setAllTags(res.data)).catch(() => setAllTags([]));
   }, []);
+
+  useEffect(() => {
+    if (!editRecipeId) return;
+    setIsLoadingEdit(true);
+    RecipeService.getById(editRecipeId)
+      .then((recipe) => {
+        const info = recipe.recipeInfo;
+        setRecipeInfo({
+          ...info,
+          cookingTime: info.cookingTime.replace("분", ""),
+          qnt: info.qnt.replace("인분", ""),
+          pcNm: String(recipe.price ?? 0),
+        });
+
+        const main = recipe.irdntInfo.filter((i) => i.irdntTyNm === "재료");
+        const sub = recipe.irdntInfo.filter((i) => i.irdntTyNm === "부재료");
+        const season = recipe.irdntInfo.filter((i) => i.irdntTyNm === "양념");
+        setMainIngredients(main.length > 0 ? main : [{ recipeId: "", irdntSn: 0, irdntNm: "", irdntCpcty: "", irdntTyCode: "", irdntTyNm: "재료" }]);
+        setSubIngredients(sub);
+        setSeasonings(season);
+
+        const steps = recipe.cookingInfo.length > 0
+          ? recipe.cookingInfo
+          : [{ recipeId: "", cookingNo: 1, cookingDc: "", stepTip: "", stepImgUrl: "", imgType: "" }];
+        setCookingInfo(steps);
+        setStepImages(steps.map(() => null));
+        setStepPreviews(steps.map(() => ""));
+        setExistingStepImgUrls(steps.map((s) => s.stepImgUrl || ""));
+
+        setSelectedTagIds(recipe.tags.map((t) => t.tagId));
+        if (info.thumbImgUrl) setExistingMainImgUrls([info.thumbImgUrl]);
+      })
+      .catch(() => alert("레시피 정보를 불러오지 못했습니다."))
+      .finally(() => setIsLoadingEdit(false));
+  }, [editRecipeId]);
 
   const toggleTag = (tagId: number) => {
     setSelectedTagIds((prev) =>
@@ -100,6 +144,7 @@ export default function RecipeWrite() {
     ]);
     setStepImages([...stepImages, null]);
     setStepPreviews([...stepPreviews, ""]);
+    setExistingStepImgUrls([...existingStepImgUrls, ""]);
   };
 
   const removeStep = (index: number) => {
@@ -109,6 +154,7 @@ export default function RecipeWrite() {
       setCookingInfo(updated);
       setStepImages(stepImages.filter((_, i) => i !== index));
       setStepPreviews(stepPreviews.filter((_, i) => i !== index));
+      setExistingStepImgUrls(existingStepImgUrls.filter((_, i) => i !== index));
     }
   };
 
@@ -123,8 +169,13 @@ export default function RecipeWrite() {
   };
 
   const removeMainImage = (index: number) => {
-    setMainImages((prev) => prev.filter((_, i) => i !== index));
-    setMainPreviews((prev) => prev.filter((_, i) => i !== index));
+    if (index < existingMainImgUrls.length) {
+      setExistingMainImgUrls((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      const ni = index - existingMainImgUrls.length;
+      setMainImages((prev) => prev.filter((_, i) => i !== ni));
+      setMainPreviews((prev) => prev.filter((_, i) => i !== ni));
+    }
   };
 
   // 단계별 이미지
@@ -137,38 +188,48 @@ export default function RecipeWrite() {
       const newPreviews = [...stepPreviews];
       newPreviews[index] = URL.createObjectURL(file);
       setStepPreviews(newPreviews);
+      const newExisting = [...existingStepImgUrls];
+      newExisting[index] = "";
+      setExistingStepImgUrls(newExisting);
     }
   };
 
-  // 제출
+  // 단계 이미지 업로드 공통 처리
+  const uploadStepImages = async () => {
+    const updated = cookingInfo.map((step, i) => ({
+      ...step,
+      stepImgUrl: existingStepImgUrls[i] || step.stepImgUrl || "",
+    }));
+    for (let i = 0; i < stepImages.length; i++) {
+      if (stepImages[i]) {
+        const formData = new FormData();
+        formData.append("file", stepImages[i]!);
+        const res = await api.post("/recipe-images/step-image", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        updated[i] = { ...updated[i], stepImgUrl: res.data, imgType: "S" };
+      }
+    }
+    return updated;
+  };
+
+  // 재료 병합 공통 처리
+  const mergeIngredients = (): Irdnt_Info[] =>
+    [
+      ...mainIngredients.map((i) => ({ ...i, irdntTyNm: "재료" })),
+      ...subIngredients.map((i) => ({ ...i, irdntTyNm: "부재료" })),
+      ...seasonings.map((i) => ({ ...i, irdntTyNm: "양념" })),
+    ].filter((i) => i.irdntNm.trim() !== "");
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      // 1. 단계별 이미지 업로드
-      const updatedCookingInfo = [...cookingInfo];
-      for (let i = 0; i < stepImages.length; i++) {
-        if (stepImages[i]) {
-          const formData = new FormData();
-          formData.append("file", stepImages[i]!);
-          const res = await api.post("/recipe-images/step-image", formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
-          updatedCookingInfo[i] = { ...updatedCookingInfo[i], stepImgUrl: res.data, imgType: "S" };
-        }
-      }
-
-      // 2. 재료 3섹션 병합 (빈 이름 제외)
-      const allIngredients: Irdnt_Info[] = [
-        ...mainIngredients.map((i) => ({ ...i, irdntTyNm: "재료" })),
-        ...subIngredients.map((i) => ({ ...i, irdntTyNm: "부재료" })),
-        ...seasonings.map((i) => ({ ...i, irdntTyNm: "양념" })),
-      ].filter((i) => i.irdntNm.trim() !== "");
-
-      // 3. 레시피 등록
-      const fullRecipeData: Partial<Recipe> & { writerId?: string } = {
-        recipeInfo: { ...recipeInfo, cookingTime: `${recipeInfo.cookingTime}분` },
+      const updatedCookingInfo = await uploadStepImages();
+      const allIngredients = mergeIngredients();
+      const recipePayload = {
+        recipeInfo: { ...recipeInfo, cookingTime: `${recipeInfo.cookingTime}분`, qnt: `${recipeInfo.qnt}인분` },
         irdntInfo: allIngredients,
         cookingInfo: updatedCookingInfo,
         price: Number(recipeInfo.pcNm) || 0,
@@ -176,23 +237,38 @@ export default function RecipeWrite() {
         tags: selectedTagIds.map((id) => ({ tagId: id, tagName: "" })),
       };
 
-      const response = await api.post("/recipe/register", fullRecipeData);
-      const recipeCode = response.data;
-
-      // 4. 대표 이미지 업로드 (순서대로 - 첫 번째가 자동으로 썸네일)
-      if (mainImages.length > 0 && recipeCode) {
-        const formData = new FormData();
-        mainImages.forEach((file) => formData.append("files", file));
-        await api.post(`/recipe-images/${recipeCode}/upload`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+      if (isEditMode && editRecipeId) {
+        // 수정
+        await RecipeService.updateRecipe(editRecipeId, {
+          ...recipePayload,
+          existingMainImgUrls,
         });
+        if (mainImages.length > 0) {
+          const formData = new FormData();
+          mainImages.forEach((file) => formData.append("files", file));
+          await api.post(`/recipe-images/${editRecipeId}/upload`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+        }
+        alert("레시피가 수정되었습니다!");
+        navigate(`/recipe/${editRecipeId}`);
+      } else {
+        // 신규 등록
+        const response = await api.post("/recipe/register", recipePayload);
+        const recipeCode = response.data;
+        if (mainImages.length > 0 && recipeCode) {
+          const formData = new FormData();
+          mainImages.forEach((file) => formData.append("files", file));
+          await api.post(`/recipe-images/${recipeCode}/upload`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+        }
+        alert("레시피가 성공적으로 등록되었습니다!");
+        navigate("/");
       }
-
-      alert("레시피가 성공적으로 등록되었습니다!");
-      navigate("/");
     } catch (error) {
-      console.error("등록 실패:", error);
-      alert("등록 중 오류가 발생했습니다.");
+      console.error(isEditMode ? "수정 실패:" : "등록 실패:", error);
+      alert(isEditMode ? "수정 중 오류가 발생했습니다." : "등록 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -260,10 +336,16 @@ export default function RecipeWrite() {
     </div>
   );
 
+  if (isLoadingEdit) {
+    return <div className="text-center py-20">레시피 정보를 불러오는 중...</div>;
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="bg-white rounded-lg shadow-md p-8">
-        <h1 className="text-3xl font-bold mb-8 text-orange-600">레시피 등록하기</h1>
+        <h1 className="text-3xl font-bold mb-8 text-orange-600">
+          {isEditMode ? "레시피 수정하기" : "레시피 등록하기"}
+        </h1>
 
         <form onSubmit={handleSubmit} className="space-y-8">
 
@@ -290,7 +372,7 @@ export default function RecipeWrite() {
                 placeholder="레시피를 간단히 소개해주세요"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="block font-medium mb-1">소요 시간 (분) *</label>
                 <input
@@ -315,6 +397,20 @@ export default function RecipeWrite() {
                   <option value="하">하</option>
                 </select>
               </div>
+              <div>
+                <label className="block font-medium mb-1">분량</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="1"
+                    value={recipeInfo.qnt}
+                    onChange={(e) => setRecipeInfo({ ...recipeInfo, qnt: e.target.value })}
+                    className="w-full px-4 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="2"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">인분</span>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -324,9 +420,12 @@ export default function RecipeWrite() {
             <p className="text-sm text-gray-500 mb-3">
               첫 번째 사진이 썸네일로 사용됩니다. 여러 장 추가 가능합니다.
             </p>
-            {mainPreviews.length > 0 && (
+            {(existingMainImgUrls.length > 0 || mainPreviews.length > 0) && (
               <div className="grid grid-cols-3 gap-3 mb-3">
-                {mainPreviews.map((preview, index) => (
+                {[
+                  ...existingMainImgUrls.map((url) => `${BASE_URL}${url}`),
+                  ...mainPreviews,
+                ].map((preview, index) => (
                   <div
                     key={index}
                     className="relative rounded-lg overflow-hidden aspect-square border border-gray-200"
@@ -350,7 +449,7 @@ export default function RecipeWrite() {
             )}
             <label className="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 text-gray-500 text-sm">
               <Upload className="w-5 h-5" />
-              <span>{mainPreviews.length === 0 ? "클릭하여 이미지 선택" : "이미지 추가"}</span>
+              <span>{existingMainImgUrls.length === 0 && mainPreviews.length === 0 ? "클릭하여 이미지 선택" : "이미지 추가"}</span>
               <input
                 type="file"
                 className="hidden"
@@ -411,10 +510,14 @@ export default function RecipeWrite() {
                   className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-orange-400"
                 />
                 <div>
-                  {stepPreviews[index] ? (
+                  {(stepPreviews[index] || existingStepImgUrls[index]) ? (
                     <div className="relative rounded-md overflow-hidden">
-                      <img src={stepPreviews[index]} alt={`Step ${index + 1} 이미지`} className="w-full max-h-48 object-cover" />
-                      <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-30 cursor-pointer transition-all group">
+                      <img
+                        src={stepPreviews[index] || `${BASE_URL}${existingStepImgUrls[index]}`}
+                        alt={`Step ${index + 1} 이미지`}
+                        className="w-full max-h-48 object-cover"
+                      />
+                      <label className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/30 cursor-pointer transition-all group">
                         <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100">클릭하여 변경</span>
                         <input type="file" className="hidden" onChange={(e) => handleStepImageChange(e, index)} accept="image/*" />
                       </label>
@@ -487,7 +590,7 @@ export default function RecipeWrite() {
               disabled={isSubmitting}
               className="flex-1 bg-orange-600 text-white py-3 rounded-xl font-bold hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "등록 중..." : "레시피 등록 완료"}
+              {isSubmitting ? (isEditMode ? "수정 중..." : "등록 중...") : (isEditMode ? "레시피 수정 완료" : "레시피 등록 완료")}
             </button>
             <button
               type="button"

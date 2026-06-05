@@ -4,19 +4,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.cloud.dto.Purchase;
 import org.cloud.dto.Recipe;
 import org.cloud.dto.RecipeSearchParams;
 import org.cloud.dto.Recipe_Info;
 import org.cloud.dto.Tag;
 import org.cloud.mapper.TagMapper;
-import org.cloud.service.PurchaseService;
 import org.cloud.service.RecipeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,8 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/recipe")
 public class RecipeController {
 
-    @Autowired
-    private PurchaseService purchaseService;
     @Autowired
     private RecipeService recipeService;
     @Autowired
@@ -101,16 +98,17 @@ public class RecipeController {
         return recipeService.registerRecipe(recipe);
     }
 
+    // 수정: PUT /api/recipe/{recipeId}
+    @PutMapping("/{recipeId}")
+    public void update(@PathVariable String recipeId, @RequestBody Recipe recipe) {
+        recipe.setRecipeCode(recipeId);
+        recipeService.updateRecipe(recipe);
+    }
+
     // 삭제: /api/recipe/{recipeId}
     @DeleteMapping("/{recipeId}")
     public boolean delete(@PathVariable("recipeId") String recipeId) {
         return recipeService.removeRecipe(recipeId);
     }
 
-    // 구매
-    @PostMapping("/purchase")
-    public boolean processPurchase(@RequestBody Purchase purchase,
-                                   @RequestParam(defaultValue = "0") int cartId) {
-        return purchaseService.processPurchase(purchase, cartId);
-    }
 }

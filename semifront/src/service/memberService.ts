@@ -27,16 +27,18 @@ export const memberService = {
     });
   },
 
+  // 소개글
+  updateIntro: (id: string, intro: string) =>
+    api.put(`/member/${id}/intro`, null, {
+      params: { intro },
+    }),
+
   // 잔액 조회
   getBalance: (id: string) => api.get<number>(`/member/${id}/balance`),
 
   // 닉네임 수정 (RequestParam 방식)
   updateNickname: (id: string, newNickname: string) =>
     api.put(`/member/${id}/nickname`, null, { params: { newNickname } }),
-
-  // 잔액 충전
-  chargeBalance: (id: string, amount: number) =>
-    api.post(`/member/${id}/balance/charge`, null, { params: { amount } }),
 
   // 회원 탈퇴
   deleteMember: (id: string) => api.delete(`/member/${id}`),

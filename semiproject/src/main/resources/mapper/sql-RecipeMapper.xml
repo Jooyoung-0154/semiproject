@@ -19,8 +19,11 @@
             r.LIKE_COUNT   AS likeCount,
             r.PRICE        AS price,
             r.WRITER_ID    AS writerId,
+            m.NICKNAME     AS writerNickname,
+            m.PROFILE_IMG  AS writerProfileImg,
             (SELECT img_url FROM recipe_image WHERE recipe_code = r.RECIPE_ID ORDER BY sort_order ASC LIMIT 1) AS thumbImgUrl
         FROM RECIPE r
+        LEFT JOIN member m ON r.WRITER_ID = m.ID
         <if test="tagId != null">
             JOIN RECIPE_TAG rt ON r.recipe_id = rt.recipe_id
         </if>
@@ -51,8 +54,11 @@
             r.LIKE_COUNT   AS likeCount,
             r.PRICE        AS price,
             r.WRITER_ID    AS writerId,
+            m.NICKNAME     AS writerNickname,
+            m.PROFILE_IMG  AS writerProfileImg,
             (SELECT img_url FROM recipe_image WHERE recipe_code = r.RECIPE_ID ORDER BY sort_order ASC LIMIT 1) AS thumbImgUrl
         FROM RECIPE r
+        LEFT JOIN member m ON r.WRITER_ID = m.ID
         <if test="tagIds != null and tagIds.size() &gt; 0">
             JOIN RECIPE_TAG rt ON r.recipe_id = rt.recipe_id
         </if>
@@ -131,8 +137,11 @@
             r.LIKE_COUNT   AS likeCount,
             r.PRICE        AS price,
             r.WRITER_ID    AS writerId,
+            m.NICKNAME     AS writerNickname,
+            m.PROFILE_IMG  AS writerProfileImg,
             (SELECT img_url FROM recipe_image WHERE recipe_code = r.RECIPE_ID ORDER BY sort_order ASC LIMIT 1) AS thumbImgUrl
         FROM RECIPE r
+        LEFT JOIN member m ON r.WRITER_ID = m.ID
         WHERE r.writer_id = #{writerId}
         ORDER BY r.recipe_id DESC
     </select>
@@ -177,14 +186,29 @@
         </foreach>
     </insert>
 
-    <update id="updateRecipeInfo" parameterType="org.cloud.dto.Recipe_Info">
+    <update id="updateFullRecipe" parameterType="org.cloud.dto.Recipe">
         UPDATE RECIPE
-        SET RECIPE_NM_KO = #{recipeNmKo},
-            SUMRY        = #{sumry},
-            COOKING_TIME = #{cookingTime},
-            LEVEL_NM     = #{levelNm}
-        WHERE RECIPE_ID = #{recipeId}
+        SET RECIPE_NM_KO = #{recipeInfo.recipeNmKo},
+            SUMRY        = #{recipeInfo.sumry},
+            NATION_CODE  = #{recipeInfo.nationCode},
+            NATION_NM    = #{recipeInfo.nationNm},
+            TY_CODE      = #{recipeInfo.tyCode},
+            TY_NM        = #{recipeInfo.tyNm},
+            COOKING_TIME = #{recipeInfo.cookingTime},
+            CALORIE      = #{recipeInfo.calorie},
+            QNT          = #{recipeInfo.qnt},
+            LEVEL_NM     = #{recipeInfo.levelNm},
+            PRICE        = #{price}
+        WHERE RECIPE_ID = #{recipeCode}
     </update>
+
+    <delete id="deleteIrdntInfo">
+        DELETE FROM IRDNT_INFO WHERE RECIPE_ID = #{recipeId}
+    </delete>
+
+    <delete id="deleteCookingInfo">
+        DELETE FROM COOKING_INFO WHERE RECIPE_ID = #{recipeId}
+    </delete>
 
     <delete id="deleteRecipe">
         DELETE FROM RECIPE WHERE RECIPE_ID = #{recipeId}
@@ -211,8 +235,11 @@
             r.LIKE_COUNT   AS likeCount,
             r.PRICE        AS price,
             r.WRITER_ID    AS writerId,
+            m.NICKNAME     AS writerNickname,
+            m.PROFILE_IMG  AS writerProfileImg,
             (SELECT img_url FROM recipe_image WHERE recipe_code = r.RECIPE_ID ORDER BY sort_order ASC LIMIT 1) AS thumbImgUrl
         FROM RECIPE r
+        LEFT JOIN member m ON r.WRITER_ID = m.ID
         WHERE r.RECIPE_ID = #{recipeId}
     </select>
 

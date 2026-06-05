@@ -74,7 +74,13 @@ const RecipeService = {
     return response.data;
   },
 
-  // 4. 레시피 삭제
+  // 4. 레시피 수정
+  updateRecipe: async (recipeId: string, recipeData: any) => {
+    const response = await api.put(`/recipe/${recipeId}`, recipeData);
+    return response.data;
+  },
+
+  // 5. 레시피 삭제
   deleteRecipe: async (recipeId: string) => {
     try {
       const response = await api.delete(`/recipe/${recipeId}`);

@@ -297,7 +297,7 @@ export default function RecipeDetail() {
       {/* 작성자 */}
       {info.writerId && (
         <div
-          onClick={() => navigate(`/profile/${info.writerId}`)}
+          onClick={() => navigate(`/mypage/${info.writerId}`)}
           className="flex items-center gap-3 bg-white rounded-2xl shadow-sm border border-gray-100 p-4 cursor-pointer hover:border-orange-300 transition-colors"
         >
           {writer?.profileImg ? (
@@ -437,7 +437,7 @@ export default function RecipeDetail() {
                     <div className="flex items-center gap-3">
                       {/* 프로필 이미지 */}
                       <button
-                        onClick={() => navigate(`/profile/${review.id}`)}
+                        onClick={() => navigate(`/mypage/${review.id}`)}
                         className="shrink-0"
                       >
                         {profile?.profileImg ? (
@@ -456,7 +456,7 @@ export default function RecipeDetail() {
                       {/* 닉네임 + 추천 아이콘 */}
                       <div>
                         <button
-                          onClick={() => navigate(`/profile/${review.id}`)}
+                          onClick={() => navigate(`/mypage/${review.id}`)}
                           className="font-semibold text-gray-800 text-sm hover:text-orange-500 transition-colors"
                         >
                           {profile?.nickname ?? review.id}

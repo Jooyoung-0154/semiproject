@@ -12,14 +12,6 @@
         WHERE FOLLOWER_ID = #{followerId} AND FOLLOWING_ID = #{followingId}
     </delete>
 
-    <select id="getFollowingIds" resultType="string">
-        SELECT FOLLOWING_ID FROM follow WHERE FOLLOWER_ID = #{followerId}
-    </select>
-
-    <select id="getFollowerIds" resultType="string">
-        SELECT FOLLOWER_ID FROM follow WHERE FOLLOWING_ID = #{followingId}
-    </select>
-    
     <select id="checkFollow" resultType="int">
         SELECT COUNT(*) FROM follow
         WHERE FOLLOWER_ID = #{followerId} AND FOLLOWING_ID = #{followingId}

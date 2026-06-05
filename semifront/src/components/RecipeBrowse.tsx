@@ -1,19 +1,14 @@
 import { useState, useEffect, useCallback, KeyboardEvent } from "react";
-import { useNavigate } from "react-router";
-import { Search, X, Plus, Clock, ChefHat, Tag as TagIcon, Heart } from "lucide-react";
+import { Search, X, Plus, ChefHat, Tag as TagIcon, Refrigerator} from "lucide-react";
 import RecipeService, { BrowseParams } from "../service/recipeService";
 import { tagService } from "../service/tagService";
 import likeService from "../service/likeService";
 import { Recipe_Info, Tag } from "../types/type";
 import { useAuth } from "../context/AuthContext";
+import RecipeCard from "./RecipeCard";
 
 const LEVEL_OPTIONS = ["", "상", "중", "하"] as const;
 const LEVEL_LABELS: Record<string, string> = { "": "전체", "상": "상 (어려움)", "중": "중 (보통)", "하": "하 (쉬움)" };
-const LEVEL_COLOR: Record<string, string> = {
-  "상": "bg-red-100 text-red-700",
-  "중": "bg-yellow-100 text-yellow-700",
-  "하": "bg-green-100 text-green-700",
-};
 
 export default function RecipeBrowse() {
   const { user } = useAuth();
@@ -143,13 +138,13 @@ export default function RecipeBrowse() {
               <button onClick={clearTags} className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${selectedTagIds.length === 0 ? "bg-orange-600 text-white border-orange-600" : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"}`}>전체</button>
               {filteredTags.map((tag) => (
                 <button key={tag.tagId} onClick={() => toggleTag(tag)} className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${selectedTagIds.includes(tag.tagId) ? "bg-orange-600 text-white border-orange-600" : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"}`}>
-                  #{tag.tagName}
+                  {tag.tagName}
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">재료로 찾기</label>
+            <label className="block text-sm font-medium text-gray-600 mb-1"><Refrigerator className="w-4 h-4 inline mr-1"/>재료로 찾기</label>
             <div className="flex gap-2">
               <input type="text" value={ingredientInput} onChange={(e) => setIngredientInput(e.target.value)} onKeyDown={handleIngredientKeyDown} placeholder="재료 입력 후 Enter" className="flex-1 px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm" />
               <button type="button" onClick={addIngredient} className="px-3 py-2 bg-orange-100 text-orange-600 rounded-xl hover:bg-orange-200 transition-colors">
@@ -230,54 +225,3 @@ export default function RecipeBrowse() {
   );
 }
 
-function RecipeCard({
-  recipe, userId, onLikeChange,
-}: {
-  recipe: Recipe_Info;
-  userId?: string;
-  onLikeChange?: (recipeId: string, liked: boolean, likeCount: number) => void;
-}) {
-  const navigate = useNavigate();
-  const thumbSrc = recipe.thumbImgUrl ? `http://localhost:8080${recipe.thumbImgUrl}` : null;
-  const levelColor = LEVEL_COLOR[recipe.levelNm] ?? "bg-gray-100 text-gray-600";
-
-  const handleLike = async () => {
-    if (!userId) return;
-    try {
-      const result = await likeService.toggle(userId, recipe.recipeId);
-      onLikeChange?.(recipe.recipeId, result.liked, result.likeCount);
-    } catch (err) {
-      console.error("좋아요 오류:", err);
-    }
-  };
-
-  return (
-    <div className="bg-white rounded-xl shadow hover:shadow-md transition-shadow overflow-hidden group">
-      <div onClick={() => navigate(`/recipe/${recipe.recipeId}`)} className="h-40 bg-orange-50 flex items-center justify-center overflow-hidden cursor-pointer">
-        {thumbSrc ? (
-          <img src={thumbSrc} alt={recipe.recipeNmKo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-        ) : (
-          <span className="text-5xl select-none">🍽️</span>
-        )}
-      </div>
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-1">
-          <h3 onClick={() => navigate(`/recipe/${recipe.recipeId}`)} className="font-bold text-gray-800 text-base line-clamp-1 flex-1 mr-2 cursor-pointer">
-            {recipe.recipeNmKo}
-          </h3>
-          <button type="button" onClick={handleLike} className="flex items-center gap-1 text-xs shrink-0 cursor-pointer hover:scale-110 transition-transform">
-            <Heart style={{ width: 16, height: 16, fill: recipe.liked ? "#ec4899" : "none", stroke: recipe.liked ? "#ec4899" : "#9ca3af", strokeWidth: 2, pointerEvents: "none" }} />
-            <span className={recipe.liked ? "text-pink-500" : "text-gray-400"}>{recipe.likeCount ?? 0}</span>
-          </button>
-        </div>
-        {recipe.sumry && (
-          <p onClick={() => navigate(`/recipe/${recipe.recipeId}`)} className="text-gray-500 text-xs mb-2 line-clamp-2 leading-relaxed cursor-pointer">{recipe.sumry}</p>
-        )}
-        <div onClick={() => navigate(`/recipe/${recipe.recipeId}`)} className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
-          {recipe.levelNm && <span className={`px-2 py-0.5 rounded-full font-medium ${levelColor}`}>{recipe.levelNm}</span>}
-          {recipe.cookingTime && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{recipe.cookingTime}</span>}
-        </div>
-      </div>
-    </div>
-  );
-}

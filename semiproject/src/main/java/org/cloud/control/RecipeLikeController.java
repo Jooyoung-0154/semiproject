@@ -1,11 +1,17 @@
 package org.cloud.control;
 
-import org.cloud.service.RecipeLikeService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Map;
+
+import org.cloud.dto.Recipe_Info;
+import org.cloud.service.RecipeLikeService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/like")
@@ -35,5 +41,10 @@ public class RecipeLikeController {
     @GetMapping("/my/{userId}")
     public List<String> getMyLikes(@PathVariable String userId) {
         return recipeLikeService.getLikedRecipeIds(userId);
+    }
+    
+    @GetMapping("/my-recipes/{userId}")
+    public List<Recipe_Info> getMyLikedRecipes(@PathVariable String userId) {
+        return recipeLikeService.getLikedRecipes(userId);
     }
 }

@@ -1311,4 +1311,13 @@ post-comments-title {
   font-size: 13px;
   color: #999;
   margin-bottom: 10px;
+
+.profile-avatar {
+  overflow: hidden;
+}
+
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }

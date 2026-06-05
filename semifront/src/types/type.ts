@@ -1,12 +1,3 @@
-//결제
-export interface Purchase {
-  purchaseId: number; // 결제 번호
-  userId: string; // 구매자
-  recipeCode: string; // 구매한 레시피
-  purchasePrice: number; // ★ 결제 당시의 가격
-  purchaseDate: string; // 구매 일시
-}
-
 //멤버
 export interface Member {
   id: string;
@@ -24,15 +15,6 @@ export interface Member {
   followingCount: number; // 내가 팔로우하는 사람들의 수
   followerCount: number; // 나를 팔로우하는 사람들의 수
   recipeCount?: number; // 작성한 레시피 수
-}
-
-//충전
-export interface Charge {
-  chargeId: number; // 충전 번호
-  userId: string; // 충전한 유저
-  amount: number; // 충전 금액
-  chargeMethod: string; // 충전 수단 (예: CARD, CASH, PAY)
-  chargeDate: string; // 충전 일시
 }
 
 //방명록
@@ -115,8 +97,10 @@ export interface Recipe_Info {
   pcNm: string; // 가격대
   price?: number; // 가격 (조회 시 서버에서 채워짐)
   thumbImgUrl?: string; // 대표 이미지 URL (조회 시 서버에서 채워줌)
+  hit?: number; // 조회수
   writerId?: string; // 작성자 ID
   writerNickname?: string; // 작성자 닉네임
+  writerProfileImg?: string; // 작성자 프로필 이미지
   tags?: Tag[]; // 태그 목록 (조회 시 서버에서 채워줌)
   likeCount?: number; // 좋아요 수
   liked?: boolean;   // 현재 유저 좋아요 여부
@@ -144,14 +128,6 @@ export interface Tag {
 export interface RecipeTag {
   recipeId: string; // 레시피 ID
   tagId: number; // 태그 ID
-}
-
-/* 장바구니 (쇼핑리스트)*/
-export interface ShoppingList {
-  cartId: number; // 장바구니 고유 번호
-  userId: string; // 유저 ID
-  recipeCode: string; // 담은 레시피 번호
-  addDate: string; // 담은 날짜
 }
 
 /* 레시피 리뷰*/
