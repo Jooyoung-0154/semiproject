@@ -502,7 +502,7 @@ export default function RecipeWrite() {
                         alt={`Step ${index + 1} 이미지`}
                         className="w-full max-h-48 object-cover"
                       />
-                      <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-30 cursor-pointer transition-all group">
+                      <label className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/30 cursor-pointer transition-all group">
                         <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100">클릭하여 변경</span>
                         <input type="file" className="hidden" onChange={(e) => handleStepImageChange(e, index)} accept="image/*" />
                       </label>

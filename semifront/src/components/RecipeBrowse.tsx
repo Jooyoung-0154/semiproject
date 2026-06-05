@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, KeyboardEvent } from "react";
-import { Search, X, Plus, ChefHat, Tag as TagIcon } from "lucide-react";
+import { Search, X, Plus, ChefHat, Tag as TagIcon, Refrigerator} from "lucide-react";
 import RecipeService, { BrowseParams } from "../service/recipeService";
 import { tagService } from "../service/tagService";
 import likeService from "../service/likeService";
@@ -138,13 +138,13 @@ export default function RecipeBrowse() {
               <button onClick={clearTags} className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${selectedTagIds.length === 0 ? "bg-orange-600 text-white border-orange-600" : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"}`}>전체</button>
               {filteredTags.map((tag) => (
                 <button key={tag.tagId} onClick={() => toggleTag(tag)} className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${selectedTagIds.includes(tag.tagId) ? "bg-orange-600 text-white border-orange-600" : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"}`}>
-                  #{tag.tagName}
+                  {tag.tagName}
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">재료로 찾기</label>
+            <label className="block text-sm font-medium text-gray-600 mb-1"><Refrigerator className="w-4 h-4 inline mr-1"/>재료로 찾기</label>
             <div className="flex gap-2">
               <input type="text" value={ingredientInput} onChange={(e) => setIngredientInput(e.target.value)} onKeyDown={handleIngredientKeyDown} placeholder="재료 입력 후 Enter" className="flex-1 px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm" />
               <button type="button" onClick={addIngredient} className="px-3 py-2 bg-orange-100 text-orange-600 rounded-xl hover:bg-orange-200 transition-colors">
