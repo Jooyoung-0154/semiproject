@@ -15,6 +15,7 @@ interface RecipeCardProps {
   recipe: Recipe_Info;
   userId?: string;
   onLikeChange?: (recipeId: string, liked: boolean, likeCount: number) => void;
+  likeDisabled?: boolean;
   onDelete?: (recipeId: string) => void;
   onEdit?: (recipeId: string) => void;
 }
@@ -23,6 +24,7 @@ export default function RecipeCard({
   recipe,
   userId,
   onLikeChange,
+  likeDisabled = false,
   onDelete,
   onEdit,
 }: RecipeCardProps) {
@@ -44,10 +46,10 @@ export default function RecipeCard({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group">
+    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group flex flex-col h-[300px]">
       {/* 썸네일 */}
       <div
-        className="relative h-40 bg-orange-50 overflow-hidden cursor-pointer"
+        className="relative h-40 bg-orange-50 overflow-hidden cursor-pointer shrink-0"
         onClick={() => navigate(`/recipe/${recipe.recipeId}`)}
       >
         {thumbSrc ? (
@@ -87,7 +89,7 @@ export default function RecipeCard({
       </div>
 
       {/* 정보 */}
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1 overflow-hidden">
         {/* 제목 + 좋아요 */}
         <div className="flex items-center justify-between gap-2 mb-1.5">
           <h3
@@ -100,7 +102,8 @@ export default function RecipeCard({
             <button
               type="button"
               onClick={handleLike}
-              className="flex items-center gap-1 text-xs shrink-0 cursor-pointer hover:scale-110 transition-transform"
+              disabled={likeDisabled}
+              className={`flex items-center gap-1 text-xs shrink-0 transition-transform ${likeDisabled ? "cursor-default" : "cursor-pointer hover:scale-110"}`}
             >
               <Heart
                 style={{
@@ -148,7 +151,7 @@ export default function RecipeCard({
 
         {/* 하단 행: 태그 왼쪽 + 수정·삭제 오른쪽 */}
         {hasBottomRow && (
-          <div className="flex items-center gap-2 pt-2 mt-2 border-t border-gray-100">
+          <div className="flex items-center gap-2 pt-2 mt-auto border-t border-gray-100">
             <div className="flex flex-wrap gap-1 flex-1">
               {recipe.tags?.map((tag) => (
                 <span

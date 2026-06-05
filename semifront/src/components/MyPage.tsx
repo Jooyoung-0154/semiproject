@@ -753,6 +753,7 @@ export default function MyPage() {
                           key={recipe.recipeId}
                           recipe={recipe}
                           userId={currentUserId || undefined}
+                          likeDisabled={!isOwnPage}
                           onLikeChange={(recipeId, liked, likeCount) =>
                             setLikedRecipes((prev) =>
                               prev.map((r) =>

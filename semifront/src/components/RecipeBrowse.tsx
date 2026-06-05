@@ -178,8 +178,8 @@ export default function RecipeBrowse() {
         </p>
       </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {isLoading && recipes.length === 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 min-h-[800px]">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="bg-white rounded-xl shadow animate-pulse">
               <div className="h-40 bg-gray-200 rounded-t-xl" />
@@ -194,7 +194,7 @@ export default function RecipeBrowse() {
           <p className="text-sm mt-1">다른 검색어나 필터를 시도해보세요.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 min-h-[800px] transition-opacity duration-150 ${isLoading ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
           {recipes.map((recipe) => (
             <RecipeCard
               key={recipe.recipeId}
