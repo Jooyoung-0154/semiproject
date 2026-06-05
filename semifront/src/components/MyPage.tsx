@@ -8,6 +8,8 @@ import {
   Clock,
   ChefHat,
   Heart,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import RecipeCard from "./RecipeCard";
 import "./MyPage.css";
@@ -73,7 +75,7 @@ export default function MyPage() {
   const [likedRecipes, setLikedRecipes] = useState<Recipe_Info[]>([]);
   const [likedRecipesLoading, setLikedRecipesLoading] = useState(false);
   const [likedPage, setLikedPage] = useState(1);
-  const LIKED_PAGE_SIZE = 6;
+  const LIKED_PAGE_SIZE = 4;
   const { userId } = useParams<{ userId: string }>();
   const currentUserId = authUser?.id ?? "";
   const displayUser = user ?? authUser;
@@ -608,6 +610,8 @@ export default function MyPage() {
       alert("댓글 삭제에 실패했습니다. 다시 시도해주세요.");
     }
   };
+  const likedTotalPages = Math.ceil(likedRecipes.length / LIKED_PAGE_SIZE);
+
   const pagedLikedRecipes = likedRecipes.slice(
     (likedPage - 1) * LIKED_PAGE_SIZE,
     likedPage * LIKED_PAGE_SIZE,
@@ -1047,6 +1051,7 @@ export default function MyPage() {
                   <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                     <span className="text-5xl mb-3">🤍</span>
                     <p className="font-medium">스크랩한 레시피가 없습니다.</p>
+
                     <button
                       onClick={() => navigate("/browse")}
                       className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-full text-sm font-semibold hover:bg-orange-600 transition"
@@ -1055,34 +1060,82 @@ export default function MyPage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {pagedLikedRecipes.map((recipe) => {
-                      const isMyRecipe = recipe.writerId === currentUserId;
-                      return (
-                        <RecipeCard
-                          key={recipe.recipeId}
-                          recipe={recipe}
-                          userId={currentUserId || undefined}
-                          likeDisabled={!isOwnPage}
-                          onLikeChange={(recipeId, liked, likeCount) =>
-                            setLikedRecipes((prev) =>
-                              prev.map((r) =>
-                                r.recipeId === recipeId
-                                  ? { ...r, liked, likeCount }
-                                  : r,
-                              ),
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {pagedLikedRecipes.map((recipe) => {
+                        const isMyRecipe = recipe.writerId === currentUserId;
+
+                        return (
+                          <RecipeCard
+                            key={recipe.recipeId}
+                            recipe={recipe}
+                            userId={currentUserId || undefined}
+                            likeDisabled={!isOwnPage}
+                            onLikeChange={(recipeId, liked, likeCount) =>
+                              setLikedRecipes((prev) =>
+                                prev.map((r) =>
+                                  r.recipeId === recipeId
+                                    ? { ...r, liked, likeCount }
+                                    : r,
+                                ),
+                              )
+                            }
+                            onDelete={
+                              isMyRecipe ? handleDeleteRecipe : undefined
+                            }
+                            onEdit={
+                              isMyRecipe
+                                ? (id) => navigate(`/write?edit=${id}`)
+                                : undefined
+                            }
+                          />
+                        );
+                      })}
+                    </div>
+
+                    {/* 페이지네이션 */}
+                    {likedTotalPages > 1 && (
+                      <div className="flex justify-center items-center gap-2 mt-8">
+                        <button
+                          onClick={() =>
+                            setLikedPage((prev) => Math.max(prev - 1, 1))
+                          }
+                          disabled={likedPage === 1}
+                          className="px-4 py-2 rounded-lg border"
+                        >
+                          이전
+                        </button>
+
+                        {Array.from({ length: likedTotalPages }).map(
+                          (_, index) => (
+                            <button
+                              key={index + 1}
+                              onClick={() => setLikedPage(index + 1)}
+                              className={`w-9 h-9 rounded-lg ${
+                                likedPage === index + 1
+                                  ? "bg-orange-600 text-white"
+                                  : "border"
+                              }`}
+                            >
+                              {index + 1}
+                            </button>
+                          ),
+                        )}
+
+                        <button
+                          onClick={() =>
+                            setLikedPage((prev) =>
+                              Math.min(prev + 1, likedTotalPages),
                             )
                           }
-                          onDelete={isMyRecipe ? handleDeleteRecipe : undefined}
-                          onEdit={
-                            isMyRecipe
-                              ? (id) => navigate(`/write?edit=${id}`)
-                              : undefined
-                          }
-                        />
-                      );
-                    })}
-                  </div>
+                          disabled={likedPage === likedTotalPages}
+                          className="px-4 py-2 rounded-lg border"
+                        >
+                          다음
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
