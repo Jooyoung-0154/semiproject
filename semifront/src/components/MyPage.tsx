@@ -11,12 +11,7 @@ import {
 } from "lucide-react";
 import RecipeCard from "./RecipeCard";
 import "./MyPage.css";
-import {
-  Recipe_Info,
-  Post,
-  Member,
-  Guestbook,
-} from "../types/type.ts";
+import { Recipe_Info, Post, Member, Guestbook } from "../types/type.ts";
 import { memberService } from "../service/memberService.ts";
 import RecipeService from "../service/recipeService";
 import { guestbookService } from "../service/guestbookService.ts";
@@ -35,9 +30,9 @@ export default function MyPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [myRecipes, setMyRecipes] = useState<Recipe_Info[]>([]);
   const [myRecipesLoading, setMyRecipesLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    "recipes" | "liked" | "posts"
-  >("recipes");
+  const [activeTab, setActiveTab] = useState<"recipes" | "liked" | "posts">(
+    "recipes",
+  );
   const [newGuestbook, setNewGuestbook] = useState("");
   const [guestbookMessages, setGuestbookMessages] = useState<Guestbook[]>([]);
   const [editingGuestbookId, setEditingGuestbookId] = useState<number | null>(
@@ -469,7 +464,7 @@ export default function MyPage() {
     if (!isConfirmed) return;
 
     try {
-      await postService.deletePost(postId);
+      await postService.deletePost(postId, currentUserId);
       setPostList((prev) => prev.filter((post) => post.postId !== postId));
       await fetchPosts();
     } catch (error) {
@@ -827,23 +822,31 @@ export default function MyPage() {
                             </div>
                           </div>
 
-                          <div className="post-item-actions flex items-start justify-end gap-2 min-w-[120px]">
-                            <button
-                              type="button"
-                              onClick={() => handleEditPost(post)}
-                              className="btn-post-edit"
-                            >
-                              수정
-                            </button>
+                          {(post.writerId === currentUserId ||
+                            currentUserId === "admin") && (
+                            <div className="post-item-actions flex items-start justify-end gap-2 min-w-[120px]">
+                              {post.writerId === currentUserId && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleEditPost(post)}
+                                  className="btn-post-edit"
+                                >
+                                  수정
+                                </button>
+                              )}
 
-                            <button
-                              type="button"
-                              onClick={() => handleDeletePost(post.postId)}
-                              className="btn-post-delete"
-                            >
-                              삭제
-                            </button>
-                          </div>
+                              {(post.writerId === currentUserId ||
+                                currentUserId === "admin") && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeletePost(post.postId)}
+                                  className="btn-post-delete"
+                                >
+                                  삭제
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         <div className="post-comments-wrap">
@@ -1022,7 +1025,11 @@ export default function MyPage() {
                         key={recipe.recipeId}
                         recipe={recipe}
                         onDelete={isOwnPage ? handleDeleteRecipe : undefined}
-                        onEdit={isOwnPage ? (id) => navigate(`/write?edit=${id}`) : undefined}
+                        onEdit={
+                          isOwnPage
+                            ? (id) => navigate(`/write?edit=${id}`)
+                            : undefined
+                        }
                       />
                     ))}
                   </div>
@@ -1059,12 +1066,18 @@ export default function MyPage() {
                           onLikeChange={(recipeId, liked, likeCount) =>
                             setLikedRecipes((prev) =>
                               prev.map((r) =>
-                                r.recipeId === recipeId ? { ...r, liked, likeCount } : r
-                              )
+                                r.recipeId === recipeId
+                                  ? { ...r, liked, likeCount }
+                                  : r,
+                              ),
                             )
                           }
                           onDelete={isMyRecipe ? handleDeleteRecipe : undefined}
-                          onEdit={isMyRecipe ? (id) => navigate(`/write?edit=${id}`) : undefined}
+                          onEdit={
+                            isMyRecipe
+                              ? (id) => navigate(`/write?edit=${id}`)
+                              : undefined
+                          }
                         />
                       );
                     })}
@@ -1072,7 +1085,6 @@ export default function MyPage() {
                 )}
               </div>
             )}
-
           </div>
 
           <div className="guestbook-container">
@@ -1276,7 +1288,6 @@ export default function MyPage() {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
