@@ -464,7 +464,7 @@ export default function MyPage() {
     if (!isConfirmed) return;
 
     try {
-      await postService.deletePost(postId);
+      await postService.deletePost(postId, currentUserId);
       setPostList((prev) => prev.filter((post) => post.postId !== postId));
       await fetchPosts();
     } catch (error) {
@@ -822,23 +822,31 @@ export default function MyPage() {
                             </div>
                           </div>
 
-                          <div className="post-item-actions flex items-start justify-end gap-2 min-w-[120px]">
-                            <button
-                              type="button"
-                              onClick={() => handleEditPost(post)}
-                              className="btn-post-edit"
-                            >
-                              수정
-                            </button>
+                          {(post.writerId === currentUserId ||
+                            currentUserId === "admin") && (
+                            <div className="post-item-actions flex items-start justify-end gap-2 min-w-[120px]">
+                              {post.writerId === currentUserId && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleEditPost(post)}
+                                  className="btn-post-edit"
+                                >
+                                  수정
+                                </button>
+                              )}
 
-                            <button
-                              type="button"
-                              onClick={() => handleDeletePost(post.postId)}
-                              className="btn-post-delete"
-                            >
-                              삭제
-                            </button>
-                          </div>
+                              {(post.writerId === currentUserId ||
+                                currentUserId === "admin") && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeletePost(post.postId)}
+                                  className="btn-post-delete"
+                                >
+                                  삭제
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         <div className="post-comments-wrap">
