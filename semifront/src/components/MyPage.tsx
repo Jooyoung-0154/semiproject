@@ -1043,6 +1043,7 @@ export default function MyPage() {
                   <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                     <span className="text-5xl mb-3">🤍</span>
                     <p className="font-medium">스크랩한 레시피가 없습니다.</p>
+
                     <button
                       onClick={() => navigate("/browse")}
                       className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-full text-sm font-semibold hover:bg-orange-600 transition"
@@ -1055,11 +1056,13 @@ export default function MyPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {pagedLikedRecipes.map((recipe) => {
                         const isMyRecipe = recipe.writerId === currentUserId;
+
                         return (
                           <RecipeCard
                             key={recipe.recipeId}
                             recipe={recipe}
                             userId={currentUserId || undefined}
+                            likeDisabled={!isOwnPage}
                             onLikeChange={(recipeId, liked, likeCount) =>
                               setLikedRecipes((prev) =>
                                 prev.map((r) =>
@@ -1082,68 +1085,45 @@ export default function MyPage() {
                       })}
                     </div>
 
-                    {likedRecipes.length > LIKED_PAGE_SIZE && (
-                      <div className="flex items-center justify-center gap-1 mt-8">
+                    {/* 페이지네이션 */}
+                    {likedTotalPages > 1 && (
+                      <div className="flex justify-center items-center gap-2 mt-8">
                         <button
                           onClick={() =>
-                            setLikedPage((p) => Math.max(1, p - 1))
+                            setLikedPage((prev) => Math.max(prev - 1, 1))
                           }
                           disabled={likedPage === 1}
-                          className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                          className="px-4 py-2 rounded-lg border"
                         >
-                          <ChevronLeft className="w-4 h-4" />
+                          이전
                         </button>
 
-                        {Array.from(
-                          { length: likedTotalPages },
-                          (_, i) => i + 1,
-                        )
-                          .filter(
-                            (p) =>
-                              p === 1 ||
-                              p === likedTotalPages ||
-                              Math.abs(p - likedPage) <= 1,
-                          )
-                          .reduce<(number | "...")[]>((acc, p, idx, arr) => {
-                            if (idx > 0 && p - (arr[idx - 1] as number) > 1) {
-                              acc.push("...");
-                            }
-                            acc.push(p);
-                            return acc;
-                          }, [])
-                          .map((item, idx) =>
-                            item === "..." ? (
-                              <span
-                                key={`ellipsis-${idx}`}
-                                className="w-8 h-8 flex items-center justify-center text-gray-400 text-sm"
-                              >
-                                …
-                              </span>
-                            ) : (
-                              <button
-                                key={item}
-                                onClick={() => setLikedPage(item as number)}
-                                className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-all ${
-                                  likedPage === item
-                                    ? "bg-orange-500 text-white"
-                                    : "border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-500"
-                                }`}
-                              >
-                                {item}
-                              </button>
-                            ),
-                          )}
+                        {Array.from({ length: likedTotalPages }).map(
+                          (_, index) => (
+                            <button
+                              key={index + 1}
+                              onClick={() => setLikedPage(index + 1)}
+                              className={`w-9 h-9 rounded-lg ${
+                                likedPage === index + 1
+                                  ? "bg-orange-600 text-white"
+                                  : "border"
+                              }`}
+                            >
+                              {index + 1}
+                            </button>
+                          ),
+                        )}
 
                         <button
                           onClick={() =>
-                            setLikedPage((p) =>
-                              Math.min(likedTotalPages, p + 1),
+                            setLikedPage((prev) =>
+                              Math.min(prev + 1, likedTotalPages),
                             )
                           }
                           disabled={likedPage === likedTotalPages}
-                          className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                          className="px-4 py-2 rounded-lg border"
                         >
-                          <ChevronRight className="w-4 h-4" />
+                          다음
                         </button>
                       </div>
                     )}
