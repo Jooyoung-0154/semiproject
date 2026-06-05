@@ -1239,6 +1239,11 @@ export default function MyPage() {
                 placeholder="비밀번호 입력"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handlePasswordConfirm();
+                  }
+                }}
                 className="modal-input"
               />
 
