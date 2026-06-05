@@ -77,29 +77,26 @@
 	</insert>
 
 	<update id="updateComment">
-		UPDATE post_comment
-		SET CONTENT = #{content}
-		WHERE
-		COMMENT_ID = #{commentId}
-	</update>
+    UPDATE post_comment
+    SET CONTENT = #{content}
+    WHERE COMMENT_ID = #{commentId}
+</update>
 
 	<delete id="deleteComment">
 		DELETE FROM post_comment
 		WHERE COMMENT_ID = #{commentId}
 	</delete>
 
-	<select id="getCommentsByPostId"
-		resultType="org.cloud.dto.PostComment">
-		SELECT
-		COMMENT_ID AS commentId,
-		POST_ID AS postId,
-		WRITER_ID AS writerId,
-		CONTENT AS content,
-		REG_DATE AS regDate
-		FROM post_comment
-		WHERE POST_ID = #{postId}
-		ORDER BY
-		REG_DATE ASC
-	</select>
+	<select id="getCommentsByPostId" resultType="org.cloud.dto.PostComment">
+    SELECT
+        COMMENT_ID AS commentId,
+        POST_ID AS postId,
+        WRITER_ID AS writerId,
+        CONTENT AS content,
+        REG_DATE AS regDate
+    FROM post_comment
+    WHERE POST_ID = #{postId}
+    ORDER BY REG_DATE ASC
+</select>
 
 </mapper>

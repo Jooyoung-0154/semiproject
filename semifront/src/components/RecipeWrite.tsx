@@ -27,7 +27,7 @@ export default function RecipeWrite() {
     tyNm: "한식",
     cookingTime: "30",
     calorie: "0",
-    qnt: "2인분",
+    qnt: "2",
     levelNm: "중",
     irdntCode: "",
     pcNm: "0",
@@ -73,6 +73,7 @@ export default function RecipeWrite() {
         setRecipeInfo({
           ...info,
           cookingTime: info.cookingTime.replace("분", ""),
+          qnt: info.qnt.replace("인분", ""),
           pcNm: String(recipe.price ?? 0),
         });
 
@@ -228,7 +229,7 @@ export default function RecipeWrite() {
       const updatedCookingInfo = await uploadStepImages();
       const allIngredients = mergeIngredients();
       const recipePayload = {
-        recipeInfo: { ...recipeInfo, cookingTime: `${recipeInfo.cookingTime}분` },
+        recipeInfo: { ...recipeInfo, cookingTime: `${recipeInfo.cookingTime}분`, qnt: `${recipeInfo.qnt}인분` },
         irdntInfo: allIngredients,
         cookingInfo: updatedCookingInfo,
         price: Number(recipeInfo.pcNm) || 0,
@@ -371,7 +372,7 @@ export default function RecipeWrite() {
                 placeholder="레시피를 간단히 소개해주세요"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="block font-medium mb-1">소요 시간 (분) *</label>
                 <input
@@ -395,6 +396,20 @@ export default function RecipeWrite() {
                   <option value="중">중</option>
                   <option value="하">하</option>
                 </select>
+              </div>
+              <div>
+                <label className="block font-medium mb-1">분량</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="1"
+                    value={recipeInfo.qnt}
+                    onChange={(e) => setRecipeInfo({ ...recipeInfo, qnt: e.target.value })}
+                    className="w-full px-4 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="2"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">인분</span>
+                </div>
               </div>
             </div>
           </section>
@@ -502,7 +517,7 @@ export default function RecipeWrite() {
                         alt={`Step ${index + 1} 이미지`}
                         className="w-full max-h-48 object-cover"
                       />
-                      <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-30 cursor-pointer transition-all group">
+                      <label className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/30 cursor-pointer transition-all group">
                         <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100">클릭하여 변경</span>
                         <input type="file" className="hidden" onChange={(e) => handleStepImageChange(e, index)} accept="image/*" />
                       </label>

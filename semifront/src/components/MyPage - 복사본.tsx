@@ -1,17 +1,23 @@
 import { useState, useEffect } from "react";
 import {
   User,
+  Trash2,
+  ShoppingCart,
   Users,
   MessageSquare,
   Wallet,
   DollarSign,
   Clock,
   ChefHat,
-  Heart,
 } from "lucide-react";
-import RecipeCard from "./RecipeCard";
 import "./MyPage.css";
-import { Recipe_Info, Post, Member, Guestbook } from "../types/type.ts";
+import {
+  Recipe_Info,
+  Post,
+  Member,
+  Purchase,
+  Guestbook,
+} from "../types/type.ts";
 import { memberService } from "../service/memberService.ts";
 import RecipeService from "../service/recipeService";
 import { guestbookService } from "../service/guestbookService.ts";
@@ -20,7 +26,6 @@ import { socialService } from "../service/socialService.ts";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth, normalizeMember } from "../context/AuthContext.tsx";
 import { authService } from "../service/authService.ts";
-import likeService from "../service/likeService";
 
 export default function MyPage() {
   // user랑 로그인 정보 setting 과정
@@ -30,10 +35,23 @@ export default function MyPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [myRecipes, setMyRecipes] = useState<Recipe_Info[]>([]);
   const [myRecipesLoading, setMyRecipesLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"recipes" | "liked" | "posts">(
-    "recipes",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "recipes" | "basket" | "posts" | "purchases"
+  >("recipes");
   const [newGuestbook, setNewGuestbook] = useState("");
+  const [balance, setBalance] = useState(0);
+  const [chargeAmount, setChargeAmount] = useState(0);
+  const [showChargeModal, setShowChargeModal] = useState(false);
+  const [savedRecipes, setSavedRecipes] = useState<
+    {
+      recipe_code: number;
+      name: string;
+      author: string;
+      price: number;
+      isPurchased: boolean;
+    }[]
+  >([]);
+  const [purchaseHistory, setPurchaseHistory] = useState<Purchase[]>([]);
   const [guestbookMessages, setGuestbookMessages] = useState<Guestbook[]>([]);
   const [editingGuestbookId, setEditingGuestbookId] = useState<number | null>(
     null,
@@ -48,33 +66,13 @@ export default function MyPage() {
   const [newPostContent, setNewPostContent] = useState("");
   const [newPostImage, setNewPostImage] = useState<File | null>(null);
   const [newPostImagePreview, setNewPostImagePreview] = useState<string>("");
-  const [editingPostId, setEditingPostId] = useState<number | null>(null);
-  const [editingPostImg, setEditingPostImg] = useState<string>("");
   const [isPostCreateMode, setIsPostCreateMode] = useState(false);
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
   const [commentInputs, setCommentInputs] = useState<Record<number, string>>(
     {},
   );
-
-  const [showCommentFormByPostId, setShowCommentFormByPostId] = useState<
-    Record<number, boolean>
-  >({});
-
-  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
-  const [editingCommentContent, setEditingCommentContent] = useState("");
-
-  const [likedPostIds, setLikedPostIds] = useState<Record<number, boolean>>({});
-  const [localLikeCounts, setLocalLikeCounts] = useState<
-    Record<number, number>
-  >({});
-
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [likedRecipes, setLikedRecipes] = useState<Recipe_Info[]>([]);
-  const [likedRecipesLoading, setLikedRecipesLoading] = useState(false);
-  const [likedPage, setLikedPage] = useState(1);
-  const LIKED_PAGE_SIZE = 6;
-  const { userId } = useParams<{ userId: string }>();
   const currentUserId = authUser?.id ?? "";
   const displayUser = user ?? authUser;
   const isOwnPage = Boolean(
@@ -83,23 +81,6 @@ export default function MyPage() {
 
   useEffect(() => {
     const fetchMemberData = async () => {
-      // 다른 유저 프로필 조회
-      if (userId && userId !== authUser?.id) {
-        setIsLoading(true);
-        try {
-          const response = await memberService.getMemberById(userId);
-          const normalized = normalizeMember(response.data);
-          setUser(normalized ?? null);
-        } catch (error) {
-          console.error("유저 정보를 불러오는데 실패했습니다.", error);
-          setUser(null);
-        } finally {
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      // 내 페이지
       if (!authUser) {
         setIsLoading(false);
         setUser(null);
@@ -126,15 +107,24 @@ export default function MyPage() {
     };
 
     fetchMemberData();
-  }, [authUser, userId]);
+  }, [authUser]);
+
+  useEffect(() => {
+    if (user) {
+      setBalance(user.balance);
+    }
+  }, [user]);
 
   const fetchPosts = async () => {
     if (!displayUser?.id) return;
     try {
+      setIsLoadingPosts(true);
       const response = await postService.getByWriter(displayUser.id);
       setPostList(response.data);
     } catch (error) {
       console.error("게시글 불러오기 실패:", error);
+    } finally {
+      setIsLoadingPosts(false);
     }
   };
 
@@ -163,22 +153,6 @@ export default function MyPage() {
     return parsed.toLocaleString();
   };
 
-  // 스크랩(좋아요) 레시피
-  const fetchLikedRecipes = async () => {
-    if (!currentUserId) return;
-
-    try {
-      setLikedRecipesLoading(true);
-      const recipes = await likeService.getMyLikedRecipes(currentUserId);
-      setLikedRecipes(recipes.map((r) => ({ ...r, liked: true })));
-    } catch (error) {
-      console.error("스크랩 레시피 불러오기 실패:", error);
-      setLikedRecipes([]);
-    } finally {
-      setLikedRecipesLoading(false);
-    }
-  };
-
   // 내 레시피 불러오기
   const fetchMyRecipes = async () => {
     if (!displayUser?.id) return;
@@ -200,9 +174,6 @@ export default function MyPage() {
     }
     if (activeTab === "posts") {
       fetchPosts();
-    }
-    if (activeTab === "liked") {
-      fetchLikedRecipes();
     }
   }, [activeTab, displayUser?.id]);
 
@@ -260,6 +231,42 @@ export default function MyPage() {
     }
   };
 
+  useEffect(() => {
+    setSavedRecipes([
+      {
+        recipe_code: 201,
+        name: "매콤 두부 찌개",
+        author: "jooyoung123",
+        price: 8000,
+        isPurchased: false,
+      },
+      {
+        recipe_code: 202,
+        name: "버터 갈릭 새우 파스타",
+        author: "jooyoung123",
+        price: 12000,
+        isPurchased: true,
+      },
+    ]);
+
+    setPurchaseHistory([
+      {
+        purchaseId: 1,
+        userId: currentUserId,
+        recipeCode: "301",
+        purchasePrice: 15000,
+        purchaseDate: "2026-05-18",
+      },
+      {
+        purchaseId: 2,
+        userId: currentUserId,
+        recipeCode: "302",
+        purchasePrice: 9000,
+        purchaseDate: "2026-05-12",
+      },
+    ]);
+  }, [currentUserId]);
+
   //예외처리
   if (isLoading)
     return <div className="text-center py-8">로딩 중입니다...</div>;
@@ -279,7 +286,7 @@ export default function MyPage() {
     return <div className="text-center py-8">유저 정보가 없습니다.</div>;
 
   const handleSubscriptionClick = (subscriberId: string) => {
-    navigate(`/mypage/${subscriberId}`);
+    navigate(`/profile/${subscriberId}`);
   };
 
   const handleGuestbookSubmit = async (e: React.FormEvent) => {
@@ -365,6 +372,28 @@ export default function MyPage() {
     }
   };
 
+  const handlePurchaseRecipe = (recipeCode: string | number, price: number) => {
+    if (balance >= price) {
+      setBalance(balance - price);
+      setSavedRecipes((prev) =>
+        prev.map((item) =>
+          item.recipe_code === Number(recipeCode)
+            ? { ...item, isPurchased: true }
+            : item,
+        ),
+      );
+      console.log("Purchased recipe:", recipeCode);
+    } else {
+      alert("잔액이 부족합니다. 충전해주세요.");
+    }
+  };
+
+  const handleCharge = () => {
+    setBalance(balance + chargeAmount);
+    setShowChargeModal(false);
+    console.log("Charged:", chargeAmount);
+  };
+
   const handlePasswordConfirm = async () => {
     if (!authUser) return;
 
@@ -382,6 +411,11 @@ export default function MyPage() {
     }
   };
 
+  const LEVEL_COLOR: Record<string, string> = {
+    상: "bg-red-100 text-red-700",
+    중: "bg-yellow-100 text-yellow-700",
+    하: "bg-green-100 text-green-700",
+  };
   const handleDeleteRecipe = async (recipeId: string) => {
     const isConfirmed = window.confirm(
       "정말 이 레시피를 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.",
@@ -425,23 +459,41 @@ export default function MyPage() {
       alert("게시글 내용을 입력해주세요.");
       return;
     }
+
     try {
-      const formData = new FormData();
-      formData.append("writerId", currentUserId);
-      formData.append("content", content);
-
+      ``;
+      let response;
       if (newPostImage) {
+        const formData = new FormData();
+        formData.append("writerId", currentUserId);
+        formData.append("content", content);
+        formData.append("regDate", new Date().toISOString().slice(0, 10));
+        formData.append("likeCount", "0");
         formData.append("image", newPostImage);
-      }
-
-      if (editingPostId !== null) {
-        await postService.modifyWithImage(editingPostId, formData);
-        alert("게시글이 수정되었습니다.");
+        response = await postService.writeWithImage(formData);
       } else {
-        await postService.writeWithImage(formData);
-        alert("게시글이 작성되었습니다.");
+        const payload: Post = {
+          postId: 0,
+          writerId: currentUserId,
+          content,
+          postImg: "",
+          regDate: new Date().toISOString().slice(0, 10),
+          likeCount: 0,
+          comments: [],
+        };
+        response = await postService.write(payload);
       }
 
+      const createdPost = response.data as Post;
+      if (createdPost) {
+        setPostList((prev) => [createdPost, ...prev]);
+        if (user && user.id === currentUserId) {
+          setUser({
+            ...user,
+            myPosts: [createdPost, ...(user.myPosts ?? [])],
+          });
+        }
+      }
       clearPostForm();
       setIsPostCreateMode(false);
       await fetchPosts();
@@ -451,14 +503,10 @@ export default function MyPage() {
     }
   };
 
-  const handleEditPost = (post: Post) => {
-    setEditingPostId(post.postId);
-    setNewPostContent(post.content ?? "");
-    setEditingPostImg(post.postImg ?? "");
-    setNewPostImage(null);
-    setNewPostImagePreview("");
-    setIsPostCreateMode(true);
+  const handleEditPost = (postId: number) => {
+    alert(`게시글 ${postId} 수정 기능을 연결해주세요.`);
   };
+
   const handleDeletePost = async (postId: number) => {
     const isConfirmed = window.confirm("정말 이 게시글을 삭제하시겠습니까?");
     if (!isConfirmed) return;
@@ -608,10 +656,6 @@ export default function MyPage() {
       alert("댓글 삭제에 실패했습니다. 다시 시도해주세요.");
     }
   };
-  const pagedLikedRecipes = likedRecipes.slice(
-    (likedPage - 1) * LIKED_PAGE_SIZE,
-    likedPage * LIKED_PAGE_SIZE,
-  );
 
   return (
     <div className="mypage-container">
@@ -619,15 +663,7 @@ export default function MyPage() {
         <div className="profile-flex">
           <div className="profile-info-section">
             <div className="profile-avatar">
-              {displayUser.profileImg ? (
-                <img
-                  src={`http://localhost:8080${displayUser.profileImg}`}
-                  alt="프로필"
-                  className="profile-avatar-img"
-                />
-              ) : (
-                <User className="avatar-icon" />
-              )}
+              <User className="avatar-icon" />
             </div>
             <div>
               <h1 className="profile-name">{displayUser.nickname}</h1>
@@ -688,16 +724,21 @@ export default function MyPage() {
               >
                 작성 레시피
               </button>
-              <button
-                onClick={() => {
-                  setActiveTab("liked");
-                  setLikedPage(1);
-                }}
-                className={`tab-btn ${activeTab === "liked" ? "active" : ""}`}
+              {/* <button
+                onClick={() => setActiveTab("basket")}
+                className={`tab-btn ${activeTab === "basket" ? "active" : ""}`}
               >
-                스크랩 레시피
+                장바구니
               </button>
+
+              <button
+                onClick={() => setActiveTab("purchases")}
+                className={`tab-btn ${activeTab === "purchases" ? "active" : ""}`}
+              >
+                구매 내역
+              </button> */}
             </div>
+
             {/* 게시판 탭 내용 */}
             {activeTab === "posts" && (
               <div className="posts-tab-content">
@@ -981,6 +1022,7 @@ export default function MyPage() {
                 )}
               </div>
             )}
+
             {/* 내 레시피 탭 내용 */}
             {activeTab === "recipes" && (
               <div>
@@ -1012,69 +1054,242 @@ export default function MyPage() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {myRecipes.map((recipe) => (
-                      <RecipeCard
-                        key={recipe.recipeId}
-                        recipe={recipe}
-                        onDelete={isOwnPage ? handleDeleteRecipe : undefined}
-                        onEdit={
-                          isOwnPage
-                            ? (id) => navigate(`/write?edit=${id}`)
-                            : undefined
-                        }
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            {/* 스크랩 레시피 탭 내용 */}
-            {activeTab === "liked" && (
-              <div>
-                {likedRecipesLoading ? (
-                  <div className="text-center py-12 text-gray-400">
-                    스크랩 레시피를 불러오는 중입니다...
-                  </div>
-                ) : likedRecipes.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-                    <span className="text-5xl mb-3">🤍</span>
-                    <p className="font-medium">스크랩한 레시피가 없습니다.</p>
-                    <button
-                      onClick={() => navigate("/browse")}
-                      className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-full text-sm font-semibold hover:bg-orange-600 transition"
-                    >
-                      레시피 둘러보기
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {pagedLikedRecipes.map((recipe) => {
-                      const isMyRecipe = recipe.writerId === currentUserId;
+                    {myRecipes.map((recipe) => {
+                      const thumbSrc = recipe.thumbImgUrl
+                        ? `http://localhost:8080${recipe.thumbImgUrl}`
+                        : null;
+                      const levelColor =
+                        LEVEL_COLOR[recipe.levelNm] ??
+                        "bg-gray-100 text-gray-600";
                       return (
-                        <RecipeCard
+                        <div
                           key={recipe.recipeId}
-                          recipe={recipe}
-                          userId={currentUserId || undefined}
-                          onLikeChange={(recipeId, liked, likeCount) =>
-                            setLikedRecipes((prev) =>
-                              prev.map((r) =>
-                                r.recipeId === recipeId
-                                  ? { ...r, liked, likeCount }
-                                  : r,
-                              ),
-                            )
-                          }
-                          onDelete={isMyRecipe ? handleDeleteRecipe : undefined}
-                          onEdit={
-                            isMyRecipe
-                              ? (id) => navigate(`/write?edit=${id}`)
-                              : undefined
-                          }
-                        />
+                          className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group"
+                        >
+                          {/* 썸네일 */}
+                          <div
+                            className="relative h-40 bg-orange-50 overflow-hidden cursor-pointer"
+                            onClick={() =>
+                              navigate(`/recipe/${recipe.recipeId}`)
+                            }
+                          >
+                            {thumbSrc ? (
+                              <img
+                                src={thumbSrc}
+                                alt={recipe.recipeNmKo}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <span className="text-5xl select-none">🍽️</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* 정보 */}
+                          <div className="p-4">
+                            {/* 제목 + 가격 */}
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <h3
+                                className="font-bold text-gray-800 text-base line-clamp-1 flex-1 cursor-pointer hover:text-orange-500 transition"
+                                onClick={() =>
+                                  navigate(`/recipe/${recipe.recipeId}`)
+                                }
+                              >
+                                {recipe.recipeNmKo}
+                              </h3>
+                              {recipe.price != null &&
+                                (recipe.price > 0 ? (
+                                  <span className="flex-shrink-0 text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200">
+                                    {recipe.price.toLocaleString()}원
+                                  </span>
+                                ) : (
+                                  <span className="flex-shrink-0 text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-200">
+                                    Free
+                                  </span>
+                                ))}
+                            </div>
+
+                            {recipe.sumry && (
+                              <p className="text-gray-400 text-xs mb-2 line-clamp-1">
+                                {recipe.sumry}
+                              </p>
+                            )}
+
+                            {/* 뱃지 */}
+                            <div className="flex items-center gap-1.5 text-xs flex-wrap mb-2">
+                              {recipe.levelNm && (
+                                <span
+                                  className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full font-medium ${levelColor}`}
+                                >
+                                  <ChefHat className="w-3 h-3" />
+                                  {recipe.levelNm}
+                                </span>
+                              )}
+                              {recipe.cookingTime && (
+                                <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium">
+                                  <Clock className="w-3 h-3" />
+                                  {recipe.cookingTime}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* 태그 */}
+                            {recipe.tags && recipe.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mb-3">
+                                {recipe.tags.map((tag) => (
+                                  <span
+                                    key={tag.tagId}
+                                    className="px-1.5 py-0.5 bg-orange-50 text-orange-600 border border-orange-100 rounded-full text-xs font-medium"
+                                  >
+                                    {tag.tagName}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* 삭제 버튼 (본인일때) */}
+                            {isOwnPage && (
+                              <div className="flex gap-2 pt-1 border-t border-gray-100">
+                                <button
+                                  onClick={() =>
+                                    handleDeleteRecipe(recipe.recipeId)
+                                  }
+                                  className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition font-medium"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" /> 삭제
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* 장바구니 탭 내용 */}
+            {activeTab === "basket" && (
+              <div>
+                {/* 타이틀 영역: 아이콘과 주황색 포인트 폰트 */}
+                <div className="section-title-wrap flex items-center gap-2 mb-4">
+                  <ShoppingCart className="title-icon w-5 h-5 text-orange-500" />
+                  <h3 className="section-title text-xl font-bold flex items-center gap-1">
+                    장바구니
+                    <span className="text-orange-500">
+                      ({savedRecipes.length})
+                    </span>
+                  </h3>
+                </div>
+
+                {/* 리스트 본문 영역 */}
+                <div className="recipe-list flex flex-col gap-4">
+                  {savedRecipes.map((recipe) => (
+                    <div
+                      key={recipe.recipe_code}
+                      className="recipe-item flex border rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition items-center justify-between"
+                    >
+                      {/* 왼쪽: 이미지 + 정보 묶음 */}
+                      <div className="flex gap-4 items-center">
+                        <div className="w-24 h-24 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0">
+                          <span className="text-3xl">🍽️</span>
+                        </div>
+
+                        {/* 텍스트 정보 */}
+                        <div className="recipe-info">
+                          <h3 className="recipe-title text-lg font-bold text-gray-900">
+                            {recipe.name}
+                          </h3>
+                          <p className="recipe-meta text-sm text-gray-400 mt-0.5">
+                            by {recipe.author}
+                          </p>
+                          {recipe.price > 0 && (
+                            <p className="price-text text-base font-bold text-orange-500 mt-1">
+                              {recipe.price
+                                ? recipe.price.toLocaleString()
+                                : "0"}
+                              원
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 오른쪽: 상하 수직 정렬 버튼 영역 */}
+                      <div className="action-buttons-vertical flex flex-col items-center justify-center gap-2 min-w-[100px]">
+                        {recipe.isPurchased ? (
+                          <button className="btn-status-success w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-xl text-sm cursor-default">
+                            구매완료
+                          </button>
+                        ) : recipe.price > 0 ? (
+                          <button
+                            onClick={() =>
+                              handlePurchaseRecipe(
+                                recipe.recipe_code,
+                                recipe.price,
+                              )
+                            }
+                            className="btn-status-action w-full bg-orange-600 text-white font-bold py-2 px-4 rounded-xl text-sm hover:bg-orange-700 transition"
+                          >
+                            구매하기
+                          </button>
+                        ) : (
+                          <button className="btn-status-view w-full bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded-xl text-sm hover:bg-gray-200 transition">
+                            보기
+                          </button>
+                        )}
+
+                        {/* 삭제 텍스트 버튼 */}
+                        <button className="btn-text-delete text-xs text-red-400 hover:text-red-600 hover:underline transition mt-1">
+                          삭제
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 구매 내역 탭 내용 */}
+            {activeTab === "purchases" && (
+              <div>
+                <div className="section-title-wrap">
+                  <DollarSign className="title-icon" />
+                  <h3 className="section-title">구매 내역</h3>
+                </div>
+                <div className="history-list">
+                  {purchaseHistory.map((purchase) => (
+                    <div key={purchase.purchaseId} className="history-item">
+                      <div>
+                        <p className="history-name">
+                          레시피 코드 {purchase.recipeCode}
+                        </p>
+                        <p className="history-date">{purchase.purchaseDate}</p>
+                      </div>
+                      <div className="history-right">
+                        <p className="price-text">
+                          {purchase.purchasePrice
+                            ? purchase.purchasePrice.toLocaleString()
+                            : "0"}
+                          원
+                        </p>
+                        <button className="btn-link">레시피 보기</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="total-price-section">
+                  <div className="total-price-flex">
+                    <span className="total-label">총 구매 금액</span>
+                    <span className="total-amount">
+                      {purchaseHistory
+                        .reduce((sum, p) => sum + (p.purchasePrice || 0), 0)
+                        .toLocaleString()}
+                      원
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -1256,11 +1471,6 @@ export default function MyPage() {
                 placeholder="비밀번호 입력"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handlePasswordConfirm();
-                  }
-                }}
                 className="modal-input"
               />
 
@@ -1285,6 +1495,54 @@ export default function MyPage() {
             </div>
           </div>
         )}
+
+        {/* 충전 모달창 */}
+        {/* {showChargeModal && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h2 className="modal-title">잔액 충전</h2>
+              <div className="modal-balance-section">
+                <p className="modal-label">현재 잔액</p>
+                <p className="modal-balance">
+                  {Number.isFinite(balance) ? balance.toLocaleString() : "0"}원
+                </p>
+              </div>
+              <div className="modal-input-section">
+                <label className="modal-input-label">충전 금액</label>
+                <input
+                  type="number"
+                  value={chargeAmount}
+                  onChange={(e) => setChargeAmount(Number(e.target.value))}
+                  min="1000"
+                  step="1000"
+                  className="modal-input"
+                />
+                <div className="modal-preset-buttons">
+                  {[10000, 30000, 50000, 100000].map((amount) => (
+                    <button
+                      key={amount}
+                      onClick={() => setChargeAmount(amount)}
+                      className="btn-preset"
+                    >
+                      {(amount / 10000).toLocaleString()}만원
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button onClick={handleCharge} className="btn-modal-charge">
+                  충전하기
+                </button>
+                <button
+                  onClick={() => setShowChargeModal(false)}
+                  className="btn-modal-cancel"
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          </div>
+        )} */}
       </div>
     </div>
   );

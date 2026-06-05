@@ -1,5 +1,12 @@
 import { useState, useEffect, useCallback, KeyboardEvent } from "react";
-import { Search, X, Plus, ChefHat, Tag as TagIcon } from "lucide-react";
+import {
+  Search,
+  X,
+  Plus,
+  ChefHat,
+  Tag as TagIcon,
+  Refrigerator,
+} from "lucide-react";
 import RecipeService, { BrowseParams } from "../service/recipeService";
 import { tagService } from "../service/tagService";
 import likeService from "../service/likeService";
@@ -208,13 +215,14 @@ export default function RecipeBrowse() {
                   onClick={() => toggleTag(tag)}
                   className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${selectedTagIds.includes(tag.tagId) ? "bg-orange-600 text-white border-orange-600" : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"}`}
                 >
-                  #{tag.tagName}
+                  {tag.tagName}
                 </button>
               ))}
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1">
+              <Refrigerator className="w-4 h-4 inline mr-1" />
               재료로 찾기
             </label>
             <div className="flex gap-2">

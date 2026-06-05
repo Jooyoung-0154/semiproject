@@ -40,10 +40,6 @@ export const memberService = {
   updateNickname: (id: string, newNickname: string) =>
     api.put(`/member/${id}/nickname`, null, { params: { newNickname } }),
 
-  // 잔액 충전
-  chargeBalance: (id: string, amount: number) =>
-    api.post(`/member/${id}/balance/charge`, null, { params: { amount } }),
-
   // 회원 탈퇴
   deleteMember: (id: string) => api.delete(`/member/${id}`),
 

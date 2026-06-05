@@ -19,6 +19,9 @@ public class PostCommentService {
 		return postMapper.insertPost(post) > 0;
 	}
 
+	public boolean modifyComment(PostComment comment) {
+	    return postMapper.updateComment(comment) > 0;
+	}
 	// 게시글 목록 조회 (최신순)
 	public List<Post> getAllPosts() {
 		List<Post> posts = postMapper.getPostList();
@@ -74,5 +77,6 @@ public class PostCommentService {
 			post.setComments(comments);
 		}
 
+		
 	}
 }
