@@ -53,12 +53,24 @@ public class PostCommentService {
 		return postMapper.updatePost(post) > 0;
 	}
 
-	public boolean removePost(int postId) {
+	public boolean removePost(int postId, String requesterId) {
 		// FK 제약 방지를 위해 댓글 먼저 삭제 후 게시글 삭제
-		postMapper.deleteCommentsByPostId(postId);
-		return postMapper.deletePost(postId) > 0;
-	}
+	    Post post = postMapper.getPostDetail(postId);
 
+	    if (post == null) {
+	        return false;
+	    }
+
+	    boolean isWriter = requesterId != null && requesterId.equals(post.getWriterId());
+	    boolean isAdmin = "admin".equals(requesterId);
+
+	    if (!isWriter && !isAdmin) {
+	        return false;
+	    }
+
+	    postMapper.deleteCommentsByPostId(postId);
+	    return postMapper.deletePost(postId) > 0;
+	}
 	// --- 댓글 관련 서비스 ---
 	public boolean writeComment(PostComment comment) {
 		return postMapper.insertComment(comment) > 0;

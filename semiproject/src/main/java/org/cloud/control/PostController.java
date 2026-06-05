@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
 
+
 @RestController
 @RequestMapping("/api/posts")
 @CrossOrigin(origins = "http://localhost:5173")
@@ -90,11 +91,14 @@ public class PostController {
 
         return postService.modifyPost(post);
     }
-
     @DeleteMapping("/{postId}")
-    public boolean deletePost(@PathVariable int postId) {
-        return postService.removePost(postId);
+    public boolean deletePost(
+            @PathVariable int postId,
+            @RequestParam String requesterId
+    ) {
+        return postService.removePost(postId, requesterId);
     }
+   
 
 	@PostMapping("/comment")
 	public boolean addComment(@RequestBody PostComment comment) {
