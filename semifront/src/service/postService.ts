@@ -43,4 +43,7 @@ export const postService = {
   // 댓글 삭제
   deleteComment: (commentId: number) =>
     api.delete(`/posts/comment/${commentId}`),
+  // 댓글 수정
+  updateComment: (commentId: number, comment: any) =>
+    api.put(`/posts/comment/${commentId}`, comment),
 };

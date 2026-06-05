@@ -14,7 +14,7 @@
 
     <!-- 좋아요 취소 + RECIPE.LIKE_COUNT 감소 -->
     <delete id="deleteLike">
-        DELETE FROM recipe_like
+        DELETE FROM recipe_like 
         WHERE USER_ID = #{userId} AND RECIPE_CODE = #{recipeCode}
     </delete>
 

@@ -9,7 +9,6 @@ import {
   DollarSign,
   Clock,
   ChefHat,
-  Heart,
 } from "lucide-react";
 import "./MyPage.css";
 import {
@@ -67,26 +66,11 @@ export default function MyPage() {
   const [newPostContent, setNewPostContent] = useState("");
   const [newPostImage, setNewPostImage] = useState<File | null>(null);
   const [newPostImagePreview, setNewPostImagePreview] = useState<string>("");
-  const [editingPostId, setEditingPostId] = useState<number | null>(null);
-  const [editingPostImg, setEditingPostImg] = useState<string>("");
   const [isPostCreateMode, setIsPostCreateMode] = useState(false);
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
   const [commentInputs, setCommentInputs] = useState<Record<number, string>>(
     {},
   );
-
-  const [showCommentFormByPostId, setShowCommentFormByPostId] = useState<
-    Record<number, boolean>
-  >({});
-
-  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
-  const [editingCommentContent, setEditingCommentContent] = useState("");
-
-  const [likedPostIds, setLikedPostIds] = useState<Record<number, boolean>>({});
-  const [localLikeCounts, setLocalLikeCounts] = useState<
-    Record<number, number>
-  >({});
-
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const currentUserId = authUser?.id ?? "";
@@ -475,23 +459,41 @@ export default function MyPage() {
       alert("게시글 내용을 입력해주세요.");
       return;
     }
+
     try {
-      const formData = new FormData();
-      formData.append("writerId", currentUserId);
-      formData.append("content", content);
-
+      ``;
+      let response;
       if (newPostImage) {
+        const formData = new FormData();
+        formData.append("writerId", currentUserId);
+        formData.append("content", content);
+        formData.append("regDate", new Date().toISOString().slice(0, 10));
+        formData.append("likeCount", "0");
         formData.append("image", newPostImage);
-      }
-
-      if (editingPostId !== null) {
-        await postService.modifyWithImage(editingPostId, formData);
-        alert("게시글이 수정되었습니다.");
+        response = await postService.writeWithImage(formData);
       } else {
-        await postService.writeWithImage(formData);
-        alert("게시글이 작성되었습니다.");
+        const payload: Post = {
+          postId: 0,
+          writerId: currentUserId,
+          content,
+          postImg: "",
+          regDate: new Date().toISOString().slice(0, 10),
+          likeCount: 0,
+          comments: [],
+        };
+        response = await postService.write(payload);
       }
 
+      const createdPost = response.data as Post;
+      if (createdPost) {
+        setPostList((prev) => [createdPost, ...prev]);
+        if (user && user.id === currentUserId) {
+          setUser({
+            ...user,
+            myPosts: [createdPost, ...(user.myPosts ?? [])],
+          });
+        }
+      }
       clearPostForm();
       setIsPostCreateMode(false);
       await fetchPosts();
@@ -501,14 +503,10 @@ export default function MyPage() {
     }
   };
 
-  const handleEditPost = (post: Post) => {
-    setEditingPostId(post.postId);
-    setNewPostContent(post.content ?? "");
-    setEditingPostImg(post.postImg ?? "");
-    setNewPostImage(null);
-    setNewPostImagePreview("");
-    setIsPostCreateMode(true);
+  const handleEditPost = (postId: number) => {
+    alert(`게시글 ${postId} 수정 기능을 연결해주세요.`);
   };
+
   const handleDeletePost = async (postId: number) => {
     const isConfirmed = window.confirm("정말 이 게시글을 삭제하시겠습니까?");
     if (!isConfirmed) return;

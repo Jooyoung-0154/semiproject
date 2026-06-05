@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -50,9 +51,12 @@ public class PostController {
 		return postService.writePost(post);
 	}
 
-	@PostMapping
-	public boolean write(@ModelAttribute Post post,
-			@RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
+	
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public boolean write(
+	        @ModelAttribute Post post,
+	        @RequestParam(value = "image", required = false) MultipartFile image
+	) throws IOException {
 
 		if (image != null && !image.isEmpty()) {
 			String savedFileName = saveImage(image);
@@ -70,13 +74,13 @@ public class PostController {
         return postService.modifyPost(post);
     }
 
-    @PutMapping("/{postId}/image")
+    @PutMapping(value = "/{postId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public boolean modifyWithImage(
             @PathVariable int postId,
             @ModelAttribute Post post,
             @RequestParam(value = "image", required = false) MultipartFile image
+            
     ) throws IOException {
-
         post.setPostId(postId);
 
         if (image != null && !image.isEmpty()) {
@@ -101,7 +105,15 @@ public class PostController {
 	public boolean deleteComment(@PathVariable int commentId) {
 		return postService.removeComment(commentId);
 	}
-
+	@PutMapping("/comment/{commentId}")
+	public boolean updateComment(
+	        @PathVariable int commentId,
+	        @RequestBody PostComment comment
+	) {
+	    comment.setCommentId(commentId);
+	    return postService.modifyComment(comment);
+	}
+	
 	private String saveImage(MultipartFile image) throws IOException {
         File folder = new File(uploadPath);
 
