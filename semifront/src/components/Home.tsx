@@ -21,10 +21,15 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    tagService.getAllTags().then((res) => setTags(res.data)).catch(() => setTags([]));
+    tagService
+      .getAllTags()
+      .then((res) => setTags(res.data))
+      .catch(() => setTags([]));
   }, []);
 
-  useEffect(() => { fetchRecipes(); }, [selectedTagId]);
+  useEffect(() => {
+    fetchRecipes();
+  }, [selectedTagId]);
 
   const fetchRecipes = async (name?: string) => {
     setIsLoading(true);
@@ -40,7 +45,10 @@ export default function Home() {
         try {
           const likedIds = await likeService.getMyLikes(user.id);
           const likedSet = new Set(likedIds);
-          loaded = loaded.map((r) => ({ ...r, liked: likedSet.has(r.recipeId) }));
+          loaded = loaded.map((r) => ({
+            ...r,
+            liked: likedSet.has(r.recipeId),
+          }));
         } catch {}
       }
       setRecipes(loaded);
@@ -52,55 +60,77 @@ export default function Home() {
   };
 
   const handleSearch = () => fetchRecipes(nameSearch);
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter") handleSearch(); };
-  const handleTagClick = (tagId: number | null) => { setSelectedTagId(tagId); setNameSearch(""); };
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleSearch();
+  };
+  const handleTagClick = (tagId: number | null) => {
+    setSelectedTagId(tagId);
+    setNameSearch("");
+  };
 
   return (
     <div className="space-y-10">
       <section
         className="relative h-72 md:h-96 rounded-2xl overflow-hidden shadow-lg"
-        style={{ backgroundImage: `url('${BG_URL}')`, backgroundSize: "cover", backgroundPosition: "center" }}
+        style={{
+          backgroundImage: `url('${BG_URL}')`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/60" />
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4">
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-3 drop-shadow-lg">오늘 뭐 먹을까?</h1>
-          <p className="text-lg md:text-xl text-white/90 drop-shadow mb-6">다양한 레시피를 검색하고 나만의 요리를 공유해보세요</p>
-          <button onClick={() => navigate("/browse")} className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full shadow-lg transition-all active:scale-95 text-base">
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-3 drop-shadow-lg">
+            오늘 뭐 먹을까?
+          </h1>
+          <p className="text-lg md:text-xl text-white/90 drop-shadow mb-6">
+            다양한 레시피를 검색하고 나만의 요리를 공유해보세요
+          </p>
+          <button
+            onClick={() => navigate("/browse")}
+            className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full shadow-lg transition-all active:scale-95 text-base"
+          >
             레시피 둘러보기 &rarr;
           </button>
         </div>
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold text-gray-800 mb-5">태그별 추천 레시피</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-5">
+          태그별 추천 레시피
+        </h2>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-2 flex-wrap">
-            <button onClick={() => handleTagClick(null)} className={`px-5 py-2 rounded-full text-sm font-semibold transition-all border ${selectedTagId === null ? "bg-orange-500 text-white border-orange-500 shadow" : "bg-white text-gray-600 border-gray-200 hover:border-orange-400 hover:text-orange-500"}`}>
+            <button
+              onClick={() => handleTagClick(null)}
+              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all border ${selectedTagId === null ? "bg-orange-500 text-white border-orange-500 shadow" : "bg-white text-gray-600 border-gray-200 hover:border-orange-400 hover:text-orange-500"}`}
+            >
               전체
             </button>
             {tags.map((tag) => (
-              <button key={tag.tagId} onClick={() => handleTagClick(tag.tagId)} className={`px-5 py-2 rounded-full text-sm font-semibold transition-all border ${selectedTagId === tag.tagId ? "bg-orange-500 text-white border-orange-500 shadow" : "bg-white text-gray-600 border-gray-200 hover:border-orange-400 hover:text-orange-500"}`}>
+              <button
+                key={tag.tagId}
+                onClick={() => handleTagClick(tag.tagId)}
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all border ${selectedTagId === tag.tagId ? "bg-orange-500 text-white border-orange-500 shadow" : "bg-white text-gray-600 border-gray-200 hover:border-orange-400 hover:text-orange-500"}`}
+              >
                 {tag.tagName}
               </button>
             ))}
-          </div>
-          <div className="flex items-center gap-2 min-w-[240px]">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input type="text" value={nameSearch} onChange={(e) => setNameSearch(e.target.value)} onKeyDown={handleKeyDown} placeholder="레시피 검색..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 bg-white shadow-sm" />
-            </div>
-            <button onClick={handleSearch} className="p-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow transition-colors">
-              <Search className="w-4 h-4" />
-            </button>
           </div>
         </div>
 
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl shadow animate-pulse overflow-hidden">
+              <div
+                key={i}
+                className="bg-white rounded-2xl shadow animate-pulse overflow-hidden"
+              >
                 <div className="h-52 bg-gray-200" />
-                <div className="p-5 space-y-2"><div className="h-4 bg-gray-200 rounded w-3/4" /><div className="h-3 bg-gray-100 rounded w-1/2" /></div>
+                <div className="p-5 space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  <div className="h-3 bg-gray-100 rounded w-1/2" />
+                </div>
               </div>
             ))}
           </div>
@@ -117,7 +147,11 @@ export default function Home() {
                 recipe={recipe}
                 userId={user?.id}
                 onLikeChange={(recipeId, liked, likeCount) =>
-                  setRecipes((prev) => prev.map((r) => r.recipeId === recipeId ? { ...r, liked, likeCount } : r))
+                  setRecipes((prev) =>
+                    prev.map((r) =>
+                      r.recipeId === recipeId ? { ...r, liked, likeCount } : r,
+                    ),
+                  )
                 }
               />
             ))}
@@ -126,7 +160,10 @@ export default function Home() {
 
         {recipes.length > 0 && (
           <div className="flex justify-center mt-8">
-            <button onClick={() => navigate("/browse")} className="px-8 py-3 border-2 border-orange-500 text-orange-500 font-bold rounded-full hover:bg-orange-500 hover:text-white transition-all active:scale-95">
+            <button
+              onClick={() => navigate("/browse")}
+              className="px-8 py-3 border-2 border-orange-500 text-orange-500 font-bold rounded-full hover:bg-orange-500 hover:text-white transition-all active:scale-95"
+            >
               더 많은 레시피 보기
             </button>
           </div>
