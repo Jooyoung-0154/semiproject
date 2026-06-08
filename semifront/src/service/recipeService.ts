@@ -5,6 +5,7 @@ export interface BrowseParams {
   tagIds?: number[];
   level?: string;
   ingredients?: string[];
+  sortType?: string;
   page?: number;
   size?: number;
 }
@@ -27,6 +28,7 @@ const RecipeService = {
         ingredients: params.ingredients?.length
           ? params.ingredients.join(",")
           : undefined,
+        sortType: params.sortType || "all",
         page: params.page || 1,
         size: params.size || 12,
       },
@@ -63,13 +65,17 @@ const RecipeService = {
   },
 
   // 2-1. 작성자 ID로 레시피 목록 조회 (MyPage 전용)
-  getByWriter: async (writerId: string): Promise<import("../types/type").Recipe_Info[]> => {
+  getByWriter: async (
+    writerId: string,
+  ): Promise<import("../types/type").Recipe_Info[]> => {
     const response = await api.get(`/recipe/by-writer/${writerId}`);
     return response.data;
   },
 
   // 3. 레시피 단건 상세 조회
-  getById: async (recipeId: string): Promise<import("../types/type").Recipe> => {
+  getById: async (
+    recipeId: string,
+  ): Promise<import("../types/type").Recipe> => {
     const response = await api.get(`/recipe/${recipeId}`);
     return response.data;
   },
