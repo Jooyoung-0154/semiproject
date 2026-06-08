@@ -31,7 +31,7 @@
 
     <!-- 레시피 수정 시 기존 태그 관계 끊기 -->
     <delete id="deleteRecipeTags">
-        DELETE FROM recipe_tag WHERE RECIPE_ID = #{recipeId}
+        DELETE FROM recipe_tag WHERE RECIPE_ID = #{RECIPE_ID}
     </delete>
 
     <!-- 레시피 상세 조회 시 태그 정보 가져오기 (JOIN 활용) -->

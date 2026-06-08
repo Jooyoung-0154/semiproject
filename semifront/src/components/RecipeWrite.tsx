@@ -99,10 +99,17 @@ export default function RecipeWrite() {
       .finally(() => setIsLoadingEdit(false));
   }, [editRecipeId]);
 
+  const MAX_TAGS = 3;
+
   const toggleTag = (tagId: number) => {
-    setSelectedTagIds((prev) =>
-      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
-    );
+    setSelectedTagIds((prev) => {
+      if (prev.includes(tagId)) return prev.filter((id) => id !== tagId);
+      if (prev.length >= MAX_TAGS) {
+        alert(`태그는 최대 ${MAX_TAGS}개까지 선택할 수 있습니다.`);
+        return prev;
+      }
+      return [...prev, tagId];
+    });
   };
 
   // 재료 헬퍼
@@ -545,25 +552,37 @@ export default function RecipeWrite() {
                 </span>
               )}
             </h2>
-            <p className="text-sm text-gray-500">레시피에 해당하는 태그를 선택하세요 (복수 선택 가능)</p>
+            <p className="text-sm text-gray-500">
+              레시피에 해당하는 태그를 선택하세요{" "}
+              <span className={selectedTagIds.length >= MAX_TAGS ? "text-orange-500 font-semibold" : ""}>
+                ({selectedTagIds.length}/{MAX_TAGS})
+              </span>
+            </p>
             {allTags.length === 0 ? (
               <p className="text-sm text-gray-400 py-2">등록된 태그가 없습니다. 관리자 페이지에서 태그를 먼저 추가해주세요.</p>
             ) : (
               <div className="flex flex-wrap gap-2">
-                {allTags.map((tag) => (
+                {allTags.map((tag) => {
+                  const isSelected = selectedTagIds.includes(tag.tagId);
+                  const isDisabled = !isSelected && selectedTagIds.length >= MAX_TAGS;
+                  return (
                   <button
                     key={tag.tagId}
                     type="button"
                     onClick={() => toggleTag(tag.tagId)}
+                    disabled={isDisabled}
                     className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all ${
-                      selectedTagIds.includes(tag.tagId)
+                      isSelected
                         ? "bg-orange-500 text-white border-orange-500 shadow"
-                        : "bg-white text-gray-600 border-gray-300 hover:border-orange-400 hover:text-orange-500"
+                        : isDisabled
+                          ? "bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed"
+                          : "bg-white text-gray-600 border-gray-300 hover:border-orange-400 hover:text-orange-500"
                     }`}
                   >
                     {tag.tagName}
                   </button>
-                ))}
+                  );
+                  })}
               </div>
             )}
             {selectedTagIds.length > 0 && (
