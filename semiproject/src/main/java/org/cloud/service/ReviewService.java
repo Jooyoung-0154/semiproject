@@ -13,8 +13,9 @@ public class ReviewService {
     @Autowired
     private ReviewMapper reviewMapper;
 
-    public boolean writeReview(Review review) {
-        return reviewMapper.insertReview(review) > 0;
+    public int writeReview(Review review) {
+        reviewMapper.insertReview(review);
+        return review.getReviewId();
     }
 
     public boolean modifyReview(Review review) {

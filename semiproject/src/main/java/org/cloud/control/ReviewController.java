@@ -14,9 +14,9 @@ public class ReviewController {
     @Autowired
     private ReviewService reviewService;
 
-    // 1. 리뷰 작성
+    // 1. 리뷰 작성 (생성된 reviewId 반환)
     @PostMapping("")
-    public boolean write(@RequestBody Review review) {
+    public int write(@RequestBody Review review) {
         return reviewService.writeReview(review);
     }
 

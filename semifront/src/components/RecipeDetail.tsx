@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import {
   Heart, ThumbsUp, ThumbsDown, Clock, ChefHat, Users,
-  Flame, User, ArrowLeft, ChevronLeft, ChevronRight
+  Flame, User, ArrowLeft, ChevronLeft, ChevronRight, ImagePlus, X
 } from "lucide-react";
 import RecipeService from "../service/recipeService";
 import { reviewService } from "../service/reviewService";
@@ -10,7 +10,7 @@ import { memberService } from "../service/memberService";
 import likeService from "../service/likeService";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
-import { Recipe, Irdnt_Info, Review, Member, RECIPE_IMAGE } from "../types/type";
+import { Recipe, Irdnt_Info, Review, Member, RECIPE_IMAGE, ReviewImage } from "../types/type";
 
 const BASE_URL = "http://localhost:8080";
 
@@ -31,6 +31,10 @@ export default function RecipeDetail() {
   const [reviewContent, setReviewContent] = useState("");
   const [reviewThumbsUp, setReviewThumbsUp] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reviewImages, setReviewImages] = useState<ReviewImage[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const REVIEWS_PER_PAGE = 5;
   const [reviewerProfiles, setReviewerProfiles] = useState<Map<string, Member>>(new Map());
@@ -53,15 +57,18 @@ export default function RecipeDetail() {
     const load = async () => {
       setIsLoading(true);
       try {
-        const [recipeData, reviewRes, imagesRes] = await Promise.all([
+        const [recipeData, reviewRes, imagesRes, reviewImagesRes] = await Promise.all([
           RecipeService.getById(recipeId),
           reviewService.getRecipeReviews(recipeId),
           api.get(`/recipe-images/${recipeId}`),
+          reviewService.getRecipeReviewImages(recipeId),
         ]);
+        RecipeService.incrementHit(recipeId).catch(() => {});
         setRecipe(recipeData);
         setLikeCount(recipeData.recipeInfo?.likeCount ?? 0);
         setReviews(reviewRes.data);
         setImages(imagesRes.data ?? []);
+        setReviewImages(reviewImagesRes.data ?? []);
         setCurrentImageIndex(0);
         setReviewPage(1);
         loadReviewerProfiles(reviewRes.data);
@@ -93,11 +100,28 @@ export default function RecipeDetail() {
     setLikeCount(result.likeCount);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    const newFiles = [...selectedFiles, ...files].slice(0, 5);
+    setSelectedFiles(newFiles);
+    const urls = newFiles.map((f) => URL.createObjectURL(f));
+    previewUrls.forEach((u) => URL.revokeObjectURL(u));
+    setPreviewUrls(urls);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removePreview = (idx: number) => {
+    URL.revokeObjectURL(previewUrls[idx]);
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== idx));
+    setPreviewUrls((prev) => prev.filter((_, i) => i !== idx));
+  };
+
   const handleReviewSubmit = async () => {
     if (!user?.id || !recipeId || !reviewContent.trim()) return;
     setIsSubmitting(true);
     try {
-      await reviewService.write({
+      const res = await reviewService.write({
         reviewId: 0,
         recipeCode: recipeId,
         id: user.id,
@@ -106,9 +130,20 @@ export default function RecipeDetail() {
         thumbsUp: reviewThumbsUp,
         regDate: "",
       });
+      const newReviewId = res.data as number;
+      if (selectedFiles.length > 0 && newReviewId) {
+        await reviewService.uploadImages(newReviewId, selectedFiles);
+      }
       setReviewContent("");
-      const updated = await reviewService.getRecipeReviews(recipeId);
+      setSelectedFiles([]);
+      previewUrls.forEach((u) => URL.revokeObjectURL(u));
+      setPreviewUrls([]);
+      const [updated, updatedImages] = await Promise.all([
+        reviewService.getRecipeReviews(recipeId),
+        reviewService.getRecipeReviewImages(recipeId),
+      ]);
       setReviews(updated.data);
+      setReviewImages(updatedImages.data ?? []);
       setReviewPage(1);
       loadReviewerProfiles(updated.data);
     } finally {
@@ -419,6 +454,25 @@ export default function RecipeDetail() {
           </div>
         )}
 
+        {/* 후기 사진 모음 */}
+        {reviewImages.length > 0 && (
+          <div className="mb-5 bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+            <p className="text-sm font-semibold text-gray-600 mb-3">후기 사진 ({reviewImages.length})</p>
+            <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "thin" }}>
+              {reviewImages.map((img) => (
+                <div key={img.imageId} className="shrink-0 w-28 h-28 rounded-xl overflow-hidden bg-gray-100">
+                  <img
+                    src={`${BASE_URL}${img.imageUrl}`}
+                    alt="후기 사진"
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* 후기 목록 */}
         <div className="space-y-3 mb-4">
           {reviews.length === 0 ? (
@@ -477,6 +531,24 @@ export default function RecipeDetail() {
                       {review.regDate ? review.regDate.slice(0, 10) : ""}
                     </span>
                   </div>
+                  
+                  {(() => {
+                    const imgs = reviewImages.filter((img) => img.reviewId === review.reviewId);
+                    return imgs.length > 0 ? (
+                      <div className="flex gap-2 mt-3 pl-12 overflow-x-auto pb-1" style={{ scrollbarWidth: "thin" }}>
+                        {imgs.map((img) => (
+                          <div key={img.imageId} className="shrink-0 w-40 h-40 rounded-lg overflow-hidden bg-gray-100">
+                            <img
+                              src={`${BASE_URL}${img.imageUrl}`}
+                              alt="후기 사진"
+                              className="w-full h-full object-cover"
+                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : null;
+                  })()}
                   <p className="text-gray-600 leading-relaxed text-sm mt-3 pl-12">
                     {review.reviewContent}
                   </p>
@@ -564,7 +636,44 @@ export default function RecipeDetail() {
               placeholder="요리 후기를 남겨주세요..."
               className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-300 h-24"
             />
-            <div className="flex justify-end mt-2">
+
+            {/* 이미지 미리보기 */}
+            {previewUrls.length > 0 && (
+              <div className="flex gap-2 mt-2 flex-wrap">
+                {previewUrls.map((url, idx) => (
+                  <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                    <img src={url} alt={`preview-${idx}`} className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => removePreview(idx)}
+                      className="absolute top-0.5 right-0.5 bg-black bg-opacity-50 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-opacity-70 transition-all"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={selectedFiles.length >= 5}
+                  className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-full text-xs text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >
+                  <ImagePlus className="w-3.5 h-3.5" />
+                  사진 추가 {selectedFiles.length > 0 && `(${selectedFiles.length}/5)`}
+                </button>
+              </div>
               <button
                 onClick={handleReviewSubmit}
                 disabled={isSubmitting || !reviewContent.trim()}

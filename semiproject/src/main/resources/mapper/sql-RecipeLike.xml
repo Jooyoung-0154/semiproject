@@ -68,14 +68,16 @@
 		r.LIKE_COUNT AS likeCount,
 		r.PRICE AS price,
 		r.WRITER_ID AS writerId,
+		m.NICKNAME AS writerNickname,
+		m.PROFILE_IMG AS writerProfileImg,
 		(SELECT img_url
 		FROM recipe_image
 		WHERE recipe_code = r.RECIPE_ID
 		ORDER BY sort_order ASC
 		LIMIT 1) AS thumbImgUrl
 		FROM recipe_like rl
-		JOIN RECIPE r
-		ON rl.RECIPE_CODE = r.RECIPE_ID
+		JOIN RECIPE r ON rl.RECIPE_CODE = r.RECIPE_ID
+		LEFT JOIN member m ON r.WRITER_ID = m.ID
 		WHERE rl.USER_ID = #{userId}
 		ORDER BY r.RECIPE_ID DESC
 	</select>

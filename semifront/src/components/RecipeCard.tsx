@@ -66,22 +66,22 @@ export default function RecipeCard({
 
         {/* 작성자 오버레이 (이미지 왼쪽 상단) */}
         {hasAuthor && (
-          <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-black/65 px-2 py-1 rounded-full">
+          <div className="absolute top-2 left-2 flex items-center gap-2 bg-black/65 px-2 py-1 rounded-full">
             {profileImgSrc ? (
               <img
                 src={profileImgSrc}
                 alt={recipe.writerNickname}
-                className="w-5 h-5 rounded-full object-cover border border-white/50 shrink-0"
+                className="w-7 h-7 rounded-full object-cover border border-white/50 shrink-0"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).style.display = "none";
                 }}
               />
             ) : (
-              <div className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
-                <User className="w-3 h-3 text-orange-400" />
+              <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                <User className="w-3.5 h-3.5 text-orange-400" />
               </div>
             )}
-            <span className="text-white text-xs font-medium leading-none">
+            <span className="text-white text-sm font-medium leading-none">
               {recipe.writerNickname ?? recipe.writerId}
             </span>
           </div>
@@ -128,25 +128,25 @@ export default function RecipeCard({
         )}
 
         {/* 뱃지 */}
-        <div className="flex items-center gap-1.5 text-xs flex-wrap">
-          {recipe.levelNm && (
-            <span className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full font-medium ${levelColor}`}>
-              <ChefHat className="w-3 h-3" />
-              {recipe.levelNm}
-            </span>
-          )}
-          {recipe.cookingTime && (
-            <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium">
-              <Clock className="w-3 h-3" />
-              {recipe.cookingTime}
-            </span>
-          )}
-          {!!recipe.hit && (
-            <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium">
-              <Eye className="w-3 h-3" />
-              {recipe.hit.toLocaleString()}
-            </span>
-          )}
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {recipe.levelNm && (
+              <span className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full font-medium ${levelColor}`}>
+                <ChefHat className="w-3 h-3" />
+                {recipe.levelNm}
+              </span>
+            )}
+            {recipe.cookingTime && (
+              <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium">
+                <Clock className="w-3 h-3" />
+                {recipe.cookingTime}
+              </span>
+            )}
+          </div>
+          <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium shrink-0">
+            <Eye className="w-3 h-3" />
+            {(recipe.hit ?? 0).toLocaleString()}
+          </span>
         </div>
 
         {/* 하단 행: 태그 왼쪽 + 수정·삭제 오른쪽 */}

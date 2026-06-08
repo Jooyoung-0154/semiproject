@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.cloud.mapper.ReviewMapper">
 
-    <insert id="insertReview">
+    <insert id="insertReview" useGeneratedKeys="true" keyProperty="reviewId">
         INSERT INTO review (RECIPE_CODE, ID, REVIEW_CONTENT, THUMBS_UP)
         VALUES (#{recipeCode}, #{id}, #{reviewContent}, #{thumbsUp})
     </insert>
