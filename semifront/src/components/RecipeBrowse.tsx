@@ -124,6 +124,16 @@ export default function RecipeBrowse() {
         t.tagName.toLowerCase().includes(tagInput.trim().toLowerCase()),
       )
     : tags;
+  const handleDeleteRecipe = async (recipeId: string) => {
+    if (!window.confirm("정말 이 레시피를 삭제하시겠습니까?")) return;
+    const ok = await RecipeService.deleteRecipe(recipeId);
+    if (ok) {
+      setRecipes((prev) => prev.filter((r) => r.recipeId !== recipeId));
+    } else {
+      alert("삭제에 실패했습니다.");
+    }
+  };
+
   const resetFilters = () => {
     setNameInput("");
     setDebouncedName("");
@@ -323,6 +333,7 @@ export default function RecipeBrowse() {
                   ),
                 )
               }
+              onDelete={user?.id === "Admin" ? handleDeleteRecipe : undefined}
             />
           ))}
         </div>

@@ -76,6 +76,8 @@ export default function MyPage() {
   const [likedRecipesLoading, setLikedRecipesLoading] = useState(false);
   const [likedPage, setLikedPage] = useState(1);
   const LIKED_PAGE_SIZE = 4;
+  const [myRecipesPage, setMyRecipesPage] = useState(1);
+  const MY_RECIPES_PAGE_SIZE = 4;
   const { userId } = useParams<{ userId: string }>();
   const currentUserId = authUser?.id ?? "";
   const displayUser = user ?? authUser;
@@ -610,6 +612,12 @@ export default function MyPage() {
       alert("댓글 삭제에 실패했습니다. 다시 시도해주세요.");
     }
   };
+  const myRecipesTotalPages = Math.ceil(myRecipes.length / MY_RECIPES_PAGE_SIZE);
+  const pagedMyRecipes = myRecipes.slice(
+    (myRecipesPage - 1) * MY_RECIPES_PAGE_SIZE,
+    myRecipesPage * MY_RECIPES_PAGE_SIZE,
+  );
+
   const likedTotalPages = Math.ceil(likedRecipes.length / LIKED_PAGE_SIZE);
 
   const pagedLikedRecipes = likedRecipes.slice(
@@ -687,7 +695,7 @@ export default function MyPage() {
                 게시판
               </button>
               <button
-                onClick={() => setActiveTab("recipes")}
+                onClick={() => { setActiveTab("recipes"); setMyRecipesPage(1); }}
                 className={`tab-btn ${activeTab === "recipes" ? "active" : ""}`}
               >
                 작성 레시피
@@ -827,7 +835,7 @@ export default function MyPage() {
                           </div>
 
                           {(post.writerId === currentUserId ||
-                            currentUserId === "admin") && (
+                            currentUserId === "Admin") && (
                             <div className="post-item-actions flex items-start justify-end gap-2 min-w-[120px]">
                               {post.writerId === currentUserId && (
                                 <button
@@ -840,7 +848,7 @@ export default function MyPage() {
                               )}
 
                               {(post.writerId === currentUserId ||
-                                currentUserId === "admin") && (
+                                currentUserId === "Admin") && (
                                 <button
                                   type="button"
                                   onClick={() => handleDeletePost(post.postId)}
@@ -1023,20 +1031,70 @@ export default function MyPage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {myRecipes.map((recipe) => (
-                      <RecipeCard
-                        key={recipe.recipeId}
-                        recipe={recipe}
-                        onDelete={isOwnPage ? handleDeleteRecipe : undefined}
-                        onEdit={
-                          isOwnPage
-                            ? (id) => navigate(`/write?edit=${id}`)
-                            : undefined
-                        }
-                      />
-                    ))}
-                  </div>
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {pagedMyRecipes.map((recipe) => (
+                        <RecipeCard
+                          key={recipe.recipeId}
+                          recipe={recipe}
+                          onDelete={isOwnPage || currentUserId === "Admin" ? handleDeleteRecipe : undefined}
+                          onEdit={
+                            isOwnPage
+                              ? (id) => navigate(`/write?edit=${id}`)
+                              : undefined
+                          }
+                        />
+                      ))}
+                    </div>
+
+                    {/* 페이지네이션 */}
+                    {myRecipesTotalPages > 1 && (
+                      <div className="flex items-center justify-center gap-1 mt-8">
+                        <button
+                          onClick={() => setMyRecipesPage((prev) => Math.max(prev - 1, 1))}
+                          disabled={myRecipesPage === 1}
+                          className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+
+                        {Array.from({ length: myRecipesTotalPages }, (_, i) => i + 1)
+                          .filter((p) => p === 1 || p === myRecipesTotalPages || Math.abs(p - myRecipesPage) <= 1)
+                          .reduce<(number | "...")[]>((acc, p, idx, arr) => {
+                            if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push("...");
+                            acc.push(p);
+                            return acc;
+                          }, [])
+                          .map((item, idx) =>
+                            item === "..." ? (
+                              <span key={`ellipsis-${idx}`} className="w-8 h-8 flex items-center justify-center text-gray-400 text-sm">
+                                …
+                              </span>
+                            ) : (
+                              <button
+                                key={item}
+                                onClick={() => setMyRecipesPage(item as number)}
+                                className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-all ${
+                                  myRecipesPage === item
+                                    ? "bg-orange-500 text-white"
+                                    : "border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-500"
+                                }`}
+                              >
+                                {item}
+                              </button>
+                            )
+                          )}
+
+                        <button
+                          onClick={() => setMyRecipesPage((prev) => Math.min(prev + 1, myRecipesTotalPages))}
+                          disabled={myRecipesPage === myRecipesTotalPages}
+                          className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -1081,7 +1139,7 @@ export default function MyPage() {
                               )
                             }
                             onDelete={
-                              isMyRecipe ? handleDeleteRecipe : undefined
+                              isMyRecipe || currentUserId === "Admin" ? handleDeleteRecipe : undefined
                             }
                             onEdit={
                               isMyRecipe
