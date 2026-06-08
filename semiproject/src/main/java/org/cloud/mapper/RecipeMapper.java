@@ -43,4 +43,6 @@ public interface RecipeMapper {
     int deleteRecipe(String recipeId);
 
     int countRecipeById(String writerId);
+
+    int incrementHit(@Param("recipeId") String recipeId);
 }

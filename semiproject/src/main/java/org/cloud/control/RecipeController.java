@@ -111,4 +111,10 @@ public class RecipeController {
         return recipeService.removeRecipe(recipeId);
     }
 
+    // 조회수 증가: PUT /api/recipe/{recipeId}/hit
+    @PutMapping("/{recipeId}/hit")
+    public void incrementHit(@PathVariable String recipeId) {
+        recipeService.incrementHit(recipeId);
+    }
+
 }

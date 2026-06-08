@@ -130,6 +130,13 @@ export interface RecipeTag {
   tagId: number; // 태그 ID
 }
 
+/* 리뷰 이미지 */
+export interface ReviewImage {
+  imageId: number;
+  reviewId: number;
+  imageUrl: string;
+}
+
 /* 레시피 리뷰*/
 export interface Review {
   reviewId: number; // 리뷰 ID

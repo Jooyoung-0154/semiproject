@@ -84,12 +84,15 @@ const RecipeService = {
   deleteRecipe: async (recipeId: string) => {
     try {
       const response = await api.delete(`/recipe/${recipeId}`);
-      return response.data; // true/false 반환
+      return response.data;
     } catch (error) {
       console.error("삭제 중 오류 발생:", error);
       throw error;
     }
   },
+
+  // 6. 조회수 증가
+  incrementHit: (recipeId: string) => api.put(`/recipe/${recipeId}/hit`),
 };
 
 export default RecipeService;

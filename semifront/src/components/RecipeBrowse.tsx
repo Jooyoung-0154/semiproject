@@ -6,6 +6,8 @@ import {
   ChefHat,
   Tag as TagIcon,
   Refrigerator,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import RecipeService, { BrowseParams } from "../service/recipeService";
 import { tagService } from "../service/tagService";
@@ -327,20 +329,23 @@ export default function RecipeBrowse() {
       )}
 
       {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2 mt-10">
-          {page > 1 && (
-            <button
-              onClick={() => doSearch(page - 1)}
-              className="px-4 py-2 rounded-lg border text-sm font-medium hover:bg-gray-50 transition-colors"
-            >
-              이전
-            </button>
-          )}
+        <div className="flex items-center justify-center gap-1 mt-10">
+          <button
+            onClick={() => doSearch(page - 1)}
+            disabled={page === 1}
+            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
           {getPageRange().map((p) => (
             <button
               key={p}
               onClick={() => doSearch(p)}
-              className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${p === page ? "bg-orange-600 text-white shadow" : "border hover:bg-gray-50 text-gray-700"}`}
+              className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-all ${
+                p === page
+                  ? "bg-orange-500 text-white"
+                  : "border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-500"
+              }`}
             >
               {p}
             </button>
@@ -348,9 +353,9 @@ export default function RecipeBrowse() {
           <button
             onClick={() => doSearch(page + 1)}
             disabled={page >= totalPages}
-            className="px-4 py-2 rounded-lg border text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
           >
-            다음
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       )}

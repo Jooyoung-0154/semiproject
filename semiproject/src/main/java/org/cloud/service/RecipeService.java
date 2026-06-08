@@ -156,4 +156,9 @@ public class RecipeService {
     public boolean removeRecipe(String recipeId) {
         return recipeMapper.deleteRecipe(recipeId) > 0;
     }
+
+    // 6. 조회수 증가
+    public void incrementHit(String recipeId) {
+        recipeMapper.incrementHit(recipeId);
+    }
 }

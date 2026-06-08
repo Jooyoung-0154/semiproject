@@ -269,4 +269,8 @@
         ORDER BY IRDNT_SN ASC
     </select>
 
+    <update id="incrementHit">
+        UPDATE RECIPE SET HIT = HIT + 1 WHERE RECIPE_ID = #{recipeId}
+    </update>
+
 </mapper>
