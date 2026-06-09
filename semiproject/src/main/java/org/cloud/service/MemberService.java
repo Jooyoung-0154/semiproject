@@ -83,4 +83,8 @@ public class MemberService {
     public boolean updateIntro(String id, String intro) {
         return memberMapper.updateIntro(id, intro) > 0;
     }
+
+    public boolean updateScrapPublic(String id, boolean scrapPublic) {
+        return memberMapper.updateScrapPublic(id, scrapPublic) > 0;
+    }
 }

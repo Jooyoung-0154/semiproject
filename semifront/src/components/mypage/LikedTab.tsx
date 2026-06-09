@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Recipe_Info } from "../../types/type";
+import { Member, Recipe_Info } from "../../types/type";
 import likeService from "../../service/likeService";
 import RecipeService from "../../service/recipeService";
 import RecipeCard from "../RecipeCard";
@@ -11,9 +11,10 @@ const PAGE_SIZE = 4;
 interface LikedTabProps {
   currentUserId: string;
   isOwnPage: boolean;
+  displayUser: Member;
 }
 
-export default function LikedTab({ currentUserId, isOwnPage }: LikedTabProps) {
+export default function LikedTab({ currentUserId, isOwnPage, displayUser }: LikedTabProps) {
   const navigate = useNavigate();
   const [likedRecipes, setLikedRecipes] = useState<Recipe_Info[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,13 +23,13 @@ export default function LikedTab({ currentUserId, isOwnPage }: LikedTabProps) {
   useEffect(() => {
     fetchLikedRecipes();
     setPage(1);
-  }, [currentUserId]);
+  }, [displayUser.id]);
 
   const fetchLikedRecipes = async () => {
-    if (!currentUserId) return;
+    if (!displayUser.id) return;
     setIsLoading(true);
     try {
-      const recipes = await likeService.getMyLikedRecipes(currentUserId);
+      const recipes = await likeService.getMyLikedRecipes(displayUser.id);
       setLikedRecipes(recipes.map(r => ({ ...r, liked: true })));
     } catch (error) {
       console.error("스크랩 레시피 불러오기 실패:", error);

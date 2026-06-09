@@ -63,6 +63,14 @@
 		#{amount} WHERE ID =
 		#{ID}
 	</update>
+	<!-- 스크랩 공개 여부 변경 -->
+	<update id="updateScrapPublic">
+		UPDATE member SET SCRAP_PUBLIC = #{scrapPublic} WHERE ID = #{id}
+	</update>
+
+    <update id="addFollowingCount">
+        UPDATE member SET FOLLOWING_COUNT = FOLLOWING_COUNT + #{amount} WHERE ID = #{ID}
+    </update>
 
 	<update id="addFollowerCount">
 		UPDATE member SET FOLLOWER_COUNT = FOLLOWER_COUNT +
@@ -87,24 +95,23 @@
 	</select>
 
 	<select id="selectMemberById" resultType="org.cloud.dto.Member">
-		SELECT
-		ID as id,
-		PASSWORD as password,
-		BALANCE as balance,
-		NICKNAME as nickname,
-		BIRTH_DATE AS birthDate,
-		GENDER AS gender,
-		PROFILE_IMG as profileImg,
-		INTRO as intro,
-		STATUS AS status,
-		FOLLOWING_COUNT as followingCount,
-		FOLLOWER_COUNT as followerCount
-		FROM
-		member
-		WHERE
-		ID = #{id}
-		AND STATUS =
-		'ACTIVE'
+    SELECT
+        ID as id,
+        PASSWORD as password,
+        BALANCE as balance,
+        NICKNAME as nickname,
+        BIRTH_DATE AS birthDate,
+        GENDER AS gender,
+        PROFILE_IMG as profileImg,
+        INTRO as intro,
+        STATUS AS status,
+        FOLLOWING_COUNT as followingCount,
+        FOLLOWER_COUNT as followerCount,
+        SCRAP_PUBLIC as scrapPublic
+    FROM
+        member
+    WHERE
+        ID = #{id} AND STATUS = 'ACTIVE'
 	</select>
 
 </mapper>

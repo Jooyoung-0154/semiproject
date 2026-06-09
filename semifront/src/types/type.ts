@@ -15,6 +15,7 @@ export interface Member {
   followingCount: number; // 내가 팔로우하는 사람들의 수
   followerCount: number; // 나를 팔로우하는 사람들의 수
   recipeCount?: number; // 작성한 레시피 수
+  scrapPublic?: boolean; // 스크랩 레시피 공개 여부
 }
 
 //방명록
