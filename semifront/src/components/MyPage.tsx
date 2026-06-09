@@ -21,14 +21,17 @@ export default function MyPage() {
 
   const [user, setUser] = useState<Member | null>(authUser);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<"recipes" | "liked" | "posts">("recipes");
+  const [activeTab, setActiveTab] = useState<"recipes" | "liked" | "posts">(
+    "recipes",
+  );
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const currentUserId = authUser?.id ?? "";
-  const displayUser = user ?? authUser;
+  const isOtherUserPage = Boolean(userId && userId !== authUser?.id);
+  const displayUser = user;
   const isOwnPage = Boolean(
     authUser?.id && displayUser?.id && authUser.id === displayUser.id,
   );
@@ -56,7 +59,10 @@ export default function MyPage() {
       }
 
       setUser(authUser);
-      if (!authUser.id) { setIsLoading(false); return; }
+      if (!authUser.id) {
+        setIsLoading(false);
+        return;
+      }
 
       try {
         setIsLoading(true);
@@ -84,7 +90,10 @@ export default function MyPage() {
     if (!currentUserId || !displayUser?.id) return;
     setIsFollowLoading(true);
     try {
-      const payload = { followerId: currentUserId, followingId: displayUser.id };
+      const payload = {
+        followerId: currentUserId,
+        followingId: displayUser.id,
+      };
       if (isFollowing) {
         await socialService.unfollow(payload);
         setIsFollowing(false);
@@ -111,7 +120,8 @@ export default function MyPage() {
     }
   };
 
-  if (isLoading) return <div className="text-center py-8">로딩 중입니다...</div>;
+  if (isLoading)
+    return <div className="text-center py-8">로딩 중입니다...</div>;
   if (!authUser) {
     return (
       <div className="text-center py-12 space-y-4">
@@ -125,7 +135,21 @@ export default function MyPage() {
       </div>
     );
   }
-  if (!displayUser) return <div className="text-center py-8">유저 정보가 없습니다.</div>;
+  if (!displayUser) {
+    return (
+      <div className="text-center py-12 space-y-4">
+        <p className="text-lg font-semibold">
+          탈퇴했거나 존재하지 않는 회원입니다.
+        </p>
+        <button
+          onClick={() => navigate("/")}
+          className="inline-flex items-center justify-center rounded-full bg-orange-600 px-6 py-3 text-white font-semibold hover:bg-orange-700 transition"
+        >
+          메인으로 이동
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="mypage-container">
@@ -146,7 +170,9 @@ export default function MyPage() {
             </div>
             <div>
               <h1 className="profile-name">{displayUser.nickname}</h1>
-              <p className="profile-bio">{displayUser.intro || "아직 등록된 소개글이 없습니다."}</p>
+              <p className="profile-bio">
+                {displayUser.intro || "아직 등록된 소개글이 없습니다."}
+              </p>
               <div className="profile-stats">
                 <span>레시피 {displayUser.recipeCount || 0}개</span>
                 <span>팔로워 {displayUser.followerCount}명</span>
@@ -156,7 +182,10 @@ export default function MyPage() {
           </div>
           <div className="wallet-section">
             {isOwnPage ? (
-              <button onClick={() => setShowPasswordModal(true)} className="btn-charge">
+              <button
+                onClick={() => setShowPasswordModal(true)}
+                className="btn-charge"
+              >
                 <User className="btn-icon" />내 정보
               </button>
             ) : (
@@ -165,7 +194,11 @@ export default function MyPage() {
                 disabled={isFollowLoading}
                 className={isFollowing ? "btn-following" : "btn-follow"}
               >
-                {isFollowLoading ? "처리중..." : isFollowing ? "구독중" : "구독하기"}
+                {isFollowLoading
+                  ? "처리중..."
+                  : isFollowing
+                    ? "구독중"
+                    : "구독하기"}
               </button>
             )}
           </div>
@@ -213,10 +246,7 @@ export default function MyPage() {
               />
             )}
             {activeTab === "liked" && (
-              <LikedTab
-                currentUserId={currentUserId}
-                isOwnPage={isOwnPage}
-              />
+              <LikedTab currentUserId={currentUserId} isOwnPage={isOwnPage} />
             )}
           </div>
 
@@ -243,13 +273,23 @@ export default function MyPage() {
               placeholder="비밀번호 입력"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") handlePasswordConfirm(); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handlePasswordConfirm();
+              }}
               className="modal-input"
             />
             <div className="modal-actions">
-              <button onClick={handlePasswordConfirm} className="btn-modal-charge">확인</button>
               <button
-                onClick={() => { setShowPasswordModal(false); setConfirmPassword(""); }}
+                onClick={handlePasswordConfirm}
+                className="btn-modal-charge"
+              >
+                확인
+              </button>
+              <button
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setConfirmPassword("");
+                }}
                 className="btn-modal-cancel"
               >
                 취소
