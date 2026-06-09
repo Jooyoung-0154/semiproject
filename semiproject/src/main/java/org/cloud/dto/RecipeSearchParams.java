@@ -11,6 +11,7 @@ public class RecipeSearchParams {
     private boolean ingredientAnd = false; // true = AND 조건, false = OR 조건
     private int page = 1;           // 페이지 번호 (1부터 시작)
     private int size = 12;          // 페이지당 개수
+    private String sortType = "all"; // 드롭다운
 
     public String getRecipeNmKo() { return recipeNmKo; }
     public void setRecipeNmKo(String recipeNmKo) { this.recipeNmKo = recipeNmKo; }
@@ -32,6 +33,9 @@ public class RecipeSearchParams {
 
     public int getSize() { return size; }
     public void setSize(int size) { this.size = size; }
+    
+    public String getSortType() { return sortType; }
+    public void setSortType(String sortType) { this.sortType = sortType; }
 
     // MyBatis에서 OFFSET 계산용
     public int getOffset() { return (page - 1) * size; }
