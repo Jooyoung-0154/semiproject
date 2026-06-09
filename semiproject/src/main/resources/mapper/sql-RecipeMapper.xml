@@ -18,11 +18,15 @@
 		r.LIKE_COUNT AS likeCount,
 		r.PRICE AS price,
 		r.WRITER_ID AS writerId,
+		r.CREATED_AT AS createdAt,
 		m.NICKNAME AS writerNickname,
-		m.PROFILE_IMG AS writerProfileImg,
-		(SELECT img_url FROM recipe_image WHERE recipe_code = r.RECIPE_ID
+		m.PROFILE_IMG
+		AS writerProfileImg,
+		(SELECT img_url FROM recipe_image WHERE
+		recipe_code = r.RECIPE_ID
 		ORDER BY
-		sort_order ASC LIMIT 1) AS thumbImgUrl
+		sort_order ASC LIMIT 1) AS
+		thumbImgUrl
 	</sql>
 
 	<select id="selectRecipeList"
@@ -58,31 +62,39 @@
 		parameterType="org.cloud.dto.RecipeSearchParams"
 		resultType="org.cloud.dto.Recipe_Info">
 
-		SELECT DISTINCT
+		SELECT
 		r.RECIPE_ID AS recipeId,
 		r.RECIPE_NM_KO AS recipeNmKo,
-		r.SUMRY AS sumry,
+		r.SUMRY AS
+		sumry,
 		r.NATION_CODE AS nationCode,
 		r.NATION_NM AS nationNm,
-		r.TY_CODE AS tyCode,
+		r.TY_CODE AS
+		tyCode,
 		r.TY_NM AS tyNm,
 		r.COOKING_TIME AS cookingTime,
-		r.CALORIE AS calorie,
+		r.CALORIE AS
+		calorie,
 		r.QNT AS qnt,
 		r.LEVEL_NM AS levelNm,
 		r.HIT AS hit,
-		r.LIKE_COUNT AS likeCount,
+		r.LIKE_COUNT
+		AS likeCount,
 		r.PRICE AS price,
 		r.WRITER_ID AS writerId,
-		m.NICKNAME AS writerNickname,
+		m.NICKNAME AS
+		writerNickname,
 		m.PROFILE_IMG AS writerProfileImg,
-		(SELECT img_url FROM recipe_image WHERE recipe_code = r.RECIPE_ID
+		(SELECT img_url FROM
+		recipe_image WHERE recipe_code = r.RECIPE_ID
 		ORDER BY
-		sort_order ASC LIMIT 1) AS thumbImgUrl
+		sort_order ASC
+		LIMIT 1) AS thumbImgUrl
 
 		FROM RECIPE r
 		LEFT JOIN
-		member m ON r.WRITER_ID = m.ID
+		member m ON r.WRITER_ID =
+		m.ID
 
 		<if test="tagIds != null and tagIds.size() &gt; 0">
 			JOIN RECIPE_TAG rt ON r.recipe_id = rt.recipe_id
@@ -120,7 +132,8 @@
 			<if test="ageGroup != null and ageGroup != 'all'">
 				AND r.WRITER_ID IS NOT NULL
 				AND r.WRITER_ID != ''
-				AND m.BIRTH_DATE IS NOT NULL
+				AND
+				m.BIRTH_DATE IS NOT NULL
 			</if>
 
 			<if test="ageGroup == 'age2030'">
@@ -144,7 +157,7 @@
 
 		<choose>
 			<when test="sortType == 'all'">
-				ORDER BY r.recipe_id DESC
+				ORDER BY r.CREATED_AT DESC, r.RECIPE_ID DESC
 			</when>
 
 			<when test="sortType == 'scrap'">
