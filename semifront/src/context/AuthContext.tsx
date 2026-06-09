@@ -104,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    authService.logout().catch(() => {});
     setUser(null);
     localStorage.removeItem("authUser");
   };

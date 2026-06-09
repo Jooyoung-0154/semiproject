@@ -6,8 +6,7 @@ import { Recipe_Info, Cooking_Info, Irdnt_Info, Tag } from "../types/type";
 import { useAuth } from "../context/AuthContext";
 import { tagService } from "../service/tagService";
 import RecipeService from "../service/recipeService";
-
-const BASE_URL = "http://localhost:8080";
+import { API_BASE_URL } from "../config/api";
 
 export default function RecipeWrite() {
   const navigate = useNavigate();
@@ -290,7 +289,6 @@ export default function RecipeWrite() {
     placeholder: string
   ) => (
     <div className="space-y-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
-      {/* 1. 여기 flex justify-between 때문에 양 끝으로 벌어집니다 */}
       <div className="flex justify-between items-center mb-1">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-sm text-orange-700 bg-orange-50 border border-orange-200 px-3 py-1 rounded-full">
@@ -430,7 +428,7 @@ export default function RecipeWrite() {
             {(existingMainImgUrls.length > 0 || mainPreviews.length > 0) && (
               <div className="grid grid-cols-3 gap-3 mb-3">
                 {[
-                  ...existingMainImgUrls.map((url) => `${BASE_URL}${url}`),
+                  ...existingMainImgUrls.map((url) => `${API_BASE_URL}${url}`),
                   ...mainPreviews,
                 ].map((preview, index) => (
                   <div
@@ -520,7 +518,7 @@ export default function RecipeWrite() {
                   {(stepPreviews[index] || existingStepImgUrls[index]) ? (
                     <div className="relative rounded-md overflow-hidden">
                       <img
-                        src={stepPreviews[index] || `${BASE_URL}${existingStepImgUrls[index]}`}
+                        src={stepPreviews[index] || `${API_BASE_URL}${existingStepImgUrls[index]}`}
                         alt={`Step ${index + 1} 이미지`}
                         className="w-full max-h-48 object-cover"
                       />

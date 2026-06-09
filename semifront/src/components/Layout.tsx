@@ -5,6 +5,7 @@ import { memberService } from "../service/memberService.ts";
 import RecipeService from "../service/recipeService";
 import type { Member, Recipe_Info } from "../types/type.ts";
 import { useAuth } from "../context/AuthContext.tsx";
+import { API_BASE_URL } from "../config/api";
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -91,7 +92,7 @@ export default function Layout() {
                           <div className="w-10 h-10 rounded-xl bg-orange-50 overflow-hidden flex items-center justify-center shrink-0">
                             {recipe.thumbImgUrl ? (
                               <img
-                                src={`http://localhost:8080${recipe.thumbImgUrl}`}
+                                src={`${API_BASE_URL}${recipe.thumbImgUrl}`}
                                 alt={recipe.recipeNmKo}
                                 className="w-full h-full object-cover"
                               />
@@ -134,7 +135,7 @@ export default function Layout() {
                           <div className="w-8 h-8 rounded-full bg-orange-100 overflow-hidden flex items-center justify-center">
                             {member.profileImg ? (
                               <img
-                                src={`http://localhost:8080${member.profileImg}`}
+                                src={`${API_BASE_URL}${member.profileImg}`}
                                 alt={member.nickname}
                                 className="w-full h-full object-cover"
                               />

@@ -2,8 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Heart, ChefHat, Clock, Trash2, Pencil, User, Eye } from "lucide-react";
 import likeService from "../service/likeService";
 import { Recipe_Info } from "../types/type";
-
-const BASE_URL = "http://localhost:8080";
+import { API_BASE_URL } from "../config/api";
 
 const LEVEL_COLOR: Record<string, string> = {
   "상": "bg-red-100 text-red-700",
@@ -29,9 +28,9 @@ export default function RecipeCard({
   onEdit,
 }: RecipeCardProps) {
   const navigate = useNavigate();
-  const thumbSrc = recipe.thumbImgUrl ? `${BASE_URL}${recipe.thumbImgUrl}` : null;
+  const thumbSrc = recipe.thumbImgUrl ? `${API_BASE_URL}${recipe.thumbImgUrl}` : null;
   const levelColor = LEVEL_COLOR[recipe.levelNm] ?? "bg-gray-100 text-gray-600";
-  const profileImgSrc = recipe.writerProfileImg ? `${BASE_URL}${recipe.writerProfileImg}` : null;
+  const profileImgSrc = recipe.writerProfileImg ? `${API_BASE_URL}${recipe.writerProfileImg}` : null;
   const hasAuthor = !!(recipe.writerId || recipe.writerNickname || profileImgSrc);
   const hasBottomRow = (recipe.tags && recipe.tags.length > 0) || !!onDelete || !!onEdit;
 

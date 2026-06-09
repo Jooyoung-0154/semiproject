@@ -11,8 +11,7 @@ import likeService from "../service/likeService";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { Recipe, Irdnt_Info, Review, Member, RECIPE_IMAGE, ReviewImage } from "../types/type";
-
-const BASE_URL = "http://localhost:8080";
+import { API_BASE_URL } from "../config/api";
 
 export default function RecipeDetail() {
   const { recipeId } = useParams<{ recipeId: string }>();
@@ -206,7 +205,7 @@ export default function RecipeDetail() {
   }
 
   const info = recipe.recipeInfo;
-  const heroImg = info?.thumbImgUrl ? `${BASE_URL}${info.thumbImgUrl}` : null;
+  const heroImg = info?.thumbImgUrl ? `${API_BASE_URL}${info.thumbImgUrl}` : null;
   const hasGallery = images.length > 0;
 
   return (
@@ -224,7 +223,7 @@ export default function RecipeDetail() {
       {hasGallery ? (
         <div className="relative w-full h-72 md:h-96 rounded-2xl overflow-hidden shadow-lg bg-gray-100">
           <img
-            src={`${BASE_URL}${images[currentImageIndex].imgUrl}`}
+            src={`${API_BASE_URL}${images[currentImageIndex].imgUrl}`}
             alt={`${info.recipeNmKo} ${currentImageIndex + 1}`}
             className="w-full h-full object-cover"
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
@@ -337,7 +336,7 @@ export default function RecipeDetail() {
         >
           {writer?.profileImg ? (
             <img
-              src={`${BASE_URL}${writer.profileImg}`}
+              src={`${API_BASE_URL}${writer.profileImg}`}
               alt={writer.nickname}
               className="w-11 h-11 rounded-full object-cover shrink-0 border border-gray-200"
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
@@ -394,7 +393,7 @@ export default function RecipeDetail() {
                 !step.stepImgUrl ||
                 step.stepImgUrl.includes("base.png") ||
                 step.stepImgUrl === "/resources/static/image/base.png";
-              const stepImg = isDefault ? null : `${BASE_URL}${step.stepImgUrl}`;
+              const stepImg = isDefault ? null : `${API_BASE_URL}${step.stepImgUrl}`;
               return (
                 <div
                   key={step.cookingNo}
@@ -462,7 +461,7 @@ export default function RecipeDetail() {
               {reviewImages.map((img) => (
                 <div key={img.imageId} className="shrink-0 w-28 h-28 rounded-xl overflow-hidden bg-gray-100">
                   <img
-                    src={`${BASE_URL}${img.imageUrl}`}
+                    src={`${API_BASE_URL}${img.imageUrl}`}
                     alt="후기 사진"
                     className="w-full h-full object-cover"
                     onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
@@ -496,7 +495,7 @@ export default function RecipeDetail() {
                       >
                         {profile?.profileImg ? (
                           <img
-                            src={`${BASE_URL}${profile.profileImg}`}
+                            src={`${API_BASE_URL}${profile.profileImg}`}
                             alt={profile.nickname}
                             className="w-9 h-9 rounded-full object-cover border border-gray-200 hover:ring-2 hover:ring-orange-300 transition-all"
                             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
@@ -539,7 +538,7 @@ export default function RecipeDetail() {
                         {imgs.map((img) => (
                           <div key={img.imageId} className="shrink-0 w-40 h-40 rounded-lg overflow-hidden bg-gray-100">
                             <img
-                              src={`${BASE_URL}${img.imageUrl}`}
+                              src={`${API_BASE_URL}${img.imageUrl}`}
                               alt="후기 사진"
                               className="w-full h-full object-cover"
                               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}

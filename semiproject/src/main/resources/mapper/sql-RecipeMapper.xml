@@ -2,66 +2,60 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.cloud.mapper.RecipeMapper">
 
-	<select id="selectRecipeList"
-		resultType="org.cloud.dto.Recipe_Info">
-		SELECT DISTINCT
-		r.RECIPE_ID AS recipeId,
-		r.RECIPE_NM_KO AS recipeNmKo,
-		r.SUMRY AS sumry,
-		r.NATION_CODE AS nationCode,
-		r.NATION_NM AS nationNm,
-		r.TY_CODE AS tyCode,
-		r.TY_NM AS tyNm,
-		r.COOKING_TIME AS cookingTime,
-		r.CALORIE AS calorie,
-		r.QNT AS qnt,
-		r.LEVEL_NM AS levelNm,
-		r.HIT AS hit,
-		r.LIKE_COUNT AS likeCount,
-		r.PRICE AS price,
-		r.WRITER_ID AS writerId,
-		m.NICKNAME AS writerNickname,
-		m.PROFILE_IMG AS writerProfileImg,
-		(SELECT img_url FROM recipe_image WHERE recipe_code = r.RECIPE_ID ORDER BY
-		sort_order ASC LIMIT 1) AS thumbImgUrl
-		FROM RECIPE r
-		LEFT JOIN member m ON r.WRITER_ID = m.ID
-		<if test="tagId != null">
-			JOIN RECIPE_TAG rt ON r.recipe_id = rt.recipe_id
-		</if>
-		<where>
-			<if test="recipeNmKo != null and recipeNmKo != ''">
-				AND r.recipe_nm_ko LIKE CONCAT('%', #{recipeNmKo}, '%')
-			</if>
-			<if test="tagId != null">
-				AND rt.tag_id = #{tagId}
-			</if>
-		</where>
-	</select>
+    <sql id="recipeColumns">
+        r.RECIPE_ID    AS recipeId,
+        r.RECIPE_NM_KO AS recipeNmKo,
+        r.SUMRY        AS sumry,
+        r.NATION_CODE  AS nationCode,
+        r.NATION_NM    AS nationNm,
+        r.TY_CODE      AS tyCode,
+        r.TY_NM        AS tyNm,
+        r.COOKING_TIME AS cookingTime,
+        r.CALORIE      AS calorie,
+        r.QNT          AS qnt,
+        r.LEVEL_NM     AS levelNm,
+        r.HIT          AS hit,
+        r.LIKE_COUNT   AS likeCount,
+        r.PRICE        AS price,
+        r.WRITER_ID    AS writerId,
+        m.NICKNAME     AS writerNickname,
+        m.PROFILE_IMG  AS writerProfileImg,
+        (SELECT img_url FROM recipe_image WHERE recipe_code = r.RECIPE_ID ORDER BY sort_order ASC LIMIT 1) AS thumbImgUrl
+    </sql>
+
+    <select id="selectRecipeList" resultType="org.cloud.dto.Recipe_Info">
+        SELECT DISTINCT
+            <include refid="recipeColumns"/>
+        FROM RECIPE r
+        LEFT JOIN member m ON r.WRITER_ID = m.ID
+        <if test="tagId != null">
+            JOIN RECIPE_TAG rt ON r.recipe_id = rt.recipe_id
+        </if>
+        <where>
+            <if test="recipeNmKo != null and recipeNmKo != ''">
+                AND r.recipe_nm_ko LIKE CONCAT('%', #{recipeNmKo}, '%')
+            </if>
+            <if test="tagId != null">
+                AND rt.tag_id = #{tagId}
+            </if>
+        </where>
+    </select>
+    
+    <insert id="insertIrdntInfo" parameterType="java.util.List">
+		INSERT INTO IRDNT_INFO (RECIPE_ID, IRDNT_SN, IRDNT_NM, IRDNT_CPCTY,
+		IRDNT_TY_CODE, IRDNT_TY_NM)
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			(#{item.recipeId}, #{item.irdntSn}, #{item.irdntNm},
+			#{item.irdntCpcty}, #{item.irdntTyCode}, #{item.irdntTyNm})
+		</foreach>
+	</insert>
 
 	<select id="selectRecipeListPaged"
 		parameterType="org.cloud.dto.RecipeSearchParams"
 		resultType="org.cloud.dto.Recipe_Info">
 		SELECT DISTINCT
-		r.RECIPE_ID AS recipeId,
-		r.RECIPE_NM_KO AS recipeNmKo,
-		r.SUMRY AS sumry,
-		r.NATION_CODE AS nationCode,
-		r.NATION_NM AS nationNm,
-		r.TY_CODE AS tyCode,
-		r.TY_NM AS tyNm,
-		r.COOKING_TIME AS cookingTime,
-		r.CALORIE AS calorie,
-		r.QNT AS qnt,
-		r.LEVEL_NM AS levelNm,
-		r.HIT AS hit,
-		r.LIKE_COUNT AS likeCount,
-		r.PRICE AS price,
-		r.WRITER_ID AS writerId,
-		m.NICKNAME AS writerNickname,
-		m.PROFILE_IMG AS writerProfileImg,
-		(SELECT img_url FROM recipe_image WHERE recipe_code = r.RECIPE_ID ORDER BY
-		sort_order ASC LIMIT 1) AS thumbImgUrl
+			<include refid="recipeColumns"/>
 		FROM RECIPE r
 		LEFT JOIN member m ON r.WRITER_ID = m.ID
 		<if test="tagIds != null and tagIds.size() &gt; 0">
@@ -92,6 +86,11 @@
 				</foreach>
 			</if>
 		</where>
+		<if test="irdntNms != null and irdntNms.size() &gt; 0 and ingredientAnd">
+            GROUP BY r.RECIPE_ID
+            HAVING COUNT(DISTINCT ii.irdnt_nm) = ${irdntNms.size}
+        </if>
+
 		<choose>
 
 			<!-- 최신순 -->
@@ -121,76 +120,60 @@
 				)
 				) DESC
 			</when>
-
 			<otherwise>
 				ORDER BY r.recipe_id DESC
 			</otherwise>
-
 		</choose>
 		LIMIT #{size} OFFSET #{offset}
 	</select>
 
-	<select id="countRecipeList"
-		parameterType="org.cloud.dto.RecipeSearchParams" resultType="int">
-		SELECT COUNT(DISTINCT r.recipe_id)
-		FROM RECIPE r
-		<if test="tagIds != null and tagIds.size() &gt; 0">
-			JOIN RECIPE_TAG rt ON r.recipe_id = rt.recipe_id
-		</if>
-		<if test="irdntNms != null and irdntNms.size() &gt; 0">
-			JOIN IRDNT_INFO ii ON r.recipe_id = ii.recipe_id
-		</if>
-		<where>
-			<if test="recipeNmKo != null and recipeNmKo != ''">
-				AND r.recipe_nm_ko LIKE CONCAT('%', #{recipeNmKo}, '%')
-			</if>
-			<if test="tagIds != null and tagIds.size() &gt; 0">
-				AND rt.tag_id IN
-				<foreach collection="tagIds" item="tid" open="("
-					separator="," close=")">
-					#{tid}
-				</foreach>
-			</if>
-			<if test="levelNm != null and levelNm != ''">
-				AND r.level_nm = #{levelNm}
-			</if>
-			<if test="irdntNms != null and irdntNms.size() &gt; 0">
-				AND ii.irdnt_nm IN
-				<foreach collection="irdntNms" item="nm" open="("
-					separator="," close=")">
-					#{nm}
-				</foreach>
-			</if>
-		</where>
-	</select>
+    <select id="countRecipeList" parameterType="org.cloud.dto.RecipeSearchParams" resultType="int">
+        <if test="irdntNms != null and irdntNms.size() &gt; 0 and ingredientAnd">
+            SELECT COUNT(*) FROM (
+        </if>
+        SELECT COUNT(DISTINCT r.recipe_id)
+        FROM RECIPE r
+        <if test="tagIds != null and tagIds.size() &gt; 0">
+            JOIN RECIPE_TAG rt ON r.recipe_id = rt.recipe_id
+        </if>
+        <if test="irdntNms != null and irdntNms.size() &gt; 0">
+            JOIN IRDNT_INFO ii ON r.recipe_id = ii.recipe_id
+        </if>
+        <where>
+            <if test="recipeNmKo != null and recipeNmKo != ''">
+                AND r.recipe_nm_ko LIKE CONCAT('%', #{recipeNmKo}, '%')
+            </if>
+            <if test="tagIds != null and tagIds.size() &gt; 0">
+                AND rt.tag_id IN
+                <foreach collection="tagIds" item="tid" open="(" separator="," close=")">
+                    #{tid}
+                </foreach>
+            </if>
+            <if test="levelNm != null and levelNm != ''">
+                AND r.level_nm = #{levelNm}
+            </if>
+            <if test="irdntNms != null and irdntNms.size() &gt; 0">
+                AND ii.irdnt_nm IN
+                <foreach collection="irdntNms" item="nm" open="(" separator="," close=")">
+                    #{nm}
+                </foreach>
+            </if>
+        </where>
+        <if test="irdntNms != null and irdntNms.size() &gt; 0 and ingredientAnd">
+            GROUP BY r.recipe_id
+            HAVING COUNT(DISTINCT ii.irdnt_nm) = ${irdntNms.size}
+            ) AS cnt_sub
+        </if>
+    </select>
 
-	<select id="selectRecipesByWriterId"
-		resultType="org.cloud.dto.Recipe_Info">
-		SELECT
-		r.RECIPE_ID AS recipeId,
-		r.RECIPE_NM_KO AS recipeNmKo,
-		r.SUMRY AS sumry,
-		r.NATION_CODE AS nationCode,
-		r.NATION_NM AS nationNm,
-		r.TY_CODE AS tyCode,
-		r.TY_NM AS tyNm,
-		r.COOKING_TIME AS cookingTime,
-		r.CALORIE AS calorie,
-		r.QNT AS qnt,
-		r.LEVEL_NM AS levelNm,
-		r.HIT AS hit,
-		r.LIKE_COUNT AS likeCount,
-		r.PRICE AS price,
-		r.WRITER_ID AS writerId,
-		m.NICKNAME AS writerNickname,
-		m.PROFILE_IMG AS writerProfileImg,
-		(SELECT img_url FROM recipe_image WHERE recipe_code = r.RECIPE_ID ORDER BY
-		sort_order ASC LIMIT 1) AS thumbImgUrl
-		FROM RECIPE r
-		LEFT JOIN member m ON r.WRITER_ID = m.ID
-		WHERE r.writer_id = #{writerId}
-		ORDER BY r.recipe_id DESC
-	</select>
+    <select id="selectRecipesByWriterId" resultType="org.cloud.dto.Recipe_Info">
+        SELECT DISTINCT
+            <include refid="recipeColumns"/>
+        FROM RECIPE r
+        LEFT JOIN member m ON r.WRITER_ID = m.ID
+        WHERE r.writer_id = #{writerId}
+        ORDER BY r.recipe_id DESC
+    </select>
 
 	<insert id="insertFullRecipe"
 		parameterType="org.cloud.dto.Recipe">
@@ -217,15 +200,6 @@
 		)
 	</insert>
 
-	<insert id="insertIrdntInfo" parameterType="java.util.List">
-		INSERT INTO IRDNT_INFO (RECIPE_ID, IRDNT_SN, IRDNT_NM, IRDNT_CPCTY,
-		IRDNT_TY_CODE, IRDNT_TY_NM)
-		VALUES
-		<foreach collection="list" item="item" separator=",">
-			(#{item.recipeId}, #{item.irdntSn}, #{item.irdntNm},
-			#{item.irdntCpcty}, #{item.irdntTyCode}, #{item.irdntTyNm})
-		</foreach>
-	</insert>
 
 	<insert id="insertCookingInfo" parameterType="java.util.List">
 		INSERT INTO COOKING_INFO (RECIPE_ID, COOKING_NO, COOKING_DC, STEP_TIP,
@@ -270,32 +244,13 @@
 		SELECT count(*) from recipe where WRITER_ID=#{writerId}
 	</select>
 
-	<select id="selectRecipeInfoById"
-		resultType="org.cloud.dto.Recipe_Info">
-		SELECT
-		r.RECIPE_ID AS recipeId,
-		r.RECIPE_NM_KO AS recipeNmKo,
-		r.SUMRY AS sumry,
-		r.NATION_CODE AS nationCode,
-		r.NATION_NM AS nationNm,
-		r.TY_CODE AS tyCode,
-		r.TY_NM AS tyNm,
-		r.COOKING_TIME AS cookingTime,
-		r.CALORIE AS calorie,
-		r.QNT AS qnt,
-		r.LEVEL_NM AS levelNm,
-		r.HIT AS hit,
-		r.LIKE_COUNT AS likeCount,
-		r.PRICE AS price,
-		r.WRITER_ID AS writerId,
-		m.NICKNAME AS writerNickname,
-		m.PROFILE_IMG AS writerProfileImg,
-		(SELECT img_url FROM recipe_image WHERE recipe_code = r.RECIPE_ID ORDER BY
-		sort_order ASC LIMIT 1) AS thumbImgUrl
-		FROM RECIPE r
-		LEFT JOIN member m ON r.WRITER_ID = m.ID
-		WHERE r.RECIPE_ID = #{recipeId}
-	</select>
+    <select id="selectRecipeInfoById" resultType="org.cloud.dto.Recipe_Info">
+        SELECT
+            <include refid="recipeColumns"/>
+        FROM RECIPE r
+        LEFT JOIN member m ON r.WRITER_ID = m.ID
+        WHERE r.RECIPE_ID = #{recipeId}
+    </select>
 
 	<select id="selectCookingInfoByRecipeId"
 		resultType="org.cloud.dto.Cooking_Info">

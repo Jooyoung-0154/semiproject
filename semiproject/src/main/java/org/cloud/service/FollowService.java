@@ -25,8 +25,8 @@ public class FollowService {
 
         // 1. 관계 등록
         followMapper.insertFollow(follow);
-        memberMapper.addFollowCount(follow.getFollowerId(), "FOLLOWING_COUNT", 1);
-        memberMapper.addFollowCount(follow.getFollowingId(), "FOLLOWER_COUNT", 1);
+        memberMapper.addFollowingCount(follow.getFollowerId(), 1);
+        memberMapper.addFollowerCount(follow.getFollowingId(), 1);
         
         return true;
     }
@@ -45,8 +45,8 @@ public class FollowService {
     @Transactional
     public boolean unfollow(Follow follow) {
         if (followMapper.deleteFollow(follow) > 0) {
-            memberMapper.addFollowCount(follow.getFollowerId(), "FOLLOWING_COUNT", -1);
-            memberMapper.addFollowCount(follow.getFollowingId(), "FOLLOWER_COUNT", -1);
+            memberMapper.addFollowingCount(follow.getFollowerId(), -1);
+            memberMapper.addFollowerCount(follow.getFollowingId(), -1);
             return true;
         }
         return false;

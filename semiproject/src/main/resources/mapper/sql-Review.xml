@@ -15,7 +15,9 @@
     </update>
 
     <delete id="deleteReview">
-        DELETE FROM review WHERE REVIEW_ID = #{REVIEW_ID}
+        DELETE FROM review
+        WHERE REVIEW_ID = #{reviewId}
+          AND (ID = #{requesterId} OR #{requesterId} = 'Admin')
     </delete>
 
     <select id="getReviewsByRecipeCode" resultType="org.cloud.dto.Review">
