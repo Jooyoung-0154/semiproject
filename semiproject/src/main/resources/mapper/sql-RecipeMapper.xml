@@ -84,12 +84,6 @@
 		LEFT JOIN
 		member m ON r.WRITER_ID = m.ID
 
-		<if test="ageGroup != null and ageGroup != 'all'">
-			JOIN recipe_like rl_age ON r.RECIPE_ID =
-			rl_age.RECIPE_CODE
-			JOIN member m_age ON rl_age.USER_ID = m_age.ID
-		</if>
-
 		<if test="tagIds != null and tagIds.size() &gt; 0">
 			JOIN RECIPE_TAG rt ON r.recipe_id = rt.recipe_id
 		</if>
@@ -126,21 +120,21 @@
 			<if test="ageGroup != null and ageGroup != 'all'">
 				AND r.WRITER_ID IS NOT NULL
 				AND r.WRITER_ID != ''
+				AND m.BIRTH_DATE IS NOT NULL
 			</if>
 
 			<if test="ageGroup == 'age2030'">
-				AND TIMESTAMPDIFF(YEAR, m_age.BIRTH_DATE, CURDATE())
-				BETWEEN 20 AND 39
+				AND TIMESTAMPDIFF(YEAR, m.BIRTH_DATE, CURDATE()) BETWEEN
+				20 AND 39
 			</if>
 
 			<if test="ageGroup == 'age4050'">
-				AND TIMESTAMPDIFF(YEAR, m_age.BIRTH_DATE, CURDATE())
-				BETWEEN 40 AND 59
+				AND TIMESTAMPDIFF(YEAR, m.BIRTH_DATE, CURDATE()) BETWEEN
+				40 AND 59
 			</if>
 
 			<if test="ageGroup == 'age60'">
-				AND TIMESTAMPDIFF(YEAR, m_age.BIRTH_DATE, CURDATE())
-				&gt;= 60
+				AND TIMESTAMPDIFF(YEAR, m.BIRTH_DATE, CURDATE()) &gt;= 60
 			</if>
 		</where>
 
