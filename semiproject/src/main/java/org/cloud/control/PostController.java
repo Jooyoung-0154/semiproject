@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
+import jakarta.servlet.http.HttpSession;
 import org.cloud.dto.Post;
 import org.cloud.dto.PostComment;
 import org.cloud.service.PostCommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.http.MediaType;
 
 
 @RestController
@@ -92,11 +94,10 @@ public class PostController {
         return postService.modifyPost(post);
     }
     @DeleteMapping("/{postId}")
-    public boolean deletePost(
-            @PathVariable int postId,
-            @RequestParam String requesterId
-    ) {
-        return postService.removePost(postId, requesterId);
+    public ResponseEntity<Boolean> deletePost(@PathVariable int postId, HttpSession session) {
+        String sessionUserId = (String) session.getAttribute("userId");
+        if (sessionUserId == null) return ResponseEntity.status(401).build();
+        return ResponseEntity.ok(postService.removePost(postId, sessionUserId));
     }
    
 
@@ -106,8 +107,10 @@ public class PostController {
 	}
 
 	@DeleteMapping("/comment/{commentId}")
-	public boolean deleteComment(@PathVariable int commentId) {
-		return postService.removeComment(commentId);
+	public ResponseEntity<Boolean> deleteComment(@PathVariable int commentId, HttpSession session) {
+		String sessionUserId = (String) session.getAttribute("userId");
+		if (sessionUserId == null) return ResponseEntity.status(401).build();
+		return ResponseEntity.ok(postService.removeComment(commentId, sessionUserId));
 	}
 	@PutMapping("/comment/{commentId}")
 	public boolean updateComment(

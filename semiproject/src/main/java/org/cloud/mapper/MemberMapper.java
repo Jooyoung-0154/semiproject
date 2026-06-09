@@ -27,7 +27,9 @@ public interface MemberMapper {
 
     int updateProfileImg(@Param("ID") String ID, @Param("PROFILE_IMG") String PROFILE_IMG);
 
-    int addFollowCount(@Param("ID") String ID, @Param("column") String column, @Param("amount") int amount);
+    int addFollowingCount(@Param("ID") String ID, @Param("amount") int amount);
+
+    int addFollowerCount(@Param("ID") String ID, @Param("amount") int amount);
     	
     int deleteMember(@Param("ID") String ID);
     

@@ -1,14 +1,12 @@
-import { useState, useEffect, KeyboardEvent } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Search } from "lucide-react";
 import RecipeService from "../service/recipeService";
 import { tagService } from "../service/tagService";
-import likeService from "../service/likeService";
 import { useAuth } from "../context/AuthContext";
 import { Recipe_Info, Tag } from "../types/type";
 import RecipeCard from "./RecipeCard";
-
-const BG_URL = "http://localhost:8080/image/home-bg.jpg";
+import { API_BASE_URL } from "../config/api";
+import { applyLikedStatus } from "../utils/likeUtils";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -16,7 +14,7 @@ export default function Home() {
 
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedTagId, setSelectedTagId] = useState<number | null>(null);
-  const [nameSearch, setNameSearch] = useState("");
+
   const [recipes, setRecipes] = useState<Recipe_Info[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -41,16 +39,7 @@ export default function Home() {
         size: 9,
       });
       let loaded = result.recipes;
-      if (user?.id) {
-        try {
-          const likedIds = await likeService.getMyLikes(user.id);
-          const likedSet = new Set(likedIds);
-          loaded = loaded.map((r) => ({
-            ...r,
-            liked: likedSet.has(r.recipeId),
-          }));
-        } catch {}
-      }
+      loaded = await applyLikedStatus(loaded, user?.id);
       setRecipes(loaded);
     } catch {
       setRecipes([]);
@@ -59,13 +48,8 @@ export default function Home() {
     }
   };
 
-  const handleSearch = () => fetchRecipes(nameSearch);
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") handleSearch();
-  };
   const handleTagClick = (tagId: number | null) => {
     setSelectedTagId(tagId);
-    setNameSearch("");
   };
 
   const handleDeleteRecipe = async (recipeId: string) => {
@@ -83,7 +67,7 @@ export default function Home() {
       <section
         className="relative h-72 md:h-96 rounded-2xl overflow-hidden shadow-lg"
         style={{
-          backgroundImage: `url('${BG_URL}')`,
+          backgroundImage: `url('${API_BASE_URL}/image/home-bg.jpg')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}

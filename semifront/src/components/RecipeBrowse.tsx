@@ -11,10 +11,10 @@ import {
 } from "lucide-react";
 import RecipeService, { BrowseParams } from "../service/recipeService";
 import { tagService } from "../service/tagService";
-import likeService from "../service/likeService";
 import { Recipe_Info, Tag } from "../types/type";
 import { useAuth } from "../context/AuthContext";
 import RecipeCard from "./RecipeCard";
+import { applyLikedStatus } from "../utils/likeUtils";
 
 const LEVEL_OPTIONS = ["", "상", "중", "하"] as const;
 const LEVEL_LABELS: Record<string, string> = {
@@ -33,6 +33,7 @@ export default function RecipeBrowse() {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [ingredientInput, setIngredientInput] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([]);
+  const [ingredientMode, setIngredientMode] = useState<"OR" | "AND">("OR");
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedName(nameInput), 500);
@@ -55,6 +56,7 @@ export default function RecipeBrowse() {
       .catch(() => setTags([]));
   }, []);
 
+  const userId = user?.id;
   const doSearch = useCallback(
     async (targetPage: number) => {
       setIsLoading(true);
@@ -64,21 +66,13 @@ export default function RecipeBrowse() {
           tagIds: selectedTagIds.length ? selectedTagIds : undefined,
           level: selectedLevel || undefined,
           ingredients: ingredients.length ? ingredients : undefined,
+          ingredientMode,
           page: targetPage,
           size: PAGE_SIZE,
         };
         const result = await RecipeService.browse(params);
         let loaded = result.recipes;
-        if (user?.id) {
-          try {
-            const likedIds = await likeService.getMyLikes(user.id);
-            const likedSet = new Set(likedIds);
-            loaded = loaded.map((r) => ({
-              ...r,
-              liked: likedSet.has(r.recipeId),
-            }));
-          } catch {}
-        }
+        loaded = await applyLikedStatus(loaded, userId);
         setRecipes(loaded);
         setTotal(result.total);
         setTotalPages(result.totalPages);
@@ -89,7 +83,7 @@ export default function RecipeBrowse() {
         setIsLoading(false);
       }
     },
-    [debouncedName, selectedLevel, selectedTagIds, ingredients, user],
+    [debouncedName, selectedLevel, selectedTagIds, ingredients, ingredientMode, userId],
   );
 
   useEffect(() => {
@@ -142,6 +136,7 @@ export default function RecipeBrowse() {
     setTagInput("");
     setIngredients([]);
     setIngredientInput("");
+    setIngredientMode("OR");
     setTimeout(() => doSearch(1), 0);
   };
   const getPageRange = () => {
@@ -233,10 +228,37 @@ export default function RecipeBrowse() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              <Refrigerator className="w-4 h-4 inline mr-1" />
-              재료로 찾기
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-medium text-gray-600">
+                <Refrigerator className="w-4 h-4 inline mr-1" />
+                재료로 찾기
+              </label>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-500 mr-1">검색 조건</span>
+                <button
+                  type="button"
+                  onClick={() => setIngredientMode("OR")}
+                  className={`px-3 py-1 text-xs font-semibold rounded-l-full border transition-colors ${
+                    ingredientMode === "OR"
+                      ? "bg-orange-500 text-white border-orange-500"
+                      : "bg-white text-gray-500 border-gray-300 hover:border-orange-400"
+                  }`}
+                >
+                  OR
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIngredientMode("AND")}
+                  className={`px-3 py-1 text-xs font-semibold rounded-r-full border-t border-b border-r transition-colors ${
+                    ingredientMode === "AND"
+                      ? "bg-orange-500 text-white border-orange-500"
+                      : "bg-white text-gray-500 border-gray-300 hover:border-orange-400"
+                  }`}
+                >
+                  AND
+                </button>
+              </div>
+            </div>
             <div className="flex gap-2">
               <input
                 type="text"

@@ -1,6 +1,7 @@
 package org.cloud.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.cloud.dto.Review;
 import java.util.List;
 
@@ -11,7 +12,7 @@ public interface ReviewMapper {
 
     int updateReview(Review review);
 
-    int deleteReview(int REVIEW_ID);
+    int deleteReview(@Param("reviewId") int reviewId, @Param("requesterId") String requesterId);
 
     List<Review> getReviewsByRecipeCode(String RECIPE_CODE);
 

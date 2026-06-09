@@ -1,10 +1,22 @@
 import api from "../api/axios";
+import { Recipe_Info, Irdnt_Info, Cooking_Info, Tag } from "../types/type";
+
+export interface RecipePayload {
+  recipeInfo: Recipe_Info;
+  irdntInfo: Irdnt_Info[];
+  cookingInfo: Cooking_Info[];
+  price: number;
+  writerId: string;
+  tags: Tag[];
+  existingMainImgUrls?: string[];
+}
 
 export interface BrowseParams {
   name?: string;
   tagIds?: number[];
   level?: string;
   ingredients?: string[];
+  ingredientMode?: "OR" | "AND";
   page?: number;
   size?: number;
 }
@@ -27,6 +39,7 @@ const RecipeService = {
         ingredients: params.ingredients?.length
           ? params.ingredients.join(",")
           : undefined,
+        ingredientMode: params.ingredientMode ?? "OR",
         page: params.page || 1,
         size: params.size || 12,
       },
@@ -51,8 +64,8 @@ const RecipeService = {
     }
   },
 
-  // 2. 레시피 등록 (매개변수에 : any를 추가하여 타입 오류를 해결했습니다)
-  registerRecipe: async (recipeData: any) => {
+  // 2. 레시피 등록
+  registerRecipe: async (recipeData: RecipePayload) => {
     try {
       const response = await api.post("/recipe/register", recipeData);
       return response.data; // 성공 시 생성된 recipeId 반환
@@ -75,7 +88,7 @@ const RecipeService = {
   },
 
   // 4. 레시피 수정
-  updateRecipe: async (recipeId: string, recipeData: any) => {
+  updateRecipe: async (recipeId: string, recipeData: RecipePayload) => {
     const response = await api.put(`/recipe/${recipeId}`, recipeData);
     return response.data;
   },

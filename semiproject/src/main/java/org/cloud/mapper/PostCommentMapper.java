@@ -3,6 +3,7 @@ package org.cloud.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.cloud.dto.Post;
 import org.cloud.dto.PostComment;
 
@@ -23,7 +24,7 @@ public interface PostCommentMapper {
 
 	int insertComment(PostComment comment);
 
-    int deleteComment(int commentId);
+    int deleteComment(@Param("commentId") int commentId, @Param("requesterId") String requesterId);
 
     int deleteCommentsByPostId(int postId);
 

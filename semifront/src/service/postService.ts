@@ -34,11 +34,8 @@ export const postService = {
       },
     }),
 
-  // 게시글 삭제
-  deletePost: (postId: number, requesterId: string) =>
-    api.delete(`/posts/${postId}`, {
-      params: { requesterId },
-    }),
+  // 게시글 삭제 (인증은 서버 세션으로 처리)
+  deletePost: (postId: number) => api.delete(`/posts/${postId}`),
 
   // 댓글 추가
   addComment: (comment: PostComment) => api.post("/posts/comment", comment),

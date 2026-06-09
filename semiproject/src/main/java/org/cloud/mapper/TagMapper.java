@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.cloud.dto.RecipeTagRow;
 import org.cloud.dto.Tag;
 
 @Mapper
@@ -18,4 +19,6 @@ public interface TagMapper {
     int deleteRecipeTags(@Param("RECIPE_ID") String recipeId);
 
     List<Tag> getTagsByRecipeId(@Param("RECIPE_ID") String recipeId);
+
+    List<RecipeTagRow> selectTagsByRecipeIds(@Param("recipeIds") List<String> recipeIds);
 }

@@ -22,8 +22,8 @@ public class ReviewService {
         return reviewMapper.updateReview(review) > 0;
     }
 
-    public boolean removeReview(int reviewId) {
-        return reviewMapper.deleteReview(reviewId) > 0;
+    public boolean removeReview(int reviewId, String requesterId) {
+        return reviewMapper.deleteReview(reviewId, requesterId) > 0;
     }
 
     public List<Review> getRecipeReviews(String recipeCode) {

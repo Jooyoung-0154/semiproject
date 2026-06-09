@@ -8,4 +8,5 @@ export interface LoginParams {
 
 export const authService = {
   login: (params: LoginParams) => api.post<Member>("/member/login", params),
+  logout: () => api.post("/member/logout"),
 };

@@ -85,6 +85,7 @@
 	<delete id="deleteComment">
 		DELETE FROM post_comment
 		WHERE COMMENT_ID = #{commentId}
+		  AND (WRITER_ID = #{requesterId} OR #{requesterId} = 'Admin')
 	</delete>
 
 	<select id="getCommentsByPostId" resultType="org.cloud.dto.PostComment">

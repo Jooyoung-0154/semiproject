@@ -48,11 +48,13 @@
     UPDATE member SET INTRO = #{intro} WHERE ID = #{id}
 	</update>
 
-    <update id="addFollowCount">
-    	UPDATE member 
-    	SET ${column} = ${column} + #{amount} 
-    	WHERE ID = #{ID}
-	</update>
+    <update id="addFollowingCount">
+        UPDATE member SET FOLLOWING_COUNT = FOLLOWING_COUNT + #{amount} WHERE ID = #{ID}
+    </update>
+
+    <update id="addFollowerCount">
+        UPDATE member SET FOLLOWER_COUNT = FOLLOWER_COUNT + #{amount} WHERE ID = #{ID}
+    </update>
 	<!-- 회원 삭제 -->
 	<delete id="deleteMember">
 		DELETE FROM member WHERE ID = #{ID}

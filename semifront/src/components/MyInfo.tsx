@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth, normalizeMember } from "../context/AuthContext.tsx";
 import { memberService } from "../service/memberService.ts";
 import type { Member } from "../types/type.ts";
+import { API_BASE_URL } from "../config/api";
 
 export default function MyInfo() {
   const navigate = useNavigate();
@@ -121,7 +122,7 @@ export default function MyInfo() {
               />
             ) : member.profileImg ? (
               <img
-                src={`http://localhost:8080${member.profileImg}`}
+                src={`${API_BASE_URL}${member.profileImg}`}
                 alt="프로필"
                 className="w-full h-full object-cover"
               />

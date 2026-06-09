@@ -62,7 +62,7 @@ public class PostCommentService {
 	    }
 
 	    boolean isWriter = requesterId != null && requesterId.equals(post.getWriterId());
-	    boolean isAdmin = "admin".equals(requesterId);
+	    boolean isAdmin = "Admin".equals(requesterId);
 
 	    if (!isWriter && !isAdmin) {
 	        return false;
@@ -76,8 +76,8 @@ public class PostCommentService {
 		return postMapper.insertComment(comment) > 0;
 	}
 
-	public boolean removeComment(int commentId) {
-		return postMapper.deleteComment(commentId) > 0;
+	public boolean removeComment(int commentId, String requesterId) {
+		return postMapper.deleteComment(commentId, requesterId) > 0;
 	}
 
 	private void fillComments(List<Post> posts) {

@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class GuestbookService {
 
+    private static final int PAGE_SIZE = 5;
+
     @Autowired
     private GuestbookMapper guestbookMapper;
 
@@ -39,9 +41,8 @@ public class GuestbookService {
      * @param pageSize 한 페이지에 보여줄 개수
      */
     public List<Guestbook> getGuestbookPage(String hostId, int page) {
-    	int pageSize = 5;
-        int offset = (page - 1) * pageSize;
-        return guestbookMapper.getGuestbookList(hostId, offset, pageSize);
+        int offset = (page - 1) * PAGE_SIZE;
+        return guestbookMapper.getGuestbookList(hostId, offset, PAGE_SIZE);
     }
     
     // 전체 개수 (프론트에서 페이지 번호를 그릴 때 필요)
