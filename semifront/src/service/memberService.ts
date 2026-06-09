@@ -49,4 +49,8 @@ export const memberService = {
   // 회원 검색 (관리자용)
   searchMembers: (keyword: string) =>
     api.get<Member[]>(`/member/search`, { params: { keyword } }),
+
+  // 스크랩 공개 여부 변경
+  updateScrapPublic: (id: string, scrapPublic: boolean) =>
+    api.put(`/member/${id}/scrap-public`, null, { params: { scrapPublic } }),
 };

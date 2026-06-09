@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, KeyboardEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   X,
@@ -26,6 +27,7 @@ const LEVEL_LABELS: Record<string, string> = {
 
 export default function RecipeBrowse() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [nameInput, setNameInput] = useState("");
   const [debouncedName, setDebouncedName] = useState("");
@@ -251,7 +253,7 @@ export default function RecipeBrowse() {
                 <button
                   type="button"
                   onClick={() => setIngredientMode("AND")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-r-full border-t border-b border-r transition-colors ${
+                  className={`px-3 py-1 text-xs font-semibold rounded-r-full border transition-colors ${
                     ingredientMode === "AND"
                       ? "bg-orange-500 text-white border-orange-500"
                       : "bg-white text-gray-500 border-gray-300 hover:border-orange-400"
@@ -369,7 +371,8 @@ export default function RecipeBrowse() {
                   ),
                 )
               }
-              onDelete={user?.id === "Admin" ? handleDeleteRecipe : undefined}
+              onDelete={user?.id === recipe.writerId || user?.id === "Admin" ? handleDeleteRecipe : undefined}
+              onEdit={user?.id === recipe.writerId ? (id) => navigate(`/write?edit=${id}`) : undefined}
             />
           ))}
         </div>

@@ -127,6 +127,7 @@ public class RecipeService {
         recipe.setLikeCount(info.getLikeCount());
         recipe.setHit(info.getHit());
         recipe.setPrice(info.getPrice());
+        recipe.setWriterId(info.getWriterId());
         return recipe;
     }
 

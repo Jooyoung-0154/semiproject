@@ -48,6 +48,11 @@
     UPDATE member SET INTRO = #{intro} WHERE ID = #{id}
 	</update>
 
+	<!-- 스크랩 공개 여부 변경 -->
+	<update id="updateScrapPublic">
+		UPDATE member SET SCRAP_PUBLIC = #{scrapPublic} WHERE ID = #{id}
+	</update>
+
     <update id="addFollowingCount">
         UPDATE member SET FOLLOWING_COUNT = FOLLOWING_COUNT + #{amount} WHERE ID = #{ID}
     </update>
@@ -79,7 +84,8 @@
         PROFILE_IMG as profileImg,
         INTRO as intro,
         FOLLOWING_COUNT as followingCount,
-        FOLLOWER_COUNT as followerCount
+        FOLLOWER_COUNT as followerCount,
+        SCRAP_PUBLIC as scrapPublic
     FROM
         member
     WHERE

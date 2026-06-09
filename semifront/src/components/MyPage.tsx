@@ -22,6 +22,7 @@ export default function MyPage() {
   const [user, setUser] = useState<Member | null>(authUser);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<"recipes" | "liked" | "posts">("recipes");
+  const [scrapPublic, setScrapPublic] = useState<boolean>(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -73,6 +74,16 @@ export default function MyPage() {
   }, [authUser, userId]);
 
   useEffect(() => {
+    setScrapPublic(displayUser?.scrapPublic ?? true);
+  }, [displayUser?.id, displayUser?.scrapPublic]);
+
+  useEffect(() => {
+    if (!isOwnPage && !scrapPublic && activeTab === "liked") {
+      setActiveTab("recipes");
+    }
+  }, [isOwnPage, scrapPublic, activeTab]);
+
+  useEffect(() => {
     if (!currentUserId || !displayUser?.id || isOwnPage) return;
     socialService
       .checkFollow(currentUserId, displayUser.id)
@@ -96,6 +107,18 @@ export default function MyPage() {
       alert("처리 중 오류가 발생했습니다.");
     } finally {
       setIsFollowLoading(false);
+    }
+  };
+
+  const handleToggleScrapPublic = async () => {
+    if (!authUser?.id) return;
+    const next = !scrapPublic;
+    setScrapPublic(next);
+    try {
+      await memberService.updateScrapPublic(authUser.id, next);
+    } catch {
+      setScrapPublic(!next);
+      alert("설정 변경에 실패했습니다.");
     }
   };
 
@@ -178,24 +201,36 @@ export default function MyPage() {
           {/* 탭 헤더 */}
           <div className="tabs-container">
             <div className="tabs-header">
-              <button
-                onClick={() => setActiveTab("posts")}
-                className={`tab-btn ${activeTab === "posts" ? "active" : ""}`}
-              >
-                게시판
-              </button>
-              <button
-                onClick={() => setActiveTab("recipes")}
-                className={`tab-btn ${activeTab === "recipes" ? "active" : ""}`}
-              >
-                작성 레시피
-              </button>
-              <button
-                onClick={() => setActiveTab("liked")}
-                className={`tab-btn ${activeTab === "liked" ? "active" : ""}`}
-              >
-                스크랩 레시피
-              </button>
+              <div className="tabs-header-left">
+                <button
+                  onClick={() => setActiveTab("posts")}
+                  className={`tab-btn ${activeTab === "posts" ? "active" : ""}`}
+                >
+                  게시판
+                </button>
+                <button
+                  onClick={() => setActiveTab("recipes")}
+                  className={`tab-btn ${activeTab === "recipes" ? "active" : ""}`}
+                >
+                  작성 레시피
+                </button>
+                {(isOwnPage || scrapPublic) && (
+                  <button
+                    onClick={() => setActiveTab("liked")}
+                    className={`tab-btn ${activeTab === "liked" ? "active" : ""}`}
+                  >
+                    스크랩 레시피
+                  </button>
+                )}
+              </div>
+              {isOwnPage && activeTab === "liked" && (
+                <button
+                  onClick={handleToggleScrapPublic}
+                  className={`scrap-public-toggle ${scrapPublic ? "on" : "off"}`}
+                >
+                  {scrapPublic ? "스크랩 공개" : "스크랩 비공개"}
+                </button>
+              )}
             </div>
 
             {activeTab === "posts" && (
@@ -214,6 +249,7 @@ export default function MyPage() {
             )}
             {activeTab === "liked" && (
               <LikedTab
+                displayUser={displayUser}
                 currentUserId={currentUserId}
                 isOwnPage={isOwnPage}
               />

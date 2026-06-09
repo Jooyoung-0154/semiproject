@@ -196,9 +196,43 @@
 
 .tabs-header {
   display: flex;
-  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 1.5rem;
   border-bottom: 1px solid var(--border-color);
+}
+
+.tabs-header-left {
+  display: flex;
+  gap: 1rem;
+}
+
+.scrap-public-toggle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  border: 1.5px solid;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 0.5rem;
+}
+
+.scrap-public-toggle.on {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.scrap-public-toggle.off {
+  background-color: white;
+  border-color: var(--border-color);
+  color: var(--text-muted);
+}
+
+.scrap-public-toggle.off:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .tab-btn {
