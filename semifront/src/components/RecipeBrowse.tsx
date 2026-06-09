@@ -33,6 +33,7 @@ export default function RecipeBrowse() {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [ingredientInput, setIngredientInput] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([]);
+  const [sortType, setSortType] = useState("all");
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedName(nameInput), 500);
@@ -64,6 +65,7 @@ export default function RecipeBrowse() {
           tagIds: selectedTagIds.length ? selectedTagIds : undefined,
           level: selectedLevel || undefined,
           ingredients: ingredients.length ? ingredients : undefined,
+          sortType,
           page: targetPage,
           size: PAGE_SIZE,
         };
@@ -89,7 +91,7 @@ export default function RecipeBrowse() {
         setIsLoading(false);
       }
     },
-    [debouncedName, selectedLevel, selectedTagIds, ingredients, user],
+    [debouncedName, selectedLevel, selectedTagIds, ingredients, user, sortType],
   );
 
   useEffect(() => {
@@ -293,12 +295,22 @@ export default function RecipeBrowse() {
             "검색 중..."
           ) : (
             <>
-              {" "}
               총 <span className="font-bold text-orange-600">{total}</span>개의
-              레시피{" "}
+              레시피
             </>
           )}
         </p>
+
+        <select
+          value={sortType}
+          onChange={(e) => setSortType(e.target.value)}
+          className="border border-gray-300 rounded-xl px-3 py-2 text-sm bg-white"
+        >
+          <option value="all">최신순</option>
+          <option value="popular">인기순</option>
+          <option value="scrap">스크랩순</option>
+          <option value="view">조회수순</option>
+        </select>
       </div>
 
       {isLoading && recipes.length === 0 ? (
@@ -320,7 +332,9 @@ export default function RecipeBrowse() {
           <p className="text-sm mt-1">다른 검색어나 필터를 시도해보세요.</p>
         </div>
       ) : (
-        <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 min-h-[800px] transition-opacity duration-150 ${isLoading ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
+        <div
+          className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 min-h-[800px] transition-opacity duration-150 ${isLoading ? "opacity-50 pointer-events-none" : "opacity-100"}`}
+        >
           {recipes.map((recipe) => (
             <RecipeCard
               key={recipe.recipeId}

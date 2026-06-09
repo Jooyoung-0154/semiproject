@@ -51,12 +51,14 @@ public class RecipeController {
             @RequestParam(required = false) String tagIds,
             @RequestParam(required = false) String level,
             @RequestParam(required = false) String ingredients,
+            @RequestParam(required = false, defaultValue = "all") String sortType,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "12") int size) {
 
         RecipeSearchParams params = new RecipeSearchParams();
         params.setRecipeNmKo(name);
         params.setLevelNm(level);
+        params.setSortType(sortType);
         params.setPage(page);
         params.setSize(size);
 
