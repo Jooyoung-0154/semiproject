@@ -55,6 +55,7 @@ public class RecipeController {
             @RequestParam(required = false) String ingredients,
             @RequestParam(defaultValue = "OR") String ingredientMode,
             @RequestParam(required = false, defaultValue = "all") String sortType,
+            @RequestParam(required = false, defaultValue = "all") String ageGroup,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "12") int size) {
 
@@ -62,6 +63,7 @@ public class RecipeController {
         params.setRecipeNmKo(name);
         params.setLevelNm(level);
         params.setSortType(sortType);
+        params.setAgeGroup(ageGroup);
         params.setPage(page);
         params.setSize(size);
         params.setIngredientAnd("AND".equalsIgnoreCase(ingredientMode));

@@ -18,6 +18,7 @@ export interface BrowseParams {
   ingredients?: string[];
   ingredientMode?: "OR" | "AND";
   sortType?: string;
+  ageGroup?: string;
   page?: number;
   size?: number;
 }
@@ -42,6 +43,7 @@ const RecipeService = {
           : undefined,
         ingredientMode: params.ingredientMode ?? "OR",
         sortType: params.sortType || "all",
+        ageGroup: params.ageGroup || "all",
         page: params.page || 1,
         size: params.size || 12,
       },

@@ -35,6 +35,7 @@ export default function RecipeBrowse() {
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [ingredientMode, setIngredientMode] = useState<"OR" | "AND">("OR");
   const [sortType, setSortType] = useState("all");
+  const [ageGroup, setAgeGroup] = useState("all");
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedName(nameInput), 500);
@@ -69,6 +70,7 @@ export default function RecipeBrowse() {
           ingredients: ingredients.length ? ingredients : undefined,
           ingredientMode,
           sortType,
+          ageGroup,
           page: targetPage,
           size: PAGE_SIZE,
         };
@@ -85,7 +87,17 @@ export default function RecipeBrowse() {
         setIsLoading(false);
       }
     },
-    [debouncedName, selectedLevel, selectedTagIds, ingredients, ingredientMode, userId, user, sortType],
+    [
+      debouncedName,
+      selectedLevel,
+      selectedTagIds,
+      ingredients,
+      ingredientMode,
+      userId,
+      user,
+      sortType,
+      ageGroup,
+    ],
   );
 
   useEffect(() => {
@@ -197,6 +209,33 @@ export default function RecipeBrowse() {
                   {LEVEL_LABELS[lv]}
                 </button>
               ))}
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                연령대
+              </label>
+
+              <div className="flex gap-2 flex-wrap">
+                {[
+                  { value: "all", label: "전체" },
+                  { value: "age2030", label: "2030대" },
+                  { value: "age4050", label: "4050대" },
+                  { value: "age60", label: "60대 이상" },
+                ].map((item) => (
+                  <button
+                    key={item.value}
+                    onClick={() => setAgeGroup(item.value)}
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                      ageGroup === item.value
+                        ? "bg-orange-600 text-white border-orange-600"
+                        : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
           <div>
