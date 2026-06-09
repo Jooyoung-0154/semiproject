@@ -38,4 +38,6 @@ public interface MemberMapper {
     List<Member> searchMembers(String keyword);
     
     int updateIntro(@Param("id") String id, @Param("intro") String intro);
+
+    int updateScrapPublic(@Param("id") String id, @Param("scrapPublic") boolean scrapPublic);
 }

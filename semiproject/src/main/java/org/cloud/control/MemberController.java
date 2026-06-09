@@ -160,4 +160,9 @@ public class MemberController {
     public boolean updateIntro(@PathVariable String id, @RequestParam String intro) {
         return memberService.updateIntro(id, intro);
     }
+
+    @PutMapping("/{id}/scrap-public")
+    public boolean updateScrapPublic(@PathVariable String id, @RequestParam boolean scrapPublic) {
+        return memberService.updateScrapPublic(id, scrapPublic);
+    }
 }
