@@ -17,4 +17,6 @@ public interface ReviewMapper {
     List<Review> getReviewsByRecipeCode(String RECIPE_CODE);
 
     List<Review> getReviewsById(String ID);
+
+    String getRecipeWriterId(String recipeCode);
 }

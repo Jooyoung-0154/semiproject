@@ -108,7 +108,7 @@
     FROM
         member
     WHERE
-        ID = #{id} AND STATUS = 'ACTIVE'
+        BINARY ID = #{id} AND STATUS = 'ACTIVE'
 	</select>
 
 </mapper>
