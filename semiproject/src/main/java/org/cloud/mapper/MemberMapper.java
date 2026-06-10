@@ -31,6 +31,17 @@ public interface MemberMapper {
 
     int addFollowerCount(@Param("ID") String ID, @Param("amount") int amount);
     	
+
+    // 회원 탈퇴 시 작성 게시글/댓글/좋아요 정리
+    int deletePostLikesByWriterId(@Param("ID") String ID);
+
+    int deletePostCommentsByWriterId(@Param("ID") String ID);
+
+    int deletePostsByWriterId(@Param("ID") String ID);
+
+    int deletePostLikesByUserId(@Param("ID") String ID);
+
+    int deletePostCommentsByUserId(@Param("ID") String ID);
     int deleteMember(@Param("ID") String ID);
     
     Member selectMemberById(String id);

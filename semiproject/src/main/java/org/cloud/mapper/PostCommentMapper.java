@@ -20,6 +20,7 @@ public interface PostCommentMapper {
     int updateComment(PostComment comment);
     int deleteComment(@Param("commentId") int commentId, @Param("requesterId") String requesterId);
     int deleteCommentsByPostId(int postId);
+    int deletePostLikesByPostId(int postId);
     List<PostComment> getCommentsByPostId(int postId);
 
     int checkPostLikeExist(@Param("postId") int postId, @Param("userId") String userId);

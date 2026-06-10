@@ -7,6 +7,7 @@ import org.cloud.mapper.MemberMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 // BCrypt 적용 이후 DB에 있는 기존 평문 비밀번호는 로그인 불가.
 // 기존 테스트 계정은 비밀번호를 재설정하거나 DB에서 직접 BCrypt 해시로 교체 필요.
@@ -68,7 +69,22 @@ public class MemberService {
         return memberMapper.updateProfileImg(id, imageUrl) > 0;
     }
 
+    @Transactional
     public boolean deleteMember(String id) {
+        if (id == null || id.isBlank()) {
+            return false;
+        }
+
+        // 탈퇴 회원이 작성한 게시글은 화면에 남기지 않도록 함께 삭제한다.
+        // FK 제약 때문에 좋아요 -> 댓글 -> 게시글 순서로 삭제한다.
+        memberMapper.deletePostLikesByWriterId(id);
+        memberMapper.deletePostCommentsByWriterId(id);
+        memberMapper.deletePostsByWriterId(id);
+
+        // 탈퇴 회원이 다른 게시글에 남긴 댓글/좋아요도 정리한다.
+        memberMapper.deletePostLikesByUserId(id);
+        memberMapper.deletePostCommentsByUserId(id);
+
         return memberMapper.deleteMember(id) > 0;
     }
 
