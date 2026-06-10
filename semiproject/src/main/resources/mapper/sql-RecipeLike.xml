@@ -2,84 +2,85 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.cloud.mapper.RecipeLikeMapper">
 
-	<!-- 좋아요 추가 + RECIPE.LIKE_COUNT 증가 -->
-	<insert id="insertLike">
-		INSERT INTO recipe_like (USER_ID, RECIPE_CODE)
-		VALUES
-		(#{userId}, #{recipeCode})
-	</insert>
+    <insert id="insertLike">
+        INSERT INTO recipe_like (USER_ID, RECIPE_CODE)
+        VALUES (#{userId}, #{recipeCode})
+    </insert>
 
-	<update id="incrementLikeCount">
-		UPDATE recipe SET LIKE_COUNT = LIKE_COUNT + 1 WHERE
-		RECIPE_ID =
-		#{recipeCode}
-	</update>
+    <update id="incrementLikeCount">
+        UPDATE recipe
+        SET LIKE_COUNT = LIKE_COUNT + 1
+        WHERE RECIPE_ID = #{recipeCode}
+    </update>
 
-	<!-- 좋아요 취소 + RECIPE.LIKE_COUNT 감소 -->
-	<delete id="deleteLike">
-		DELETE FROM recipe_like
-		WHERE USER_ID = #{userId} AND
-		RECIPE_CODE = #{recipeCode}
-	</delete>
+    <delete id="deleteLike">
+        DELETE FROM recipe_like
+        WHERE USER_ID = #{userId}
+          AND RECIPE_CODE = #{recipeCode}
+    </delete>
 
-	<update id="decrementLikeCount">
-		UPDATE recipe SET LIKE_COUNT = GREATEST(LIKE_COUNT -
-		1, 0) WHERE RECIPE_ID =
-		#{recipeCode}
-	</update>
+    <update id="decrementLikeCount">
+        UPDATE recipe
+        SET LIKE_COUNT = GREATEST(LIKE_COUNT - 1, 0)
+        WHERE RECIPE_ID = #{recipeCode}
+    </update>
 
-	<!-- 좋아요 여부 확인 -->
-	<select id="checkLikeExist" resultType="int">
-		SELECT COUNT(*) FROM
-		recipe_like
-		WHERE USER_ID = #{userId} AND RECIPE_CODE = #{recipeCode}
-	</select>
+    <select id="checkLikeExist" resultType="int">
+        SELECT COUNT(*)
+        FROM recipe_like
+        WHERE USER_ID = #{userId}
+          AND RECIPE_CODE = #{recipeCode}
+    </select>
 
-	<!-- 레시피 좋아요 수 조회 -->
-	<select id="getLikeCount" resultType="int">
-		SELECT COUNT(*) FROM
-		recipe_like
-		WHERE RECIPE_CODE = #{recipeCode}
-	</select>
+    <select id="getLikeCount" resultType="int">
+        SELECT COUNT(*)
+        FROM recipe_like
+        WHERE RECIPE_CODE = #{recipeCode}
+    </select>
 
-	<!-- 유저가 좋아요한 recipeCode 목록 -->
-	<select id="getLikedRecipeIdsByUser" resultType="string">
-		SELECT
-		RECIPE_CODE FROM recipe_like
-		WHERE USER_ID = #{userId}
-	</select>
+    <select id="getLikedRecipeIdsByUser" resultType="string">
+        SELECT RECIPE_CODE
+        FROM recipe_like
+        WHERE USER_ID = #{userId}
+    </select>
 
-	<!-- 유저가 좋아요한 레시피 목록 -->
-	<select id="getLikedRecipesByUser"
-		resultType="org.cloud.dto.Recipe_Info">
-		SELECT
-		r.RECIPE_ID AS recipeId,
-		r.RECIPE_NM_KO AS recipeNmKo,
-		r.SUMRY AS sumry,
-		r.NATION_CODE AS nationCode,
-		r.NATION_NM AS nationNm,
-		r.TY_CODE AS tyCode,
-		r.TY_NM AS tyNm,
-		r.COOKING_TIME AS cookingTime,
-		r.CALORIE AS calorie,
-		r.QNT AS qnt,
-		r.LEVEL_NM AS levelNm,
-		r.HIT AS hit,
-		r.LIKE_COUNT AS likeCount,
-		r.PRICE AS price,
-		r.WRITER_ID AS writerId,
-		m.NICKNAME AS writerNickname,
-		m.PROFILE_IMG AS writerProfileImg,
-		(SELECT img_url
-		FROM recipe_image
-		WHERE recipe_code = r.RECIPE_ID
-		ORDER BY sort_order ASC
-		LIMIT 1) AS thumbImgUrl
-		FROM recipe_like rl
-		JOIN RECIPE r ON rl.RECIPE_CODE = r.RECIPE_ID
-		LEFT JOIN member m ON r.WRITER_ID = m.ID
-		WHERE rl.USER_ID = #{userId}
-		ORDER BY r.RECIPE_ID DESC
-	</select>
+    <select id="getRecipeWriterId" resultType="string">
+        SELECT WRITER_ID
+        FROM recipe
+        WHERE RECIPE_ID = #{recipeCode}
+    </select>
+
+    <select id="getLikedRecipesByUser" resultType="org.cloud.dto.Recipe_Info">
+        SELECT
+            r.RECIPE_ID AS recipeId,
+            r.RECIPE_NM_KO AS recipeNmKo,
+            r.SUMRY AS sumry,
+            r.NATION_CODE AS nationCode,
+            r.NATION_NM AS nationNm,
+            r.TY_CODE AS tyCode,
+            r.TY_NM AS tyNm,
+            r.COOKING_TIME AS cookingTime,
+            r.CALORIE AS calorie,
+            r.QNT AS qnt,
+            r.LEVEL_NM AS levelNm,
+            r.HIT AS hit,
+            r.LIKE_COUNT AS likeCount,
+            r.PRICE AS price,
+            r.WRITER_ID AS writerId,
+            m.NICKNAME AS writerNickname,
+            m.PROFILE_IMG AS writerProfileImg,
+            (
+                SELECT img_url
+                FROM recipe_image
+                WHERE recipe_code = r.RECIPE_ID
+                ORDER BY sort_order ASC
+                LIMIT 1
+            ) AS thumbImgUrl
+        FROM recipe_like rl
+        JOIN recipe r ON rl.RECIPE_CODE = r.RECIPE_ID
+        LEFT JOIN member m ON r.WRITER_ID = m.ID
+        WHERE rl.USER_ID = #{userId}
+        ORDER BY r.RECIPE_ID DESC
+    </select>
 
 </mapper>

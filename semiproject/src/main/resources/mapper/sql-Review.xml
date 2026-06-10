@@ -17,19 +17,41 @@
     <delete id="deleteReview">
         DELETE FROM review
         WHERE REVIEW_ID = #{reviewId}
-          AND (ID = #{requesterId} OR #{requesterId} = 'Admin')
+          AND (ID = #{requesterId} OR #{requesterId} = 'Admin' OR #{requesterId} = 'admin')
     </delete>
 
     <select id="getReviewsByRecipeCode" resultType="org.cloud.dto.Review">
-        SELECT * FROM review
+        SELECT
+            REVIEW_ID AS reviewId,
+            RECIPE_CODE AS recipeCode,
+            ID AS id,
+            REVIEW_CONTENT AS reviewContent,
+            REVIEW_HIT AS reviewHit,
+            THUMBS_UP AS thumbsUp,
+            REG_DATE AS regDate
+        FROM review
         WHERE RECIPE_CODE = #{RECIPE_CODE}
         ORDER BY REG_DATE DESC
     </select>
 
     <select id="getReviewsById" resultType="org.cloud.dto.Review">
-        SELECT * FROM review
+        SELECT
+            REVIEW_ID AS reviewId,
+            RECIPE_CODE AS recipeCode,
+            ID AS id,
+            REVIEW_CONTENT AS reviewContent,
+            REVIEW_HIT AS reviewHit,
+            THUMBS_UP AS thumbsUp,
+            REG_DATE AS regDate
+        FROM review
         WHERE ID = #{ID}
         ORDER BY REG_DATE DESC
+    </select>
+
+    <select id="getRecipeWriterId" resultType="string">
+        SELECT WRITER_ID
+        FROM recipe
+        WHERE RECIPE_ID = #{recipeCode}
     </select>
 
 </mapper>

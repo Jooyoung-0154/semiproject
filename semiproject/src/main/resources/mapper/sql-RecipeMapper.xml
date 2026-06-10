@@ -368,4 +368,11 @@
 		#{recipeId}
 	</update>
 
+
+    <select id="selectWriterIdByRecipeId" resultType="string">
+        SELECT WRITER_ID
+        FROM RECIPE
+        WHERE RECIPE_ID = #{recipeId}
+    </select>
+
 </mapper>

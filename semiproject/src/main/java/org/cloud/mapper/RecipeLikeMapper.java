@@ -15,6 +15,6 @@ public interface RecipeLikeMapper {
     int checkLikeExist(@Param("userId") String userId, @Param("recipeCode") String recipeCode);
     int getLikeCount(@Param("recipeCode") String recipeCode);
     List<String> getLikedRecipeIdsByUser(@Param("userId") String userId);
-
     List<Recipe_Info> getLikedRecipesByUser(@Param("userId") String userId);
+    String getRecipeWriterId(@Param("recipeCode") String recipeCode);
 }

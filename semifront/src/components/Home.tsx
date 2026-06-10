@@ -151,8 +151,14 @@ export default function Home() {
                     ),
                   )
                 }
-                onDelete={user?.id === "Admin" || user?.id === recipe.writerId ? handleDeleteRecipe : undefined}
-                onEdit={user?.id === recipe.writerId ? handleEditRecipe : undefined}
+                onDelete={
+                  user?.id === "Admin" || user?.id === recipe.writerId
+                    ? handleDeleteRecipe
+                    : undefined
+                }
+                onEdit={
+                  user?.id === recipe.writerId ? handleEditRecipe : undefined
+                }
               />
             ))}
           </div>

@@ -2,102 +2,132 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.cloud.mapper.PostCommentMapper">
 
-	<insert id="insertPost">
-		INSERT INTO post (WRITER_ID, CONTENT, POST_IMG)
-		VALUES (#{writerId}, #{content}, #{postImg})
-	</insert>
+    <insert id="insertPost" useGeneratedKeys="true" keyProperty="postId">
+        INSERT INTO post (WRITER_ID, CONTENT, POST_IMG, LIKE_COUNT)
+        VALUES (#{writerId}, #{content}, #{postImg}, 0)
+    </insert>
 
-	<update id="updatePost">
-		UPDATE post
-		SET
-		CONTENT = #{content},
-		POST_IMG = CASE
-		WHEN #{postImg} IS NULL OR #{postImg} = '' THEN POST_IMG
-		ELSE
-		#{postImg}
-		END
-		WHERE POST_ID = #{postId}
-	</update>
+    <update id="updatePost">
+        UPDATE post
+        SET
+            CONTENT = #{content},
+            POST_IMG = CASE
+                WHEN #{postImg} IS NULL OR #{postImg} = '' THEN POST_IMG
+                ELSE #{postImg}
+            END
+        WHERE POST_ID = #{postId}
+    </update>
 
-	<delete id="deleteCommentsByPostId">
-		DELETE FROM post_comment
-		WHERE POST_ID = #{postId}
-	</delete>
+    <delete id="deleteCommentsByPostId">
+        DELETE FROM post_comment
+        WHERE POST_ID = #{postId}
+    </delete>
 
-	<delete id="deletePost">
-		DELETE FROM post
-		WHERE POST_ID = #{postId}
-	</delete>
+    <delete id="deletePost">
+        DELETE FROM post
+        WHERE POST_ID = #{postId}
+    </delete>
 
-	<select id="getPostList" resultType="org.cloud.dto.Post">
-		SELECT
-		POST_ID AS postId,
-		WRITER_ID AS writerId,
-		CONTENT AS content,
-		POST_IMG AS postImg,
-		REG_DATE
-		AS regDate,
-		LIKE_COUNT AS likeCount
-		FROM post
-		ORDER BY REG_DATE DESC
-	</select>
+    <select id="getPostList" resultType="org.cloud.dto.Post">
+        SELECT
+            POST_ID AS postId,
+            WRITER_ID AS writerId,
+            CONTENT AS content,
+            POST_IMG AS postImg,
+            REG_DATE AS regDate,
+            LIKE_COUNT AS likeCount
+        FROM post
+        ORDER BY REG_DATE DESC
+    </select>
 
-	<select id="getPostsByWriter" resultType="org.cloud.dto.Post">
-		SELECT
-		POST_ID AS
-		postId,
-		WRITER_ID AS writerId,
-		CONTENT AS content,
-		POST_IMG AS postImg,
-		REG_DATE AS regDate,
-		LIKE_COUNT AS likeCount
-		FROM post
-		WHERE WRITER_ID =
-		#{writerId}
-		ORDER BY REG_DATE DESC
-	</select>
+    <select id="getPostsByWriter" resultType="org.cloud.dto.Post">
+        SELECT
+            POST_ID AS postId,
+            WRITER_ID AS writerId,
+            CONTENT AS content,
+            POST_IMG AS postImg,
+            REG_DATE AS regDate,
+            LIKE_COUNT AS likeCount
+        FROM post
+        WHERE WRITER_ID = #{writerId}
+        ORDER BY REG_DATE DESC
+    </select>
 
-	<select id="getPostDetail" resultType="org.cloud.dto.Post">
-		SELECT
-		POST_ID AS postId,
-		WRITER_ID AS writerId,
-		CONTENT AS content,
-		POST_IMG AS postImg,
-		REG_DATE
-		AS regDate,
-		LIKE_COUNT AS likeCount
-		FROM post
-		WHERE POST_ID = #{postId}
-	</select>
+    <select id="getPostDetail" resultType="org.cloud.dto.Post">
+        SELECT
+            POST_ID AS postId,
+            WRITER_ID AS writerId,
+            CONTENT AS content,
+            POST_IMG AS postImg,
+            REG_DATE AS regDate,
+            LIKE_COUNT AS likeCount
+        FROM post
+        WHERE POST_ID = #{postId}
+    </select>
 
-	<insert id="insertComment">
-		INSERT INTO post_comment (POST_ID, WRITER_ID,
-		CONTENT)
-		VALUES (#{postId}, #{writerId}, #{content})
-	</insert>
+    <insert id="insertComment">
+        INSERT INTO post_comment (POST_ID, WRITER_ID, CONTENT)
+        VALUES (#{postId}, #{writerId}, #{content})
+    </insert>
 
-	<update id="updateComment">
-    UPDATE post_comment
-    SET CONTENT = #{content}
-    WHERE COMMENT_ID = #{commentId}
-</update>
+    <update id="updateComment">
+        UPDATE post_comment
+        SET CONTENT = #{content}
+        WHERE COMMENT_ID = #{commentId}
+    </update>
 
-	<delete id="deleteComment">
-		DELETE FROM post_comment
-		WHERE COMMENT_ID = #{commentId}
-		  AND (WRITER_ID = #{requesterId} OR #{requesterId} = 'Admin')
-	</delete>
+    <delete id="deleteComment">
+        DELETE FROM post_comment
+        WHERE COMMENT_ID = #{commentId}
+          AND (WRITER_ID = #{requesterId} OR #{requesterId} = 'Admin' OR #{requesterId} = 'admin')
+    </delete>
 
-	<select id="getCommentsByPostId" resultType="org.cloud.dto.PostComment">
-    SELECT
-        COMMENT_ID AS commentId,
-        POST_ID AS postId,
-        WRITER_ID AS writerId,
-        CONTENT AS content,
-        REG_DATE AS regDate
-    FROM post_comment
-    WHERE POST_ID = #{postId}
-    ORDER BY REG_DATE ASC
-</select>
+    <select id="getCommentsByPostId" resultType="org.cloud.dto.PostComment">
+        SELECT
+            COMMENT_ID AS commentId,
+            POST_ID AS postId,
+            WRITER_ID AS writerId,
+            CONTENT AS content,
+            REG_DATE AS regDate
+        FROM post_comment
+        WHERE POST_ID = #{postId}
+        ORDER BY REG_DATE ASC
+    </select>
+
+    <select id="checkPostLikeExist" resultType="int">
+        SELECT COUNT(*)
+        FROM post_like
+        WHERE POST_ID = #{postId}
+          AND USER_ID = #{userId}
+    </select>
+
+    <insert id="insertPostLike">
+        INSERT INTO post_like (POST_ID, USER_ID)
+        VALUES (#{postId}, #{userId})
+    </insert>
+
+    <delete id="deletePostLike">
+        DELETE FROM post_like
+        WHERE POST_ID = #{postId}
+          AND USER_ID = #{userId}
+    </delete>
+
+    <update id="incrementPostLikeCount">
+        UPDATE post
+        SET LIKE_COUNT = LIKE_COUNT + 1
+        WHERE POST_ID = #{postId}
+    </update>
+
+    <update id="decrementPostLikeCount">
+        UPDATE post
+        SET LIKE_COUNT = GREATEST(LIKE_COUNT - 1, 0)
+        WHERE POST_ID = #{postId}
+    </update>
+
+    <select id="getPostLikeCount" resultType="int">
+        SELECT COUNT(*)
+        FROM post_like
+        WHERE POST_ID = #{postId}
+    </select>
 
 </mapper>

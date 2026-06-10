@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.cloud.mapper.NotificationMapper">
+
+    <insert id="insertNotification">
+        INSERT INTO notification
+        (
+            RECEIVER_ID,
+            SENDER_ID,
+            TYPE,
+            TARGET_ID,
+            MESSAGE
+        )
+        VALUES
+        (
+            #{receiverId},
+            #{senderId},
+            #{type},
+            #{targetId},
+            #{message}
+        )
+    </insert>
+
+    <select id="getNotificationList" resultType="org.cloud.dto.Notification">
+        SELECT
+            NOTI_ID AS notiId,
+            RECEIVER_ID AS receiverId,
+            SENDER_ID AS senderId,
+            TYPE AS type,
+            TARGET_ID AS targetId,
+            MESSAGE AS message,
+            IS_READ AS isRead,
+            REG_DATE AS regDate
+        FROM notification
+        WHERE RECEIVER_ID = #{receiverId}
+          AND IS_READ = 0
+        ORDER BY REG_DATE DESC
+    </select>
+
+    <select id="getUnreadCount" resultType="int">
+        SELECT COUNT(*)
+        FROM notification
+        WHERE RECEIVER_ID = #{receiverId}
+          AND IS_READ = 0
+    </select>
+
+    <update id="readNotification">
+        UPDATE notification
+        SET IS_READ = 1
+        WHERE NOTI_ID = #{notiId}
+    </update>
+
+    <update id="readAll">
+        UPDATE notification
+        SET IS_READ = 1
+        WHERE RECEIVER_ID = #{receiverId}
+    </update>
+
+</mapper>

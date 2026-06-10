@@ -13,8 +13,23 @@ public class ReviewService {
     @Autowired
     private ReviewMapper reviewMapper;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public int writeReview(Review review) {
         reviewMapper.insertReview(review);
+        try {
+            String writerId = reviewMapper.getRecipeWriterId(review.getRecipeCode());
+            notificationService.createNotification(
+                    writerId,
+                    review.getId(),
+                    "RECIPE_COMMENT",
+                    review.getRecipeCode(),
+                    review.getId() + "님이 회원님의 레시피에 댓글을 남겼습니다."
+            );
+        } catch (Exception e) {
+            System.out.println("레시피 댓글 알림 저장 실패: " + e.getMessage());
+        }
         return review.getReviewId();
     }
 

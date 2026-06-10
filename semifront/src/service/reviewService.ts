@@ -3,9 +3,11 @@ import { Review, ReviewImage } from "../types/type";
 
 export const reviewService = {
   write: (review: Review) => api.post<number>("/reviews", review),
-  modify: (reviewId: number, review: Review) => api.put(`/reviews/${reviewId}`, review),
+  modify: (reviewId: number, review: Review) =>
+    api.put(`/reviews/${reviewId}`, review),
   remove: (reviewId: number) => api.delete(`/reviews/${reviewId}`),
-  getRecipeReviews: (recipeCode: string) => api.get<Review[]>(`/reviews/recipe/${recipeCode}`),
+  getRecipeReviews: (recipeCode: string) =>
+    api.get<Review[]>(`/reviews/recipe/${recipeCode}`),
   getMyReviews: (userId: string) => api.get<Review[]>(`/reviews/my/${userId}`),
 
   uploadImages: (reviewId: number, files: File[]) => {

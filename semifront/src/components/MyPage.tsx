@@ -21,7 +21,9 @@ export default function MyPage() {
 
   const [user, setUser] = useState<Member | null>(authUser);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<"recipes" | "liked" | "posts">("recipes");
+  const [activeTab, setActiveTab] = useState<"recipes" | "liked" | "posts">(
+    "recipes",
+  );
   const [scrapPublic, setScrapPublic] = useState<boolean>(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
