@@ -2,8 +2,8 @@ import api from "../api/axios";
 import { Post, PostComment } from "../types/type";
 
 export const postService = {
-  getList: (viewerId?: string) =>
-    api.get<Post[]>("/posts", { params: viewerId ? { viewerId } : {} }),
+  getList: (writerId?: string) =>
+    api.get<Post[]>("/posts", { params: writerId ? { writerId } : {} }),
 
   getByWriter: (writerId: string, viewerId?: string) =>
     api.get<Post[]>("/posts", {
