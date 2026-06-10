@@ -17,6 +17,7 @@ public class Member {
 
 	private LocalDate birthDate;
 	private String gender;
+	private String status;
 
 	private List<String> followerIds;
 	private List<String> followingIds;
