@@ -68,9 +68,6 @@
 		UPDATE member SET SCRAP_PUBLIC = #{scrapPublic} WHERE ID = #{id}
 	</update>
 
-    <update id="addFollowingCount">
-        UPDATE member SET FOLLOWING_COUNT = FOLLOWING_COUNT + #{amount} WHERE ID = #{ID}
-    </update>
 
 	<update id="addFollowerCount">
 		UPDATE member SET FOLLOWER_COUNT = FOLLOWER_COUNT +
