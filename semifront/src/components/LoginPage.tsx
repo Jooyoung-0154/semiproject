@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isCapsLockOn, setIsCapsLockOn] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -21,15 +22,14 @@ export default function LoginPage() {
       console.error(err);
       let message = "로그인에 실패했습니다. 다시 시도해주세요.";
       if (axios.isAxiosError(err) && err.response) {
-      
         if (err.response.status === 400) {
           message = "잘못된 회원정보입니다. 아이디와 비밀번호를 확인해주세요.";
         } else {
           message = err.response.data?.message || message;
         }
-        } else if (err instanceof Error) {
-          message = err.message;
-        }
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
       setError(message);
     }
   };
@@ -51,16 +51,22 @@ export default function LoginPage() {
           />
         </div>
 
-        <div>
+        <div className="relative">
           <label className="block text-sm font-medium mb-2">비밀번호</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => setIsCapsLockOn(e.getModifierState("CapsLock"))}
+            onKeyUp={(e) => setIsCapsLockOn(e.getModifierState("CapsLock"))}
+            onBlur={() => setIsCapsLockOn(false)}
             className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
             placeholder="비밀번호를 입력하세요"
             required
           />
+          {isCapsLockOn && (
+            <div className="capslock-tooltip">⚠ Caps Lock이 켜져 있습니다.</div>
+          )}
         </div>
 
         <button
@@ -72,8 +78,11 @@ export default function LoginPage() {
       </form>
 
       <p className="text-center text-sm text-gray-500 mt-6">
-        계정이 없으신가요?{' '}
-        <Link to="/signup" className="text-orange-600 font-semibold hover:underline">
+        계정이 없으신가요?{" "}
+        <Link
+          to="/signup"
+          className="text-orange-600 font-semibold hover:underline"
+        >
           회원가입
         </Link>
       </p>

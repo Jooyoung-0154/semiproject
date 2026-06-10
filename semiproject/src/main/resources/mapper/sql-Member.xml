@@ -35,18 +35,6 @@
 		#{oldPassword}
 	</update>
 
-	<!-- 잔고 확인 -->
-	<select id="getBalance" resultType="int">
-		SELECT BALANCE FROM member
-		WHERE ID = #{ID}
-	</select>
-
-	<!-- 잔고 충전/감소 (amount에 양수를 넣으면 충전, 음수를 넣으면 감소) -->
-	<update id="updateBalance">
-		UPDATE member SET BALANCE = BALANCE + #{amount} WHERE
-		ID = #{ID}
-	</update>
-
 	<!-- 프로필 이미지 변경 -->
 	<update id="updateProfileImg">
 		UPDATE member SET PROFILE_IMG = #{PROFILE_IMG} WHERE
@@ -58,11 +46,13 @@
 		UPDATE member SET INTRO = #{intro} WHERE ID = #{id}
 	</update>
 
+	<!-- 팔로잉 카운터 -->
 	<update id="addFollowingCount">
 		UPDATE member SET FOLLOWING_COUNT = FOLLOWING_COUNT +
 		#{amount} WHERE ID =
 		#{ID}
 	</update>
+	
 	<!-- 스크랩 공개 여부 변경 -->
 	<update id="updateScrapPublic">
 		UPDATE member SET SCRAP_PUBLIC = #{scrapPublic} WHERE ID = #{id}
@@ -102,7 +92,7 @@
     FROM
         member
     WHERE
-        ID = #{id} AND STATUS = 'ACTIVE'
+        BINARY ID = #{id} AND STATUS = 'ACTIVE'
 	</select>
 
 </mapper>

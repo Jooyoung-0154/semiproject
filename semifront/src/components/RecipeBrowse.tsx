@@ -410,8 +410,16 @@ export default function RecipeBrowse() {
                   ),
                 )
               }
-              onDelete={user?.id === recipe.writerId || user?.id === "Admin" ? handleDeleteRecipe : undefined}
-              onEdit={user?.id === recipe.writerId ? (id) => navigate(`/write?edit=${id}`) : undefined}
+              onDelete={
+                user?.id === recipe.writerId || user?.id === "Admin"
+                  ? handleDeleteRecipe
+                  : undefined
+              }
+              onEdit={
+                user?.id === recipe.writerId
+                  ? (id) => navigate(`/write?edit=${id}`)
+                  : undefined
+              }
             />
           ))}
         </div>
