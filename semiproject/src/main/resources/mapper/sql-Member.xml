@@ -58,6 +58,12 @@
 		UPDATE member SET SCRAP_PUBLIC = #{scrapPublic} WHERE ID = #{id}
 	</update>
 
+	<update id="addFollowerCount">
+		UPDATE member SET FOLLOWER_COUNT = FOLLOWER_COUNT +
+		#{amount} WHERE ID =
+		#{ID}
+	</update>
+
 	<!-- 회원 탈퇴 -->
 	<update id="deleteMember">
 		UPDATE member

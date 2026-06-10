@@ -49,7 +49,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/review-images/**").permitAll()
                 .requestMatchers("/api/ai/**").permitAll()
                 .requestMatchers("/resources/static/image/**").permitAll()
-                
+                .requestMatchers("/api/notifications/**").permitAll()                
                 .anyRequest().authenticated()
             );
 

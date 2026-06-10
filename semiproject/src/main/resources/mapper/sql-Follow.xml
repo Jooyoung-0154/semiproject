@@ -24,7 +24,8 @@
             m.NICKNAME      AS nickname,
             m.PROFILE_IMG   AS profileImg,
             m.FOLLOWER_COUNT  AS followerCount,
-            m.FOLLOWING_COUNT AS followingCount
+            m.FOLLOWING_COUNT AS followingCount,
+            (SELECT COUNT(*) FROM recipe r WHERE r.WRITER_ID = m.ID) AS recipeCount
         FROM follow f
         JOIN member m ON f.FOLLOWING_ID = m.ID
         WHERE f.FOLLOWER_ID = #{userId}

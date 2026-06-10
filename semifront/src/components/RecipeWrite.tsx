@@ -452,7 +452,7 @@ export default function RecipeWrite() {
       ) : (
         items.map((item, index) => (
           <div key={index} className="flex gap-2 items-center">
-            <span className="text-gray-400 text-sm w-5 text-right flex-shrink-0">
+            <span className="text-gray-400 text-sm w-5 text-right shrink-0">
               {index + 1}
             </span>
             <input
@@ -474,7 +474,7 @@ export default function RecipeWrite() {
             <button
               type="button"
               onClick={() => removeIngredient(setter, index)}
-              className="text-gray-400 hover:text-red-500 flex-shrink-0"
+              className="text-gray-400 hover:text-red-500 shrink-0"
             >
               <X className="w-5 h-5" />
             </button>
