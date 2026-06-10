@@ -149,7 +149,6 @@ public class Member {
 		this.scrapPublic = scrapPublic;
 	}
 
-<<<<<<< HEAD
 	public LocalDate getBirthDate() {
 		return birthDate;
 	}
@@ -166,7 +165,13 @@ public class Member {
 		this.gender = gender;
 	}
 
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 	
-=======
->>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 }

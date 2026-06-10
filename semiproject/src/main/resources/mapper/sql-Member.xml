@@ -28,31 +28,12 @@
 		#{ID}
 	</update>
 
-<<<<<<< HEAD
-	<!-- 스크랩 공개 여부 변경 -->
-	<update id="updateScrapPublic">
-		UPDATE member SET SCRAP_PUBLIC = #{scrapPublic} WHERE ID = #{id}
-	</update>
-
-    <update id="addFollowingCount">
-        UPDATE member SET FOLLOWING_COUNT = FOLLOWING_COUNT + #{amount} WHERE ID = #{ID}
-    </update>
-
-    <update id="addFollowerCount">
-        UPDATE member SET FOLLOWER_COUNT = FOLLOWER_COUNT + #{amount} WHERE ID = #{ID}
-    </update>
-	<!-- 회원 삭제 -->
-	<delete id="deleteMember">
-		DELETE FROM member WHERE ID = #{ID}
-	</delete>
-=======
 	<!-- 비밀번호 확인 및 변경 -->
 	<update id="updatePassword">
 		UPDATE member SET PASSWORD = #{newPassword} WHERE ID
 		= #{ID} AND PASSWORD =
 		#{oldPassword}
 	</update>
->>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 
 	<!-- 잔고 확인 -->
 	<select id="getBalance" resultType="int">
@@ -87,15 +68,6 @@
 		UPDATE member SET SCRAP_PUBLIC = #{scrapPublic} WHERE ID = #{id}
 	</update>
 
-    <update id="addFollowingCount">
-        UPDATE member SET FOLLOWING_COUNT = FOLLOWING_COUNT + #{amount} WHERE ID = #{ID}
-    </update>
-
-	<update id="addFollowerCount">
-		UPDATE member SET FOLLOWER_COUNT = FOLLOWER_COUNT +
-		#{amount} WHERE ID =
-		#{ID}
-	</update>
 	<!-- 회원 탈퇴 -->
 	<update id="deleteMember">
 		UPDATE member

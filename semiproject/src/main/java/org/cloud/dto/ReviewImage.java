@@ -7,7 +7,6 @@ public class ReviewImage {
     private int imageId;
     private int reviewId;
     private String imageUrl;
-<<<<<<< HEAD
 	public int getImageId() {
 		return imageId;
 	}
@@ -27,6 +26,4 @@ public class ReviewImage {
 		this.imageUrl = imageUrl;
 	}
     
-=======
->>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 }
