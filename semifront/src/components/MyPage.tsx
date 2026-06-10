@@ -21,7 +21,13 @@ export default function MyPage() {
 
   const [user, setUser] = useState<Member | null>(authUser);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+<<<<<<< HEAD
+  const [activeTab, setActiveTab] = useState<"recipes" | "liked" | "posts">(
+    "recipes",
+  );
+=======
   const [activeTab, setActiveTab] = useState<"recipes" | "liked" | "posts">("recipes");
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
   const [scrapPublic, setScrapPublic] = useState<boolean>(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
@@ -156,6 +162,10 @@ export default function MyPage() {
       </div>
     );
   }
+<<<<<<< HEAD
+  if (!displayUser)
+    return <div className="text-center py-8">유저 정보가 없습니다.</div>;
+=======
   if (!displayUser) {
     return (
       <div className="text-center py-12 space-y-4">
@@ -171,6 +181,7 @@ export default function MyPage() {
       </div>
     );
   }
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 
   return (
     <div className="mypage-container">

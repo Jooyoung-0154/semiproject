@@ -45,4 +45,9 @@ public interface RecipeMapper {
     int countRecipeById(String writerId);
 
     int incrementHit(@Param("recipeId") String recipeId);
+<<<<<<< HEAD
+
+    String selectWriterIdByRecipeId(@Param("recipeId") String recipeId);
+=======
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 }

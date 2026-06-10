@@ -60,10 +60,13 @@ export default function Home() {
     } else {
       alert("삭제에 실패했습니다.");
     }
+<<<<<<< HEAD
+=======
   };
 
   const handleEditRecipe = (recipeId: string) => {
     navigate(`/write?edit=${recipeId}`);
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
   };
 
   return (
@@ -151,8 +154,12 @@ export default function Home() {
                     ),
                   )
                 }
+<<<<<<< HEAD
+                onDelete={user?.id === "Admin" ? handleDeleteRecipe : undefined}
+=======
                 onDelete={user?.id === "Admin" || user?.id === recipe.writerId ? handleDeleteRecipe : undefined}
                 onEdit={user?.id === recipe.writerId ? handleEditRecipe : undefined}
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
               />
             ))}
           </div>

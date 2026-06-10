@@ -2,48 +2,47 @@ import api from "../api/axios";
 import { Post, PostComment } from "../types/type";
 
 export const postService = {
-  // 전체 게시글 조회
-  getList: () => api.get<Post[]>("/posts"),
+  getList: (viewerId?: string) =>
+    api.get<Post[]>("/posts", { params: viewerId ? { viewerId } : {} }),
 
-  // 개인 게시글 조회
-  getByWriter: (writerId: string) =>
-    api.get<Post[]>(`/posts?writerId=${encodeURIComponent(writerId)}`),
+  getByWriter: (writerId: string, viewerId?: string) =>
+    api.get<Post[]>("/posts", {
+      params: {
+        writerId,
+        ...(viewerId ? { viewerId } : {}),
+      },
+    }),
 
-  // 게시글 상세 조회
-  getDetail: (postId: number) => api.get<Post>(`/posts/${postId}`),
+  getDetail: (postId: number, viewerId?: string) =>
+    api.get<Post>(`/posts/${postId}`, {
+      params: viewerId ? { viewerId } : {},
+    }),
 
-  // 일반 게시글 작성
   write: (post: Post) => api.post("/posts/json", post),
 
-  // 이미지 포함 게시글 작성
-  writeWithImage: (formData: FormData) =>
-    api.post("/posts", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }),
+  writeWithImage: (formData: FormData) => api.post("/posts", formData),
 
-  // 일반 게시글 수정
   modify: (postId: number, post: Post) => api.put(`/posts/${postId}`, post),
 
-  // 이미지 포함 게시글 수정
   modifyWithImage: (postId: number, formData: FormData) =>
-    api.put(`/posts/${postId}/image`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }),
+    api.put(`/posts/${postId}/image`, formData),
 
+<<<<<<< HEAD
+  deletePost: (postId: number, requesterId: string) =>
+    api.delete(`/posts/${postId}`, { params: { requesterId } }),
+=======
   // 게시글 삭제 (인증은 서버 세션으로 처리)
   deletePost: (postId: number) => api.delete(`/posts/${postId}`),
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 
-  // 댓글 추가
   addComment: (comment: PostComment) => api.post("/posts/comment", comment),
 
-  // 댓글 삭제
-  deleteComment: (commentId: number) =>
-    api.delete(`/posts/comment/${commentId}`),
-  // 댓글 수정
-  updateComment: (commentId: number, comment: any) =>
+  deleteComment: (commentId: number, requesterId: string) =>
+    api.delete(`/posts/comment/${commentId}`, { params: { requesterId } }),
+
+  updateComment: (commentId: number, comment: PostComment) =>
     api.put(`/posts/comment/${commentId}`, comment),
+
+  toggleLike: (postId: number, userId: string) =>
+    api.post(`/posts/${postId}/like`, null, { params: { userId } }),
 };

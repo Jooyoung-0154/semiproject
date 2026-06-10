@@ -7,7 +7,10 @@ import { useAuth } from "../context/AuthContext";
 import { tagService } from "../service/tagService";
 import RecipeService from "../service/recipeService";
 import { API_BASE_URL } from "../config/api";
+<<<<<<< HEAD
+=======
 import askGemini from "../service/aiService";
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 
 export default function RecipeWrite() {
   const navigate = useNavigate();
@@ -62,6 +65,16 @@ export default function RecipeWrite() {
   const [isLoadingEdit, setIsLoadingEdit] = useState(isEditMode);
   const [existingMainImgUrls, setExistingMainImgUrls] = useState<string[]>([]);
   const [existingStepImgUrls, setExistingStepImgUrls] = useState<string[]>([""]);
+
+  const normalizeImageUrl = (path?: string | null) => {
+    if (!path) return "";
+    const cleanPath = String(path).trim();
+    if (!cleanPath) return "";
+    if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) return cleanPath;
+    if (cleanPath.startsWith("/")) return `${API_BASE_URL}${cleanPath}`;
+    return `${API_BASE_URL}/uploads/${cleanPath}`;
+  };
+
 
   useEffect(() => {
     tagService.getAllTags().then((res) => setAllTags(res.data)).catch(() => setAllTags([]));
@@ -214,9 +227,7 @@ export default function RecipeWrite() {
       if (stepImages[i]) {
         const formData = new FormData();
         formData.append("file", stepImages[i]!);
-        const res = await api.post("/recipe-images/step-image", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        const res = await api.post("/recipe-images/step-image", formData);
         updated[i] = { ...updated[i], stepImgUrl: res.data, imgType: "S" };
       }
     }
@@ -305,9 +316,7 @@ export default function RecipeWrite() {
         if (mainImages.length > 0) {
           const formData = new FormData();
           mainImages.forEach((file) => formData.append("files", file));
-          await api.post(`/recipe-images/${editRecipeId}/upload`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
+          await api.post(`/recipe-images/${editRecipeId}/upload`, formData);
         }
         alert("레시피가 수정되었습니다!");
         navigate(`/recipe/${editRecipeId}`);
@@ -318,9 +327,7 @@ export default function RecipeWrite() {
         if (mainImages.length > 0 && recipeCode) {
           const formData = new FormData();
           mainImages.forEach((file) => formData.append("files", file));
-          await api.post(`/recipe-images/${recipeCode}/upload`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
+          await api.post(`/recipe-images/${recipeCode}/upload`, formData);
         }
         alert("레시피가 성공적으로 등록되었습니다!");
         navigate("/");
@@ -502,7 +509,11 @@ export default function RecipeWrite() {
             {(existingMainImgUrls.length > 0 || mainPreviews.length > 0) && (
               <div className="grid grid-cols-3 gap-3 mb-3">
                 {[
+<<<<<<< HEAD
+                  ...existingMainImgUrls.map((url) => normalizeImageUrl(url)),
+=======
                   ...existingMainImgUrls.map((url) => `${API_BASE_URL}${url}`),
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
                   ...mainPreviews,
                 ].map((preview, index) => (
                   <div
@@ -592,7 +603,11 @@ export default function RecipeWrite() {
                   {(stepPreviews[index] || existingStepImgUrls[index]) ? (
                     <div className="relative rounded-md overflow-hidden">
                       <img
+<<<<<<< HEAD
+                        src={stepPreviews[index] || normalizeImageUrl(existingStepImgUrls[index])}
+=======
                         src={stepPreviews[index] || `${API_BASE_URL}${existingStepImgUrls[index]}`}
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
                         alt={`Step ${index + 1} 이미지`}
                         className="w-full max-h-48 object-cover"
                       />

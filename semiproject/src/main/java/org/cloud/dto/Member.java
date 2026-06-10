@@ -149,4 +149,24 @@ public class Member {
 		this.scrapPublic = scrapPublic;
 	}
 
+<<<<<<< HEAD
+	public LocalDate getBirthDate() {
+		return birthDate;
+	}
+
+	public void setBirthDate(LocalDate birthDate) {
+		this.birthDate = birthDate;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	
+=======
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 }

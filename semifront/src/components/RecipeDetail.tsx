@@ -39,6 +39,20 @@ export default function RecipeDetail() {
   const [reviewerProfiles, setReviewerProfiles] = useState<Map<string, Member>>(new Map());
   const [reviewPage, setReviewPage] = useState(1);
 
+  const normalizeImageUrl = (path?: string | null) => {
+    if (!path) return null;
+    const cleanPath = String(path).trim();
+    if (!cleanPath) return null;
+    if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
+      return cleanPath;
+    }
+    if (cleanPath.startsWith("/")) {
+      return `${API_BASE_URL}${cleanPath}`;
+    }
+    return `${API_BASE_URL}/uploads/${cleanPath}`;
+  };
+
+
   const loadReviewerProfiles = async (reviewList: Review[]) => {
     const uniqueIds = [...new Set(reviewList.map((r) => r.id))];
     const results = await Promise.allSettled(
@@ -205,7 +219,11 @@ export default function RecipeDetail() {
   }
 
   const info = recipe.recipeInfo;
+<<<<<<< HEAD
+  const heroImg = normalizeImageUrl(info?.thumbImgUrl);
+=======
   const heroImg = info?.thumbImgUrl ? `${API_BASE_URL}${info.thumbImgUrl}` : null;
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
   const hasGallery = images.length > 0;
 
   return (
@@ -223,7 +241,11 @@ export default function RecipeDetail() {
       {hasGallery ? (
         <div className="relative w-full h-72 md:h-96 rounded-2xl overflow-hidden shadow-lg bg-gray-100">
           <img
+<<<<<<< HEAD
+            src={normalizeImageUrl(images[currentImageIndex].imgUrl) ?? ""}
+=======
             src={`${API_BASE_URL}${images[currentImageIndex].imgUrl}`}
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
             alt={`${info.recipeNmKo} ${currentImageIndex + 1}`}
             className="w-full h-full object-cover"
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
@@ -336,7 +358,11 @@ export default function RecipeDetail() {
         >
           {writer?.profileImg ? (
             <img
+<<<<<<< HEAD
+              src={normalizeImageUrl(writer.profileImg) ?? ""}
+=======
               src={`${API_BASE_URL}${writer.profileImg}`}
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
               alt={writer.nickname}
               className="w-11 h-11 rounded-full object-cover shrink-0 border border-gray-200"
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
@@ -393,7 +419,11 @@ export default function RecipeDetail() {
                 !step.stepImgUrl ||
                 step.stepImgUrl.includes("base.png") ||
                 step.stepImgUrl === "/resources/static/image/base.png";
+<<<<<<< HEAD
+              const stepImg = isDefault ? null : normalizeImageUrl(step.stepImgUrl);
+=======
               const stepImg = isDefault ? null : `${API_BASE_URL}${step.stepImgUrl}`;
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
               return (
                 <div
                   key={step.cookingNo}
@@ -461,7 +491,11 @@ export default function RecipeDetail() {
               {reviewImages.map((img) => (
                 <div key={img.imageId} className="shrink-0 w-28 h-28 rounded-xl overflow-hidden bg-gray-100">
                   <img
+<<<<<<< HEAD
+                    src={normalizeImageUrl(img.imageUrl) ?? ""}
+=======
                     src={`${API_BASE_URL}${img.imageUrl}`}
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
                     alt="후기 사진"
                     className="w-full h-full object-cover"
                     onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
@@ -495,7 +529,11 @@ export default function RecipeDetail() {
                       >
                         {profile?.profileImg ? (
                           <img
+<<<<<<< HEAD
+                            src={normalizeImageUrl(profile.profileImg) ?? ""}
+=======
                             src={`${API_BASE_URL}${profile.profileImg}`}
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
                             alt={profile.nickname}
                             className="w-9 h-9 rounded-full object-cover border border-gray-200 hover:ring-2 hover:ring-orange-300 transition-all"
                             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
@@ -538,7 +576,11 @@ export default function RecipeDetail() {
                         {imgs.map((img) => (
                           <div key={img.imageId} className="shrink-0 w-40 h-40 rounded-lg overflow-hidden bg-gray-100">
                             <img
+<<<<<<< HEAD
+                              src={normalizeImageUrl(img.imageUrl) ?? ""}
+=======
                               src={`${API_BASE_URL}${img.imageUrl}`}
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
                               alt="후기 사진"
                               className="w-full h-full object-cover"
                               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}

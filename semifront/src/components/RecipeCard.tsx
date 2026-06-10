@@ -28,9 +28,22 @@ export default function RecipeCard({
   onEdit,
 }: RecipeCardProps) {
   const navigate = useNavigate();
+<<<<<<< HEAD
+  const normalizeImageUrl = (path?: string | null) => {
+    if (!path) return null;
+    if (path.startsWith("http://") || path.startsWith("https://")) return path;
+    if (path.startsWith("/")) return `${API_BASE_URL}${path}`;
+    return `${API_BASE_URL}/uploads/${path}`;
+  };
+
+  const thumbSrc = normalizeImageUrl(recipe.thumbImgUrl);
+  const levelColor = LEVEL_COLOR[recipe.levelNm] ?? "bg-gray-100 text-gray-600";
+  const profileImgSrc = normalizeImageUrl(recipe.writerProfileImg);
+=======
   const thumbSrc = recipe.thumbImgUrl ? `${API_BASE_URL}${recipe.thumbImgUrl}` : null;
   const levelColor = LEVEL_COLOR[recipe.levelNm] ?? "bg-gray-100 text-gray-600";
   const profileImgSrc = recipe.writerProfileImg ? `${API_BASE_URL}${recipe.writerProfileImg}` : null;
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
   const hasAuthor = !!(recipe.writerId || recipe.writerNickname || profileImgSrc);
   const hasBottomRow = (recipe.tags && recipe.tags.length > 0) || !!onDelete || !!onEdit;
 

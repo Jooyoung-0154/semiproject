@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 @RestController
 @RequestMapping("/api/recipe-images")
@@ -19,77 +20,125 @@ public class RecipeImageController {
     @Autowired
     private RecipeImageService recipeImageService;
 
-    // 1. 레시피 이미지들 업로드 (등록)
+    // 레시피 대표 이미지 업로드
     @PostMapping("/{recipeCode}/upload")
-    public ResponseEntity<?> uploadImages(@PathVariable String recipeCode,
-                                          @RequestParam("files") List<MultipartFile> files) {
+    public ResponseEntity<?> uploadImages(
+            @PathVariable String recipeCode,
+            MultipartHttpServletRequest request) {
         try {
+            List<MultipartFile> files = request.getFiles("files");
+            if (files == null || files.isEmpty()) {
+                MultipartFile single = request.getFile("file");
+                if (single == null) single = request.getFile("image");
+                if (single != null) files = List.of(single);
+            }
+
+            if (files == null || files.isEmpty()) {
+                return ResponseEntity.badRequest().body("업로드할 이미지 파일이 없습니다.");
+            }
+
             List<RECIPE_IMAGE> imageList = new ArrayList<>();
             for (int i = 0; i < files.size(); i++) {
-                String savedUrl = saveFile(files.get(i));
-                
+                MultipartFile file = files.get(i);
+                if (file == null || file.isEmpty()) continue;
+
+                String savedUrl = saveFile(file);
+
                 RECIPE_IMAGE img = new RECIPE_IMAGE();
                 img.setRecipeCode(recipeCode);
                 img.setImgUrl(savedUrl);
                 img.setSortOrder(i + 1);
                 imageList.add(img);
             }
-            recipeImageService.addRecipeImages(imageList);
+
+            if (!imageList.isEmpty()) {
+                recipeImageService.addRecipeImages(imageList);
+            }
+
             return ResponseEntity.ok("성공");
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).body("업로드 에러: " + e.getMessage());
         }
     }
 
-    // 2. 레시피별 이미지 목록 조회 
+    // 레시피별 이미지 목록 조회
     @GetMapping("/{recipeCode}")
     public List<RECIPE_IMAGE> getImages(@PathVariable String recipeCode) {
         return recipeImageService.getRecipeImages(recipeCode);
     }
 
-    // 3. 레시피 이미지 정보 전체 업데이트
+    // 레시피 대표 이미지 전체 수정
     @PutMapping("/{recipeCode}")
-    public ResponseEntity<?> updateImages(@PathVariable String recipeCode,
-                                          @RequestParam("files") List<MultipartFile> files) {
+    public ResponseEntity<?> updateImages(
+            @PathVariable String recipeCode,
+            MultipartHttpServletRequest request) {
         try {
-            List<RECIPE_IMAGE> newImageList = new ArrayList<>();
-            for (int i = 0; i < files.size(); i++) {
-                String savedUrl = saveFile(files.get(i));
-                
-                RECIPE_IMAGE img = new RECIPE_IMAGE();
-                img.setRecipeCode(recipeCode);
-                img.setImgUrl(savedUrl);
-                img.setSortOrder(i + 1);
-                newImageList.add(img);
+            List<MultipartFile> files = request.getFiles("files");
+            if (files == null || files.isEmpty()) {
+                MultipartFile single = request.getFile("file");
+                if (single == null) single = request.getFile("image");
+                if (single != null) files = List.of(single);
             }
-            // 서비스의 updateRecipeImages 호출 (기존 삭제 후 새 등록)
+
+            List<RECIPE_IMAGE> newImageList = new ArrayList<>();
+            if (files != null) {
+                for (int i = 0; i < files.size(); i++) {
+                    MultipartFile file = files.get(i);
+                    if (file == null || file.isEmpty()) continue;
+
+                    String savedUrl = saveFile(file);
+
+                    RECIPE_IMAGE img = new RECIPE_IMAGE();
+                    img.setRecipeCode(recipeCode);
+                    img.setImgUrl(savedUrl);
+                    img.setSortOrder(i + 1);
+                    newImageList.add(img);
+                }
+            }
+
             recipeImageService.updateRecipeImages(recipeCode, newImageList);
             return ResponseEntity.ok("업데이트 성공");
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).body("업데이트 에러: " + e.getMessage());
         }
     }
 
-    // 4. 조리 단계 이미지 단건 업로드
+    // 조리 단계 이미지 단건 업로드
     @PostMapping("/step-image")
-    public ResponseEntity<?> uploadStepImage(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> uploadStepImage(MultipartHttpServletRequest request) {
         try {
+            MultipartFile file = request.getFile("file");
+            if (file == null) file = request.getFile("image");
+
+            if (file == null || file.isEmpty()) {
+                return ResponseEntity.badRequest().body("업로드할 조리 단계 이미지가 없습니다.");
+            }
+
             String savedUrl = saveFile(file);
             return ResponseEntity.ok(savedUrl);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).body("업로드 에러: " + e.getMessage());
         }
     }
 
-    // 파일 저장 로직 (공통 사용)
     private String saveFile(MultipartFile file) throws Exception {
-        String projectPath = System.getProperty("user.dir");
-        String uploadDir = projectPath + "/src/main/resources/static/uploads/";
+        String uploadDir = "C:/upload/";
         File dir = new File(uploadDir);
         if (!dir.exists()) dir.mkdirs();
 
-        String savedName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-        file.transferTo(new File(uploadDir + savedName));
+        String originalName = file.getOriginalFilename();
+        String ext = "";
+        if (originalName != null && originalName.contains(".")) {
+            ext = originalName.substring(originalName.lastIndexOf("."));
+        }
+
+        String savedName = UUID.randomUUID().toString() + ext;
+        File saveTarget = new File(uploadDir + savedName);
+        file.transferTo(saveTarget);
+
         return "/uploads/" + savedName;
     }
 }
