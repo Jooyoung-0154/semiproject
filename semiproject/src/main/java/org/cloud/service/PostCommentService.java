@@ -59,9 +59,11 @@ public class PostCommentService {
         if (post == null) return false;
 
         boolean isWriter = requesterId != null && requesterId.equals(post.getWriterId());
-        boolean isAdmin = "Admin".equals(requesterId) || "admin".equals(requesterId);
+        boolean isAdmin = requesterId != null && "admin".equalsIgnoreCase(requesterId);
         if (!isWriter && !isAdmin) return false;
 
+        // FK 제약 방지: 좋아요 -> 댓글 -> 게시글 순서로 삭제
+        postMapper.deletePostLikesByPostId(postId);
         postMapper.deleteCommentsByPostId(postId);
         return postMapper.deletePost(postId) > 0;
     }

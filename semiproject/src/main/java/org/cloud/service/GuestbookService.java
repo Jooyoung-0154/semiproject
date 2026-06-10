@@ -17,8 +17,16 @@ public class GuestbookService {
     private NotificationService notificationService;
 
     public boolean writeGuestbook(Guestbook guestbook) {
+        if (guestbook == null
+                || guestbook.getHostId() == null || guestbook.getHostId().isBlank()
+                || guestbook.getWriterId() == null || guestbook.getWriterId().isBlank()
+                || guestbook.getContent() == null || guestbook.getContent().trim().isEmpty()) {
+            return false;
+        }
+
         boolean result = guestbookMapper.insertGuestbook(guestbook) > 0;
 
+        // 알림 저장 실패가 방명록 작성 실패로 이어지지 않도록 분리 처리
         if (result) {
             try {
                 notificationService.createNotification(

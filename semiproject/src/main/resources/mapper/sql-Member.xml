@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.cloud.mapper.MemberMapper">
@@ -111,4 +112,149 @@
         BINARY ID = #{id} AND STATUS = 'ACTIVE'
 	</select>
 
+=======
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.cloud.mapper.MemberMapper">
+
+	<!-- 회원가입 -->
+	<insert id="insertMember">
+		INSERT INTO member (ID, PASSWORD, NICKNAME,
+		BIRTH_DATE, GENDER)
+		VALUES (#{id}, #{password}, #{nickname},
+		#{birthDate}, #{gender})
+	</insert>
+
+	<!-- 아이디 중복 확인 (존재하면 1, 없으면 0 반환) -->
+	<select id="checkId" resultType="int">
+		SELECT COUNT(*) FROM member
+		WHERE ID = #{ID}
+	</select>
+
+	<!-- 닉네임 중복 확인 -->
+	<select id="checkNickname" resultType="int">
+		SELECT COUNT(*) FROM
+		member WHERE NICKNAME = #{NICKNAME}
+	</select>
+
+	<!-- 닉네임 변경 -->
+	<update id="updateNickname">
+		UPDATE member SET NICKNAME = #{NICKNAME} WHERE ID =
+		#{ID}
+	</update>
+
+	<!-- 비밀번호 확인 및 변경 -->
+	<update id="updatePassword">
+		UPDATE member SET PASSWORD = #{newPassword} WHERE ID
+		= #{ID} AND PASSWORD =
+		#{oldPassword}
+	</update>
+
+	<!-- 잔고 확인 -->
+	<select id="getBalance" resultType="int">
+		SELECT BALANCE FROM member
+		WHERE ID = #{ID}
+	</select>
+
+	<!-- 잔고 충전/감소 (amount에 양수를 넣으면 충전, 음수를 넣으면 감소) -->
+	<update id="updateBalance">
+		UPDATE member SET BALANCE = BALANCE + #{amount} WHERE
+		ID = #{ID}
+	</update>
+
+	<!-- 프로필 이미지 변경 -->
+	<update id="updateProfileImg">
+		UPDATE member SET PROFILE_IMG = #{PROFILE_IMG} WHERE
+		ID = #{ID}
+	</update>
+
+	<!-- 인트로 변경 -->
+	<update id="updateIntro">
+		UPDATE member SET INTRO = #{intro} WHERE ID = #{id}
+	</update>
+
+	<update id="addFollowingCount">
+		UPDATE member SET FOLLOWING_COUNT = FOLLOWING_COUNT +
+		#{amount} WHERE ID =
+		#{ID}
+	</update>
+	<!-- 스크랩 공개 여부 변경 -->
+	<update id="updateScrapPublic">
+		UPDATE member SET SCRAP_PUBLIC = #{scrapPublic} WHERE ID = #{id}
+	</update>
+
+
+
+    <!-- 회원 탈퇴 시 해당 회원이 작성한 게시글에 달린 좋아요 삭제 -->
+    <delete id="deletePostLikesByWriterId">
+        DELETE pl
+        FROM post_like pl
+        INNER JOIN post p ON p.POST_ID = pl.POST_ID
+        WHERE p.WRITER_ID = #{ID}
+    </delete>
+
+    <!-- 회원 탈퇴 시 해당 회원이 작성한 게시글 댓글 삭제 -->
+    <delete id="deletePostCommentsByWriterId">
+        DELETE pc
+        FROM post_comment pc
+        INNER JOIN post p ON p.POST_ID = pc.POST_ID
+        WHERE p.WRITER_ID = #{ID}
+    </delete>
+
+    <!-- 회원 탈퇴 시 해당 회원이 작성한 게시글 삭제 -->
+    <delete id="deletePostsByWriterId">
+        DELETE FROM post
+        WHERE WRITER_ID = #{ID}
+    </delete>
+
+    <!-- 회원 탈퇴 시 해당 회원이 누른 게시글 좋아요 삭제 -->
+    <delete id="deletePostLikesByUserId">
+        DELETE FROM post_like
+        WHERE USER_ID = #{ID}
+    </delete>
+
+    <!-- 회원 탈퇴 시 해당 회원이 다른 게시글에 작성한 댓글 삭제 -->
+    <delete id="deletePostCommentsByUserId">
+        DELETE FROM post_comment
+        WHERE WRITER_ID = #{ID}
+    </delete>
+
+	<!-- 회원 탈퇴 -->
+	<update id="deleteMember">
+		UPDATE member
+		SET STATUS = 'DELETED'
+		WHERE ID = #{ID}
+	</update>
+
+	<select id="searchMembers" parameterType="String"
+		resultType="org.cloud.dto.Member">
+		SELECT ID, NICKNAME, PROFILE_IMG
+		FROM member
+		WHERE CONCAT(ID, ' ', NICKNAME) LIKE CONCAT('%', #{keyword}, '%')
+		AND ID != 'Admin'
+		AND STATUS = 'ACTIVE'
+		LIMIT 20
+	</select>
+
+	<select id="selectMemberById" resultType="org.cloud.dto.Member">
+    SELECT
+        ID as id,
+        PASSWORD as password,
+        BALANCE as balance,
+        NICKNAME as nickname,
+        BIRTH_DATE AS birthDate,
+        GENDER AS gender,
+        PROFILE_IMG as profileImg,
+        INTRO as intro,
+        STATUS AS status,
+        FOLLOWING_COUNT as followingCount,
+        FOLLOWER_COUNT as followerCount,
+        SCRAP_PUBLIC as scrapPublic
+    FROM
+        member
+    WHERE
+        BINARY ID = #{id} AND STATUS = 'ACTIVE'
+   </select>
+
+>>>>>>> Stashed changes
 </mapper>
