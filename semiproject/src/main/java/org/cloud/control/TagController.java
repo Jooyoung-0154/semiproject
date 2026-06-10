@@ -6,18 +6,13 @@ import org.cloud.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
 @RequestMapping("/api/tags")
 public class TagController {
 
     @Autowired
     private TagService tagService;
-
-    // 1. 모든 태그 목록 조회 (태그 선택창 등을 만들 때 사용)
-    @GetMapping("")
-    public List<Tag> getAllTags() {
-        return tagService.findAllTags();
-    }
 
     // 2. 새로운 태그 생성 (관리자용)
     @PostMapping("")

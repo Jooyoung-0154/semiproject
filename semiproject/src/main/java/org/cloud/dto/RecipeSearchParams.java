@@ -8,8 +8,11 @@ public class RecipeSearchParams {
     private List<Integer> tagIds;     // 태그 필터 (복수, OR 조건)
     private String levelNm;          // 난이도 필터 (상/중/하)
     private List<String> irdntNms;   // 재료 필터 (복수)
+    private boolean ingredientAnd = false; // true = AND 조건, false = OR 조건
     private int page = 1;           // 페이지 번호 (1부터 시작)
     private int size = 12;          // 페이지당 개수
+    private String sortType = "all"; // 드롭다운
+    private String ageGroup = "all"; // all, age2030, age4050, age60
 
     public String getRecipeNmKo() { return recipeNmKo; }
     public void setRecipeNmKo(String recipeNmKo) { this.recipeNmKo = recipeNmKo; }
@@ -23,11 +26,20 @@ public class RecipeSearchParams {
     public List<String> getIrdntNms() { return irdntNms; }
     public void setIrdntNms(List<String> irdntNms) { this.irdntNms = irdntNms; }
 
+    public boolean isIngredientAnd() { return ingredientAnd; }
+    public void setIngredientAnd(boolean ingredientAnd) { this.ingredientAnd = ingredientAnd; }
+
     public int getPage() { return page; }
     public void setPage(int page) { this.page = page; }
 
     public int getSize() { return size; }
     public void setSize(int size) { this.size = size; }
+    
+    public String getSortType() { return sortType; }
+    public void setSortType(String sortType) { this.sortType = sortType; }
+    
+    public String getAgeGroup() { return ageGroup; }
+    public void setAgeGroup(String ageGroup) { this.ageGroup = ageGroup; }
 
     // MyBatis에서 OFFSET 계산용
     public int getOffset() { return (page - 1) * size; }

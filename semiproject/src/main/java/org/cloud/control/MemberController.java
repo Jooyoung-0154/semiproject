@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import jakarta.servlet.http.HttpSession;
 import org.cloud.dto.Member;
 import org.cloud.service.MemberService;
 import org.cloud.service.RecipeService;
@@ -131,11 +132,12 @@ public class MemberController {
     
     // 멤버 로그인
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Member member) {
+    public ResponseEntity<?> login(@RequestBody Member member, HttpSession session) {
         boolean loginSuccess = memberService.login(member.getId(), member.getPassword());
-        
+
         Map<String, Object> response = new HashMap<>();
         if (loginSuccess) {
+            session.setAttribute("userId", member.getId());
             response.put("success", true);
             response.put("message", "로그인 성공");
             Member loginUser = memberService.selectMemberById(member.getId());
@@ -147,9 +149,20 @@ public class MemberController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpSession session) {
+        session.invalidate();
+        return ResponseEntity.ok().build();
+    }
     
     @PutMapping("/{id}/intro")
     public boolean updateIntro(@PathVariable String id, @RequestParam String intro) {
         return memberService.updateIntro(id, intro);
+    }
+
+    @PutMapping("/{id}/scrap-public")
+    public boolean updateScrapPublic(@PathVariable String id, @RequestParam boolean scrapPublic) {
+        return memberService.updateScrapPublic(id, scrapPublic);
     }
 }

@@ -31,16 +31,34 @@
 
     <!-- 레시피 수정 시 기존 태그 관계 끊기 -->
     <delete id="deleteRecipeTags">
-        DELETE FROM recipe_tag WHERE RECIPE_ID = #{recipeId}
+        DELETE FROM recipe_tag WHERE RECIPE_ID = #{RECIPE_ID}
     </delete>
 
     <!-- 레시피 상세 조회 시 태그 정보 가져오기 (JOIN 활용) -->
     <select id="getTagsByRecipeId" resultType="org.cloud.dto.Tag">
-    SELECT 
-        t.TAG_ID as tagId, 
+    SELECT
+        t.TAG_ID as tagId,
         t.TAG_NAME as tagName
     FROM tag t
     JOIN recipe_tag rt ON t.TAG_ID = rt.TAG_ID
     WHERE rt.RECIPE_ID = #{RECIPE_ID}  </select>
+
+    <!-- 여러 레시피의 태그를 한 번에 조회 (N+1 방지용 배치 조회) -->
+    <select id="selectTagsByRecipeIds" resultType="org.cloud.dto.RecipeTagRow">
+        SELECT
+            rt.RECIPE_ID AS recipeId,
+            t.TAG_ID     AS tagId,
+            t.TAG_NAME   AS tagName
+        FROM recipe_tag rt
+        JOIN tag t ON rt.TAG_ID = t.TAG_ID
+        <where>
+            <if test="recipeIds != null and recipeIds.size() > 0">
+                rt.RECIPE_ID IN
+                <foreach collection="recipeIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
 
 </mapper>

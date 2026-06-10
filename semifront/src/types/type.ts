@@ -15,6 +15,7 @@ export interface Member {
   followingCount: number; // 내가 팔로우하는 사람들의 수
   followerCount: number; // 나를 팔로우하는 사람들의 수
   recipeCount?: number; // 작성한 레시피 수
+  scrapPublic?: boolean; // 스크랩 레시피 공개 여부
 }
 
 //방명록
@@ -70,6 +71,7 @@ export interface Post {
   postImg: string;
   regDate: string;
   likeCount: number;
+  liked?: boolean;
   comments: PostComment[]; // 댓글 목록
 }
 
@@ -130,6 +132,13 @@ export interface RecipeTag {
   tagId: number; // 태그 ID
 }
 
+/* 리뷰 이미지 */
+export interface ReviewImage {
+  imageId: number;
+  reviewId: number;
+  imageUrl: string;
+}
+
 /* 레시피 리뷰*/
 export interface Review {
   reviewId: number; // 리뷰 ID
@@ -139,4 +148,16 @@ export interface Review {
   reviewHit: number; // 리뷰 조회수
   thumbsUp: boolean; // 추천 여부 (Java의 boolean 대응)
   regDate: string; // 등록일
+}
+
+
+export interface Notification {
+  notiId: number;
+  receiverId: string;
+  senderId: string;
+  type: string;
+  targetId?: string;
+  message: string;
+  isRead: boolean;
+  regDate: string;
 }

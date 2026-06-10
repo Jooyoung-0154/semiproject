@@ -44,9 +44,7 @@ public class SocialController {
     public boolean checkFollow(
             @RequestParam("followerId") String followerId,
             @RequestParam("followingId") String followingId) {
-        Follow follow = new Follow();
-        follow.setFollowerId(followerId);
-        follow.setFollowingId(followingId);
+        Follow follow = new Follow(followerId, followingId);
         return followService.checkFollow(follow);
     }
 }

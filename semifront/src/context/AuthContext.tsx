@@ -78,6 +78,7 @@ export function normalizeMember(data: any): Member | null {
     followingCount: Number(member.followingCount) || 0,
     followerCount: Number(member.followerCount) || 0,
     recipeCount: Number(member.recipeCount) || 0,
+    scrapPublic: typeof member.scrapPublic === "boolean" ? member.scrapPublic : true,
   };
 }
 
@@ -104,6 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    authService.logout().catch(() => {});
     setUser(null);
     localStorage.removeItem("authUser");
   };

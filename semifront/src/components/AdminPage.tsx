@@ -267,9 +267,12 @@ export default function AdminPage() {
                 key={m.id}
                 className="flex items-center justify-between px-4 py-3 bg-orange-50 border border-orange-200 rounded-xl"
               >
-                <div>
-                  <span className="font-semibold text-gray-800 text-sm">{m.nickname}</span>
-                  <span className="ml-2 text-xs text-gray-400">({m.id})</span>
+                <div
+                  className="cursor-pointer hover:opacity-70 transition-opacity"
+                  onClick={() => navigate(`/mypage/${m.id}`)}
+                >
+                  <span className="font-semibold text-gray-800 text-sm underline decoration-dotted">{m.nickname}</span>
+                  <span className="ml-2 text-xs text-gray-400 underline decoration-dotted">({m.id})</span>
                 </div>
                 <button
                   onClick={() => handleDeleteMember(m)}

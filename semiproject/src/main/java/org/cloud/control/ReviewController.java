@@ -2,9 +2,11 @@ package org.cloud.control;
 
 import java.util.List;
 
+import jakarta.servlet.http.HttpSession;
 import org.cloud.dto.Review;
 import org.cloud.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,27 +16,24 @@ public class ReviewController {
     @Autowired
     private ReviewService reviewService;
 
-    // 1. 리뷰 작성
     @PostMapping("")
-    public boolean write(@RequestBody Review review) {
+    public int write(@RequestBody Review review) {
         return reviewService.writeReview(review);
     }
 
-    // 2. 리뷰 수정
     @PutMapping("/{reviewId}")
     public boolean modify(@PathVariable int reviewId, @RequestBody Review review) {
-        // 주소의 ID를 객체에 세팅하여 안전하게 업데이트
         review.setReviewId(reviewId);
         return reviewService.modifyReview(review);
     }
 
-    // 3. 리뷰 삭제
     @DeleteMapping("/{reviewId}")
-    public boolean remove(@PathVariable int reviewId) {
-        return reviewService.removeReview(reviewId);
+    public ResponseEntity<Boolean> remove(@PathVariable int reviewId, HttpSession session) {
+        String sessionUserId = (String) session.getAttribute("userId");
+        if (sessionUserId == null) return ResponseEntity.status(401).build();
+        return ResponseEntity.ok(reviewService.removeReview(reviewId, sessionUserId));
     }
 
-    // 예: /api/reviews/recipe/R001
     @GetMapping("/recipe/{recipeCode}")
     public List<Review> getRecipeReviews(@PathVariable String recipeCode) {
         return reviewService.getRecipeReviews(recipeCode);

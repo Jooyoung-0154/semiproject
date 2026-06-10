@@ -6,8 +6,7 @@ import { Recipe_Info, Cooking_Info, Irdnt_Info, Tag } from "../types/type";
 import { useAuth } from "../context/AuthContext";
 import { tagService } from "../service/tagService";
 import RecipeService from "../service/recipeService";
-
-const BASE_URL = "http://localhost:8080";
+import { API_BASE_URL } from "../config/api";
 
 export default function RecipeWrite() {
   const navigate = useNavigate();
@@ -60,6 +59,16 @@ export default function RecipeWrite() {
   const [existingMainImgUrls, setExistingMainImgUrls] = useState<string[]>([]);
   const [existingStepImgUrls, setExistingStepImgUrls] = useState<string[]>([""]);
 
+  const normalizeImageUrl = (path?: string | null) => {
+    if (!path) return "";
+    const cleanPath = String(path).trim();
+    if (!cleanPath) return "";
+    if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) return cleanPath;
+    if (cleanPath.startsWith("/")) return `${API_BASE_URL}${cleanPath}`;
+    return `${API_BASE_URL}/uploads/${cleanPath}`;
+  };
+
+
   useEffect(() => {
     tagService.getAllTags().then((res) => setAllTags(res.data)).catch(() => setAllTags([]));
   }, []);
@@ -99,10 +108,17 @@ export default function RecipeWrite() {
       .finally(() => setIsLoadingEdit(false));
   }, [editRecipeId]);
 
+  const MAX_TAGS = 3;
+
   const toggleTag = (tagId: number) => {
-    setSelectedTagIds((prev) =>
-      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
-    );
+    setSelectedTagIds((prev) => {
+      if (prev.includes(tagId)) return prev.filter((id) => id !== tagId);
+      if (prev.length >= MAX_TAGS) {
+        alert(`태그는 최대 ${MAX_TAGS}개까지 선택할 수 있습니다.`);
+        return prev;
+      }
+      return [...prev, tagId];
+    });
   };
 
   // 재료 헬퍼
@@ -204,9 +220,7 @@ export default function RecipeWrite() {
       if (stepImages[i]) {
         const formData = new FormData();
         formData.append("file", stepImages[i]!);
-        const res = await api.post("/recipe-images/step-image", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        const res = await api.post("/recipe-images/step-image", formData);
         updated[i] = { ...updated[i], stepImgUrl: res.data, imgType: "S" };
       }
     }
@@ -246,9 +260,7 @@ export default function RecipeWrite() {
         if (mainImages.length > 0) {
           const formData = new FormData();
           mainImages.forEach((file) => formData.append("files", file));
-          await api.post(`/recipe-images/${editRecipeId}/upload`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
+          await api.post(`/recipe-images/${editRecipeId}/upload`, formData);
         }
         alert("레시피가 수정되었습니다!");
         navigate(`/recipe/${editRecipeId}`);
@@ -259,9 +271,7 @@ export default function RecipeWrite() {
         if (mainImages.length > 0 && recipeCode) {
           const formData = new FormData();
           mainImages.forEach((file) => formData.append("files", file));
-          await api.post(`/recipe-images/${recipeCode}/upload`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
+          await api.post(`/recipe-images/${recipeCode}/upload`, formData);
         }
         alert("레시피가 성공적으로 등록되었습니다!");
         navigate("/");
@@ -283,7 +293,6 @@ export default function RecipeWrite() {
     placeholder: string
   ) => (
     <div className="space-y-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
-      {/* 1. 여기 flex justify-between 때문에 양 끝으로 벌어집니다 */}
       <div className="flex justify-between items-center mb-1">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-sm text-orange-700 bg-orange-50 border border-orange-200 px-3 py-1 rounded-full">
@@ -423,7 +432,7 @@ export default function RecipeWrite() {
             {(existingMainImgUrls.length > 0 || mainPreviews.length > 0) && (
               <div className="grid grid-cols-3 gap-3 mb-3">
                 {[
-                  ...existingMainImgUrls.map((url) => `${BASE_URL}${url}`),
+                  ...existingMainImgUrls.map((url) => normalizeImageUrl(url)),
                   ...mainPreviews,
                 ].map((preview, index) => (
                   <div
@@ -513,7 +522,7 @@ export default function RecipeWrite() {
                   {(stepPreviews[index] || existingStepImgUrls[index]) ? (
                     <div className="relative rounded-md overflow-hidden">
                       <img
-                        src={stepPreviews[index] || `${BASE_URL}${existingStepImgUrls[index]}`}
+                        src={stepPreviews[index] || normalizeImageUrl(existingStepImgUrls[index])}
                         alt={`Step ${index + 1} 이미지`}
                         className="w-full max-h-48 object-cover"
                       />
@@ -545,25 +554,37 @@ export default function RecipeWrite() {
                 </span>
               )}
             </h2>
-            <p className="text-sm text-gray-500">레시피에 해당하는 태그를 선택하세요 (복수 선택 가능)</p>
+            <p className="text-sm text-gray-500">
+              레시피에 해당하는 태그를 선택하세요{" "}
+              <span className={selectedTagIds.length >= MAX_TAGS ? "text-orange-500 font-semibold" : ""}>
+                ({selectedTagIds.length}/{MAX_TAGS})
+              </span>
+            </p>
             {allTags.length === 0 ? (
               <p className="text-sm text-gray-400 py-2">등록된 태그가 없습니다. 관리자 페이지에서 태그를 먼저 추가해주세요.</p>
             ) : (
               <div className="flex flex-wrap gap-2">
-                {allTags.map((tag) => (
+                {allTags.map((tag) => {
+                  const isSelected = selectedTagIds.includes(tag.tagId);
+                  const isDisabled = !isSelected && selectedTagIds.length >= MAX_TAGS;
+                  return (
                   <button
                     key={tag.tagId}
                     type="button"
                     onClick={() => toggleTag(tag.tagId)}
+                    disabled={isDisabled}
                     className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all ${
-                      selectedTagIds.includes(tag.tagId)
+                      isSelected
                         ? "bg-orange-500 text-white border-orange-500 shadow"
-                        : "bg-white text-gray-600 border-gray-300 hover:border-orange-400 hover:text-orange-500"
+                        : isDisabled
+                          ? "bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed"
+                          : "bg-white text-gray-600 border-gray-300 hover:border-orange-400 hover:text-orange-500"
                     }`}
                   >
                     {tag.tagName}
                   </button>
-                ))}
+                  );
+                  })}
               </div>
             )}
             {selectedTagIds.length > 0 && (

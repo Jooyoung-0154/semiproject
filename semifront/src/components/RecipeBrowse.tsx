@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, KeyboardEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   X,
@@ -6,13 +7,15 @@ import {
   ChefHat,
   Tag as TagIcon,
   Refrigerator,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import RecipeService, { BrowseParams } from "../service/recipeService";
 import { tagService } from "../service/tagService";
-import likeService from "../service/likeService";
 import { Recipe_Info, Tag } from "../types/type";
 import { useAuth } from "../context/AuthContext";
 import RecipeCard from "./RecipeCard";
+import { applyLikedStatus } from "../utils/likeUtils";
 
 const LEVEL_OPTIONS = ["", "상", "중", "하"] as const;
 const LEVEL_LABELS: Record<string, string> = {
@@ -24,6 +27,7 @@ const LEVEL_LABELS: Record<string, string> = {
 
 export default function RecipeBrowse() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [nameInput, setNameInput] = useState("");
   const [debouncedName, setDebouncedName] = useState("");
@@ -31,6 +35,9 @@ export default function RecipeBrowse() {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [ingredientInput, setIngredientInput] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([]);
+  const [ingredientMode, setIngredientMode] = useState<"OR" | "AND">("OR");
+  const [sortType, setSortType] = useState("all");
+  const [ageGroup, setAgeGroup] = useState("all");
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedName(nameInput), 500);
@@ -53,6 +60,7 @@ export default function RecipeBrowse() {
       .catch(() => setTags([]));
   }, []);
 
+  const userId = user?.id;
   const doSearch = useCallback(
     async (targetPage: number) => {
       setIsLoading(true);
@@ -62,21 +70,15 @@ export default function RecipeBrowse() {
           tagIds: selectedTagIds.length ? selectedTagIds : undefined,
           level: selectedLevel || undefined,
           ingredients: ingredients.length ? ingredients : undefined,
+          ingredientMode,
+          sortType,
+          ageGroup,
           page: targetPage,
           size: PAGE_SIZE,
         };
         const result = await RecipeService.browse(params);
         let loaded = result.recipes;
-        if (user?.id) {
-          try {
-            const likedIds = await likeService.getMyLikes(user.id);
-            const likedSet = new Set(likedIds);
-            loaded = loaded.map((r) => ({
-              ...r,
-              liked: likedSet.has(r.recipeId),
-            }));
-          } catch {}
-        }
+        loaded = await applyLikedStatus(loaded, userId);
         setRecipes(loaded);
         setTotal(result.total);
         setTotalPages(result.totalPages);
@@ -87,7 +89,17 @@ export default function RecipeBrowse() {
         setIsLoading(false);
       }
     },
-    [debouncedName, selectedLevel, selectedTagIds, ingredients, user],
+    [
+      debouncedName,
+      selectedLevel,
+      selectedTagIds,
+      ingredients,
+      ingredientMode,
+      userId,
+      user,
+      sortType,
+      ageGroup,
+    ],
   );
 
   useEffect(() => {
@@ -122,6 +134,16 @@ export default function RecipeBrowse() {
         t.tagName.toLowerCase().includes(tagInput.trim().toLowerCase()),
       )
     : tags;
+  const handleDeleteRecipe = async (recipeId: string) => {
+    if (!window.confirm("정말 이 레시피를 삭제하시겠습니까?")) return;
+    const ok = await RecipeService.deleteRecipe(recipeId);
+    if (ok) {
+      setRecipes((prev) => prev.filter((r) => r.recipeId !== recipeId));
+    } else {
+      alert("삭제에 실패했습니다.");
+    }
+  };
+
   const resetFilters = () => {
     setNameInput("");
     setDebouncedName("");
@@ -130,6 +152,7 @@ export default function RecipeBrowse() {
     setTagInput("");
     setIngredients([]);
     setIngredientInput("");
+    setIngredientMode("OR");
     setTimeout(() => doSearch(1), 0);
   };
   const getPageRange = () => {
@@ -189,6 +212,33 @@ export default function RecipeBrowse() {
                 </button>
               ))}
             </div>
+
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                연령대
+              </label>
+
+              <div className="flex gap-2 flex-wrap">
+                {[
+                  { value: "all", label: "전체" },
+                  { value: "age2030", label: "2030대" },
+                  { value: "age4050", label: "4050대" },
+                  { value: "age60", label: "60대 이상" },
+                ].map((item) => (
+                  <button
+                    key={item.value}
+                    onClick={() => setAgeGroup(item.value)}
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                      ageGroup === item.value
+                        ? "bg-orange-600 text-white border-orange-600"
+                        : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1">
@@ -221,10 +271,37 @@ export default function RecipeBrowse() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              <Refrigerator className="w-4 h-4 inline mr-1" />
-              재료로 찾기
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-medium text-gray-600">
+                <Refrigerator className="w-4 h-4 inline mr-1" />
+                재료로 찾기
+              </label>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-500 mr-1">검색 조건</span>
+                <button
+                  type="button"
+                  onClick={() => setIngredientMode("OR")}
+                  className={`px-3 py-1 text-xs font-semibold rounded-l-full border transition-colors ${
+                    ingredientMode === "OR"
+                      ? "bg-orange-500 text-white border-orange-500"
+                      : "bg-white text-gray-500 border-gray-300 hover:border-orange-400"
+                  }`}
+                >
+                  OR
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIngredientMode("AND")}
+                  className={`px-3 py-1 text-xs font-semibold rounded-r-full border transition-colors ${
+                    ingredientMode === "AND"
+                      ? "bg-orange-500 text-white border-orange-500"
+                      : "bg-white text-gray-500 border-gray-300 hover:border-orange-400"
+                  }`}
+                >
+                  AND
+                </button>
+              </div>
+            </div>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -281,12 +358,22 @@ export default function RecipeBrowse() {
             "검색 중..."
           ) : (
             <>
-              {" "}
               총 <span className="font-bold text-orange-600">{total}</span>개의
-              레시피{" "}
+              레시피
             </>
           )}
         </p>
+
+        <select
+          value={sortType}
+          onChange={(e) => setSortType(e.target.value)}
+          className="border border-gray-300 rounded-xl px-3 py-2 text-sm bg-white"
+        >
+          <option value="all">최신순</option>
+          <option value="popular">인기순</option>
+          <option value="scrap">스크랩순</option>
+          <option value="view">조회수순</option>
+        </select>
       </div>
 
       {isLoading && recipes.length === 0 ? (
@@ -308,7 +395,9 @@ export default function RecipeBrowse() {
           <p className="text-sm mt-1">다른 검색어나 필터를 시도해보세요.</p>
         </div>
       ) : (
-        <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 min-h-[800px] transition-opacity duration-150 ${isLoading ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
+        <div
+          className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 min-h-[800px] transition-opacity duration-150 ${isLoading ? "opacity-50 pointer-events-none" : "opacity-100"}`}
+        >
           {recipes.map((recipe) => (
             <RecipeCard
               key={recipe.recipeId}
@@ -321,26 +410,31 @@ export default function RecipeBrowse() {
                   ),
                 )
               }
+              onDelete={user?.id === recipe.writerId || user?.id === "Admin" ? handleDeleteRecipe : undefined}
+              onEdit={user?.id === recipe.writerId ? (id) => navigate(`/write?edit=${id}`) : undefined}
             />
           ))}
         </div>
       )}
 
       {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2 mt-10">
-          {page > 1 && (
-            <button
-              onClick={() => doSearch(page - 1)}
-              className="px-4 py-2 rounded-lg border text-sm font-medium hover:bg-gray-50 transition-colors"
-            >
-              이전
-            </button>
-          )}
+        <div className="flex items-center justify-center gap-1 mt-10">
+          <button
+            onClick={() => doSearch(page - 1)}
+            disabled={page === 1}
+            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
           {getPageRange().map((p) => (
             <button
               key={p}
               onClick={() => doSearch(p)}
-              className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${p === page ? "bg-orange-600 text-white shadow" : "border hover:bg-gray-50 text-gray-700"}`}
+              className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-all ${
+                p === page
+                  ? "bg-orange-500 text-white"
+                  : "border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-500"
+              }`}
             >
               {p}
             </button>
@@ -348,9 +442,9 @@ export default function RecipeBrowse() {
           <button
             onClick={() => doSearch(page + 1)}
             disabled={page >= totalPages}
-            className="px-4 py-2 rounded-lg border text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
           >
-            다음
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       )}

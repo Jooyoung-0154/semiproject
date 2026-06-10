@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.cloud.mapper.ReviewMapper">
 
-    <insert id="insertReview">
+    <insert id="insertReview" useGeneratedKeys="true" keyProperty="reviewId">
         INSERT INTO review (RECIPE_CODE, ID, REVIEW_CONTENT, THUMBS_UP)
         VALUES (#{recipeCode}, #{id}, #{reviewContent}, #{thumbsUp})
     </insert>
@@ -15,19 +15,43 @@
     </update>
 
     <delete id="deleteReview">
-        DELETE FROM review WHERE REVIEW_ID = #{REVIEW_ID}
+        DELETE FROM review
+        WHERE REVIEW_ID = #{reviewId}
+          AND (ID = #{requesterId} OR #{requesterId} = 'Admin' OR #{requesterId} = 'admin')
     </delete>
 
     <select id="getReviewsByRecipeCode" resultType="org.cloud.dto.Review">
-        SELECT * FROM review
+        SELECT
+            REVIEW_ID AS reviewId,
+            RECIPE_CODE AS recipeCode,
+            ID AS id,
+            REVIEW_CONTENT AS reviewContent,
+            REVIEW_HIT AS reviewHit,
+            THUMBS_UP AS thumbsUp,
+            REG_DATE AS regDate
+        FROM review
         WHERE RECIPE_CODE = #{RECIPE_CODE}
         ORDER BY REG_DATE DESC
     </select>
 
     <select id="getReviewsById" resultType="org.cloud.dto.Review">
-        SELECT * FROM review
+        SELECT
+            REVIEW_ID AS reviewId,
+            RECIPE_CODE AS recipeCode,
+            ID AS id,
+            REVIEW_CONTENT AS reviewContent,
+            REVIEW_HIT AS reviewHit,
+            THUMBS_UP AS thumbsUp,
+            REG_DATE AS regDate
+        FROM review
         WHERE ID = #{ID}
         ORDER BY REG_DATE DESC
+    </select>
+
+    <select id="getRecipeWriterId" resultType="string">
+        SELECT WRITER_ID
+        FROM recipe
+        WHERE RECIPE_ID = #{recipeCode}
     </select>
 
 </mapper>

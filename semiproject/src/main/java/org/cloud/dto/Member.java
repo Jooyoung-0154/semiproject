@@ -33,6 +33,9 @@ public class Member {
 	// 작성한 레시피 수
 	private int recipeCount;
 
+	// 스크랩 레시피 공개 여부
+	private boolean scrapPublic = true;
+
 	public String getId() {
 		return id;
 	}
@@ -137,4 +140,29 @@ public class Member {
 		this.recipeCount = recipeCount;
 	}
 
+	public boolean isScrapPublic() {
+		return scrapPublic;
+	}
+
+	public void setScrapPublic(boolean scrapPublic) {
+		this.scrapPublic = scrapPublic;
+	}
+
+	public LocalDate getBirthDate() {
+		return birthDate;
+	}
+
+	public void setBirthDate(LocalDate birthDate) {
+		this.birthDate = birthDate;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	
 }
