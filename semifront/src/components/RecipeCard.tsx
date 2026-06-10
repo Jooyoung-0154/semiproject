@@ -5,9 +5,9 @@ import { Recipe_Info } from "../types/type";
 import { API_BASE_URL } from "../config/api";
 
 const LEVEL_COLOR: Record<string, string> = {
-  "상": "bg-red-100 text-red-700",
-  "중": "bg-yellow-100 text-yellow-700",
-  "하": "bg-green-100 text-green-700",
+  상: "bg-red-100 text-red-700",
+  중: "bg-yellow-100 text-yellow-700",
+  하: "bg-green-100 text-green-700",
 };
 
 interface RecipeCardProps {
@@ -28,24 +28,20 @@ export default function RecipeCard({
   onEdit,
 }: RecipeCardProps) {
   const navigate = useNavigate();
-<<<<<<< HEAD
-  const normalizeImageUrl = (path?: string | null) => {
-    if (!path) return null;
-    if (path.startsWith("http://") || path.startsWith("https://")) return path;
-    if (path.startsWith("/")) return `${API_BASE_URL}${path}`;
-    return `${API_BASE_URL}/uploads/${path}`;
-  };
-
-  const thumbSrc = normalizeImageUrl(recipe.thumbImgUrl);
+  const thumbSrc = recipe.thumbImgUrl
+    ? `${API_BASE_URL}${recipe.thumbImgUrl}`
+    : null;
   const levelColor = LEVEL_COLOR[recipe.levelNm] ?? "bg-gray-100 text-gray-600";
-  const profileImgSrc = normalizeImageUrl(recipe.writerProfileImg);
-=======
-  const thumbSrc = recipe.thumbImgUrl ? `${API_BASE_URL}${recipe.thumbImgUrl}` : null;
-  const levelColor = LEVEL_COLOR[recipe.levelNm] ?? "bg-gray-100 text-gray-600";
-  const profileImgSrc = recipe.writerProfileImg ? `${API_BASE_URL}${recipe.writerProfileImg}` : null;
->>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
-  const hasAuthor = !!(recipe.writerId || recipe.writerNickname || profileImgSrc);
-  const hasBottomRow = (recipe.tags && recipe.tags.length > 0) || !!onDelete || !!onEdit;
+  const profileImgSrc = recipe.writerProfileImg
+    ? `${API_BASE_URL}${recipe.writerProfileImg}`
+    : null;
+  const hasAuthor = !!(
+    recipe.writerId ||
+    recipe.writerNickname ||
+    profileImgSrc
+  );
+  const hasBottomRow =
+    (recipe.tags && recipe.tags.length > 0) || !!onDelete || !!onEdit;
 
   const handleLike = async () => {
     if (!userId) return;
@@ -127,7 +123,9 @@ export default function RecipeCard({
                   pointerEvents: "none",
                 }}
               />
-              <span className={recipe.liked ? "text-pink-500" : "text-gray-400"}>
+              <span
+                className={recipe.liked ? "text-pink-500" : "text-gray-400"}
+              >
                 {recipe.likeCount ?? 0}
               </span>
             </button>
@@ -136,14 +134,18 @@ export default function RecipeCard({
 
         {/* 요약 */}
         {recipe.sumry && (
-          <p className="text-gray-400 text-xs mb-2 line-clamp-1">{recipe.sumry}</p>
+          <p className="text-gray-400 text-xs mb-2 line-clamp-1">
+            {recipe.sumry}
+          </p>
         )}
 
         {/* 뱃지 */}
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-1.5 flex-wrap">
             {recipe.levelNm && (
-              <span className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full font-medium ${levelColor}`}>
+              <span
+                className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full font-medium ${levelColor}`}
+              >
                 <ChefHat className="w-3 h-3" />
                 {recipe.levelNm}
               </span>

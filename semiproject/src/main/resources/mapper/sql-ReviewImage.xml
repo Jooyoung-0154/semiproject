@@ -8,7 +8,6 @@
     </insert>
 
     <select id="getImagesByReviewId" resultType="org.cloud.dto.ReviewImage">
-<<<<<<< HEAD
         SELECT
             image_id AS imageId,
             review_id AS reviewId,
@@ -23,15 +22,6 @@
             ri.image_id AS imageId,
             ri.review_id AS reviewId,
             ri.image_url AS imageUrl
-=======
-        SELECT image_id, review_id, image_url
-        FROM review_image
-        WHERE review_id = #{reviewId}
-    </select>
-
-    <select id="getImagesByRecipeCode" resultType="org.cloud.dto.ReviewImage">
-        SELECT ri.image_id, ri.review_id, ri.image_url
->>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
         FROM review_image ri
         INNER JOIN review r ON ri.review_id = r.review_id
         WHERE r.recipe_code = #{recipeCode}

@@ -1,8 +1,19 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import {
-  Heart, ThumbsUp, ThumbsDown, Clock, ChefHat, Users,
-  Flame, User, ArrowLeft, ChevronLeft, ChevronRight, ImagePlus, X
+  Heart,
+  ThumbsUp,
+  ThumbsDown,
+  Clock,
+  ChefHat,
+  Users,
+  Flame,
+  User,
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  ImagePlus,
+  X,
 } from "lucide-react";
 import RecipeService from "../service/recipeService";
 import { reviewService } from "../service/reviewService";
@@ -10,7 +21,14 @@ import { memberService } from "../service/memberService";
 import likeService from "../service/likeService";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
-import { Recipe, Irdnt_Info, Review, Member, RECIPE_IMAGE, ReviewImage } from "../types/type";
+import {
+  Recipe,
+  Irdnt_Info,
+  Review,
+  Member,
+  RECIPE_IMAGE,
+  ReviewImage,
+} from "../types/type";
 import { API_BASE_URL } from "../config/api";
 
 export default function RecipeDetail() {
@@ -36,7 +54,9 @@ export default function RecipeDetail() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const REVIEWS_PER_PAGE = 5;
-  const [reviewerProfiles, setReviewerProfiles] = useState<Map<string, Member>>(new Map());
+  const [reviewerProfiles, setReviewerProfiles] = useState<Map<string, Member>>(
+    new Map(),
+  );
   const [reviewPage, setReviewPage] = useState(1);
 
   const normalizeImageUrl = (path?: string | null) => {
@@ -52,15 +72,15 @@ export default function RecipeDetail() {
     return `${API_BASE_URL}/uploads/${cleanPath}`;
   };
 
-
   const loadReviewerProfiles = async (reviewList: Review[]) => {
     const uniqueIds = [...new Set(reviewList.map((r) => r.id))];
     const results = await Promise.allSettled(
-      uniqueIds.map((id) => memberService.getMemberById(id))
+      uniqueIds.map((id) => memberService.getMemberById(id)),
     );
     const profileMap = new Map<string, Member>();
     results.forEach((result, i) => {
-      if (result.status === "fulfilled") profileMap.set(uniqueIds[i], result.value.data);
+      if (result.status === "fulfilled")
+        profileMap.set(uniqueIds[i], result.value.data);
     });
     setReviewerProfiles(profileMap);
   };
@@ -70,12 +90,13 @@ export default function RecipeDetail() {
     const load = async () => {
       setIsLoading(true);
       try {
-        const [recipeData, reviewRes, imagesRes, reviewImagesRes] = await Promise.all([
-          RecipeService.getById(recipeId),
-          reviewService.getRecipeReviews(recipeId),
-          api.get(`/recipe-images/${recipeId}`),
-          reviewService.getRecipeReviewImages(recipeId),
-        ]);
+        const [recipeData, reviewRes, imagesRes, reviewImagesRes] =
+          await Promise.all([
+            RecipeService.getById(recipeId),
+            reviewService.getRecipeReviews(recipeId),
+            api.get(`/recipe-images/${recipeId}`),
+            reviewService.getRecipeReviewImages(recipeId),
+          ]);
         RecipeService.incrementHit(recipeId).catch(() => {});
         setRecipe(recipeData);
         setLikeCount(recipeData.recipeInfo?.likeCount ?? 0);
@@ -177,17 +198,40 @@ export default function RecipeDetail() {
     return map;
   }, [recipe?.irdntInfo]);
 
-  const totalReviewPages = Math.max(1, Math.ceil(reviews.length / REVIEWS_PER_PAGE));
-  const pagedReviews = reviews.slice((reviewPage - 1) * REVIEWS_PER_PAGE, reviewPage * REVIEWS_PER_PAGE);
+  const totalReviewPages = Math.max(
+    1,
+    Math.ceil(reviews.length / REVIEWS_PER_PAGE),
+  );
+  const pagedReviews = reviews.slice(
+    (reviewPage - 1) * REVIEWS_PER_PAGE,
+    reviewPage * REVIEWS_PER_PAGE,
+  );
 
   const thumbsUpCount = reviews.filter((r) => r.thumbsUp).length;
-  const thumbsUpRatio = reviews.length > 0 ? Math.round((thumbsUpCount / reviews.length) * 100) : null;
-  const sentimentLabel = thumbsUpRatio === null ? null
-    : thumbsUpRatio >= 90 ? { text: "😍 매우 긍정적", color: "text-blue-600", bar: "bg-blue-500" }
-    : thumbsUpRatio >= 80 ? { text: "😄 긍정적",     color: "text-blue-400", bar: "bg-blue-400" }
-    : thumbsUpRatio >= 60 ? { text: "😐 복합적",        color: "text-gray-500", bar: "bg-gray-400" }
-    : thumbsUpRatio >= 40 ? { text: "😞 부정적",      color: "text-orange-500", bar: "bg-orange-400" }
-    :                        { text: "😨 매우 부정적", color: "text-red-500",  bar: "bg-red-500" };
+  const thumbsUpRatio =
+    reviews.length > 0
+      ? Math.round((thumbsUpCount / reviews.length) * 100)
+      : null;
+  const sentimentLabel =
+    thumbsUpRatio === null
+      ? null
+      : thumbsUpRatio >= 90
+        ? { text: "😍 매우 긍정적", color: "text-blue-600", bar: "bg-blue-500" }
+        : thumbsUpRatio >= 80
+          ? { text: "😄 긍정적", color: "text-blue-400", bar: "bg-blue-400" }
+          : thumbsUpRatio >= 60
+            ? { text: "😐 복합적", color: "text-gray-500", bar: "bg-gray-400" }
+            : thumbsUpRatio >= 40
+              ? {
+                  text: "😞 부정적",
+                  color: "text-orange-500",
+                  bar: "bg-orange-400",
+                }
+              : {
+                  text: "😨 매우 부정적",
+                  color: "text-red-500",
+                  bar: "bg-red-500",
+                };
 
   /* ── 로딩 ── */
   if (isLoading) {
@@ -197,7 +241,9 @@ export default function RecipeDetail() {
         <div className="h-8 bg-gray-200 rounded w-2/3" />
         <div className="h-4 bg-gray-100 rounded w-1/2" />
         <div className="grid grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-gray-100 rounded-2xl" />)}
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 bg-gray-100 rounded-2xl" />
+          ))}
         </div>
       </div>
     );
@@ -219,48 +265,50 @@ export default function RecipeDetail() {
   }
 
   const info = recipe.recipeInfo;
-<<<<<<< HEAD
-  const heroImg = normalizeImageUrl(info?.thumbImgUrl);
-=======
-  const heroImg = info?.thumbImgUrl ? `${API_BASE_URL}${info.thumbImgUrl}` : null;
->>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
+  const heroImg = info?.thumbImgUrl
+    ? `${API_BASE_URL}${info.thumbImgUrl}`
+    : null;
   const hasGallery = images.length > 0;
 
   return (
     <div className="max-w-4xl mx-auto pb-16 space-y-8">
-
       {/* 뒤로가기 */}
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-1.5 text-gray-500 hover:text-orange-500 transition-colors text-sm"
       >
-        <ArrowLeft className="w-4 h-4" />뒤로 가기
+        <ArrowLeft className="w-4 h-4" />
+        뒤로 가기
       </button>
 
       {/* 대표 이미지 / 갤러리 */}
       {hasGallery ? (
         <div className="relative w-full h-72 md:h-96 rounded-2xl overflow-hidden shadow-lg bg-gray-100">
           <img
-<<<<<<< HEAD
-            src={normalizeImageUrl(images[currentImageIndex].imgUrl) ?? ""}
-=======
             src={`${API_BASE_URL}${images[currentImageIndex].imgUrl}`}
->>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
             alt={`${info.recipeNmKo} ${currentImageIndex + 1}`}
             className="w-full h-full object-cover"
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
           />
           {images.length > 1 && (
             <>
               <button
-                onClick={() => setCurrentImageIndex((prev) => Math.max(0, prev - 1))}
+                onClick={() =>
+                  setCurrentImageIndex((prev) => Math.max(0, prev - 1))
+                }
                 disabled={currentImageIndex === 0}
                 className="absolute left-3 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 hover:bg-opacity-60 text-white rounded-full w-9 h-9 flex items-center justify-center disabled:opacity-30 transition-all"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
-                onClick={() => setCurrentImageIndex((prev) => Math.min(images.length - 1, prev + 1))}
+                onClick={() =>
+                  setCurrentImageIndex((prev) =>
+                    Math.min(images.length - 1, prev + 1),
+                  )
+                }
                 disabled={currentImageIndex === images.length - 1}
                 className="absolute right-3 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 hover:bg-opacity-60 text-white rounded-full w-9 h-9 flex items-center justify-center disabled:opacity-30 transition-all"
               >
@@ -272,7 +320,9 @@ export default function RecipeDetail() {
                     key={i}
                     onClick={() => setCurrentImageIndex(i)}
                     className={`h-2 rounded-full transition-all ${
-                      i === currentImageIndex ? "bg-white w-4" : "bg-white bg-opacity-60 w-2"
+                      i === currentImageIndex
+                        ? "bg-white w-4"
+                        : "bg-white bg-opacity-60 w-2"
                     }`}
                   />
                 ))}
@@ -289,7 +339,9 @@ export default function RecipeDetail() {
             src={heroImg}
             alt={info.recipeNmKo}
             className="w-full h-full object-cover"
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
           />
         </div>
       ) : null}
@@ -298,9 +350,13 @@ export default function RecipeDetail() {
       <div>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <h1 className="text-3xl font-extrabold text-gray-900 leading-tight">{info.recipeNmKo}</h1>
+            <h1 className="text-3xl font-extrabold text-gray-900 leading-tight">
+              {info.recipeNmKo}
+            </h1>
             {info.sumry && (
-              <p className="mt-2 text-gray-500 text-base leading-relaxed">{info.sumry}</p>
+              <p className="mt-2 text-gray-500 text-base leading-relaxed">
+                {info.sumry}
+              </p>
             )}
             {recipe.tags?.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">
@@ -321,13 +377,16 @@ export default function RecipeDetail() {
           >
             <Heart
               style={{
-                width: 28, height: 28,
+                width: 28,
+                height: 28,
                 fill: liked ? "#ec4899" : "none",
                 stroke: liked ? "#ec4899" : "#9ca3af",
                 strokeWidth: 2,
               }}
             />
-            <span className={`text-sm font-semibold ${liked ? "text-pink-500" : "text-gray-400"}`}>
+            <span
+              className={`text-sm font-semibold ${liked ? "text-pink-500" : "text-gray-400"}`}
+            >
               {likeCount}
             </span>
           </button>
@@ -337,16 +396,32 @@ export default function RecipeDetail() {
       {/* 정보 바 */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {info.levelNm && (
-          <InfoCard icon={<ChefHat className="w-6 h-6 text-orange-400" />} label="난이도" value={info.levelNm} />
+          <InfoCard
+            icon={<ChefHat className="w-6 h-6 text-orange-400" />}
+            label="난이도"
+            value={info.levelNm}
+          />
         )}
         {info.cookingTime && (
-          <InfoCard icon={<Clock className="w-6 h-6 text-orange-400" />} label="조리시간" value={info.cookingTime} />
+          <InfoCard
+            icon={<Clock className="w-6 h-6 text-orange-400" />}
+            label="조리시간"
+            value={info.cookingTime}
+          />
         )}
         {info.qnt && (
-          <InfoCard icon={<Users className="w-6 h-6 text-orange-400" />} label="분량" value={info.qnt} />
+          <InfoCard
+            icon={<Users className="w-6 h-6 text-orange-400" />}
+            label="분량"
+            value={info.qnt}
+          />
         )}
         {info.calorie && (
-          <InfoCard icon={<Flame className="w-6 h-6 text-orange-400" />} label="칼로리" value={info.calorie} />
+          <InfoCard
+            icon={<Flame className="w-6 h-6 text-orange-400" />}
+            label="칼로리"
+            value={info.calorie}
+          />
         )}
       </div>
 
@@ -358,14 +433,12 @@ export default function RecipeDetail() {
         >
           {writer?.profileImg ? (
             <img
-<<<<<<< HEAD
-              src={normalizeImageUrl(writer.profileImg) ?? ""}
-=======
               src={`${API_BASE_URL}${writer.profileImg}`}
->>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
               alt={writer.nickname}
               className="w-11 h-11 rounded-full object-cover shrink-0 border border-gray-200"
-              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = "none";
+              }}
             />
           ) : (
             <div className="w-11 h-11 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
@@ -386,25 +459,34 @@ export default function RecipeDetail() {
         <section>
           <SectionTitle>재료</SectionTitle>
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            {Array.from(ingredientGroups.entries()).map(([groupName, items]) => (
-              <div key={groupName}>
-                <div className="px-5 py-2.5 bg-orange-50 border-b border-gray-100">
-                  <span className="text-sm font-semibold text-orange-600">{groupName}</span>
+            {Array.from(ingredientGroups.entries()).map(
+              ([groupName, items]) => (
+                <div key={groupName}>
+                  <div className="px-5 py-2.5 bg-orange-50 border-b border-gray-100">
+                    <span className="text-sm font-semibold text-orange-600">
+                      {groupName}
+                    </span>
+                  </div>
+                  <table className="w-full">
+                    <tbody>
+                      {items.map((item, i) => (
+                        <tr
+                          key={i}
+                          className="border-b border-gray-50 last:border-0"
+                        >
+                          <td className="px-5 py-2.5 text-gray-700 font-medium">
+                            {item.irdntNm}
+                          </td>
+                          <td className="px-5 py-2.5 text-gray-400 text-right text-sm">
+                            {item.irdntCpcty || ""}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-                <table className="w-full">
-                  <tbody>
-                    {items.map((item, i) => (
-                      <tr key={i} className="border-b border-gray-50 last:border-0">
-                        <td className="px-5 py-2.5 text-gray-700 font-medium">{item.irdntNm}</td>
-                        <td className="px-5 py-2.5 text-gray-400 text-right text-sm">
-                          {item.irdntCpcty || ""}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ))}
+              ),
+            )}
           </div>
         </section>
       )}
@@ -419,11 +501,9 @@ export default function RecipeDetail() {
                 !step.stepImgUrl ||
                 step.stepImgUrl.includes("base.png") ||
                 step.stepImgUrl === "/resources/static/image/base.png";
-<<<<<<< HEAD
-              const stepImg = isDefault ? null : normalizeImageUrl(step.stepImgUrl);
-=======
-              const stepImg = isDefault ? null : `${API_BASE_URL}${step.stepImgUrl}`;
->>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
+              const stepImg = isDefault
+                ? null
+                : `${API_BASE_URL}${step.stepImgUrl}`;
               return (
                 <div
                   key={step.cookingNo}
@@ -439,10 +519,16 @@ export default function RecipeDetail() {
                           src={stepImg}
                           alt={`step-${step.cookingNo}`}
                           className="w-full max-w-sm rounded-xl mb-3 object-cover h-44"
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                          onError={(e) => {
+                            (
+                              e.currentTarget as HTMLImageElement
+                            ).style.display = "none";
+                          }}
                         />
                       )}
-                      <p className="text-gray-700 leading-relaxed">{step.cookingDc}</p>
+                      <p className="text-gray-700 leading-relaxed">
+                        {step.cookingDc}
+                      </p>
                       {step.stepTip && step.stepTip.trim() && (
                         <p className="mt-2 text-sm text-orange-500 italic">
                           ({step.stepTip})
@@ -461,7 +547,9 @@ export default function RecipeDetail() {
       <section>
         <SectionTitle>
           요리 후기
-          <span className="text-base font-normal text-gray-400 ml-2">({reviews.length})</span>
+          <span className="text-base font-normal text-gray-400 ml-2">
+            ({reviews.length})
+          </span>
         </SectionTitle>
 
         {/* 통계 */}
@@ -469,9 +557,15 @@ export default function RecipeDetail() {
           <div className="mb-5 p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <span className={`text-lg font-bold ${sentimentLabel.color}`}>{sentimentLabel.text}</span>
+                <span className={`text-lg font-bold ${sentimentLabel.color}`}>
+                  {sentimentLabel.text}
+                </span>
               </div>
-              <span className={`text-2xl font-extrabold ${sentimentLabel.color}`}>{thumbsUpRatio}%</span>
+              <span
+                className={`text-2xl font-extrabold ${sentimentLabel.color}`}
+              >
+                {thumbsUpRatio}%
+              </span>
             </div>
             <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
               <div
@@ -479,26 +573,35 @@ export default function RecipeDetail() {
                 style={{ width: `${thumbsUpRatio}%` }}
               />
             </div>
-            <p className="text-xs text-gray-400 mt-1.5">전체 {reviews.length}개 후기 중 추천 {thumbsUpCount}개</p>
+            <p className="text-xs text-gray-400 mt-1.5">
+              전체 {reviews.length}개 후기 중 추천 {thumbsUpCount}개
+            </p>
           </div>
         )}
 
         {/* 후기 사진 모음 */}
         {reviewImages.length > 0 && (
           <div className="mb-5 bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-            <p className="text-sm font-semibold text-gray-600 mb-3">후기 사진 ({reviewImages.length})</p>
-            <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "thin" }}>
+            <p className="text-sm font-semibold text-gray-600 mb-3">
+              후기 사진 ({reviewImages.length})
+            </p>
+            <div
+              className="flex gap-2 overflow-x-auto pb-1"
+              style={{ scrollbarWidth: "thin" }}
+            >
               {reviewImages.map((img) => (
-                <div key={img.imageId} className="shrink-0 w-28 h-28 rounded-xl overflow-hidden bg-gray-100">
+                <div
+                  key={img.imageId}
+                  className="shrink-0 w-28 h-28 rounded-xl overflow-hidden bg-gray-100"
+                >
                   <img
-<<<<<<< HEAD
-                    src={normalizeImageUrl(img.imageUrl) ?? ""}
-=======
                     src={`${API_BASE_URL}${img.imageUrl}`}
->>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
                     alt="후기 사진"
                     className="w-full h-full object-cover"
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display =
+                        "none";
+                    }}
                   />
                 </div>
               ))}
@@ -529,14 +632,14 @@ export default function RecipeDetail() {
                       >
                         {profile?.profileImg ? (
                           <img
-<<<<<<< HEAD
-                            src={normalizeImageUrl(profile.profileImg) ?? ""}
-=======
                             src={`${API_BASE_URL}${profile.profileImg}`}
->>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
                             alt={profile.nickname}
                             className="w-9 h-9 rounded-full object-cover border border-gray-200 hover:ring-2 hover:ring-orange-300 transition-all"
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                            onError={(e) => {
+                              (
+                                e.currentTarget as HTMLImageElement
+                              ).style.display = "none";
+                            }}
                           />
                         ) : (
                           <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center hover:ring-2 hover:ring-orange-300 transition-all">
@@ -558,7 +661,9 @@ export default function RecipeDetail() {
                           ) : (
                             <ThumbsDown className="w-3.5 h-3.5 text-red-400" />
                           )}
-                          <span className={`text-xs font-medium ${review.thumbsUp ? "text-blue-500" : "text-red-400"}`}>
+                          <span
+                            className={`text-xs font-medium ${review.thumbsUp ? "text-blue-500" : "text-red-400"}`}
+                          >
                             {review.thumbsUp ? "추천" : "비추천"}
                           </span>
                         </div>
@@ -568,22 +673,30 @@ export default function RecipeDetail() {
                       {review.regDate ? review.regDate.slice(0, 10) : ""}
                     </span>
                   </div>
-                  
+
                   {(() => {
-                    const imgs = reviewImages.filter((img) => img.reviewId === review.reviewId);
+                    const imgs = reviewImages.filter(
+                      (img) => img.reviewId === review.reviewId,
+                    );
                     return imgs.length > 0 ? (
-                      <div className="flex gap-2 mt-3 pl-12 overflow-x-auto pb-1" style={{ scrollbarWidth: "thin" }}>
+                      <div
+                        className="flex gap-2 mt-3 pl-12 overflow-x-auto pb-1"
+                        style={{ scrollbarWidth: "thin" }}
+                      >
                         {imgs.map((img) => (
-                          <div key={img.imageId} className="shrink-0 w-40 h-40 rounded-lg overflow-hidden bg-gray-100">
+                          <div
+                            key={img.imageId}
+                            className="shrink-0 w-40 h-40 rounded-lg overflow-hidden bg-gray-100"
+                          >
                             <img
-<<<<<<< HEAD
-                              src={normalizeImageUrl(img.imageUrl) ?? ""}
-=======
                               src={`${API_BASE_URL}${img.imageUrl}`}
->>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
                               alt="후기 사진"
                               className="w-full h-full object-cover"
-                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                              onError={(e) => {
+                                (
+                                  e.currentTarget as HTMLImageElement
+                                ).style.display = "none";
+                              }}
                             />
                           </div>
                         ))}
@@ -610,15 +723,24 @@ export default function RecipeDetail() {
               <ChevronLeft className="w-4 h-4" />
             </button>
             {Array.from({ length: totalReviewPages }, (_, i) => i + 1)
-              .filter((p) => p === 1 || p === totalReviewPages || Math.abs(p - reviewPage) <= 1)
+              .filter(
+                (p) =>
+                  p === 1 ||
+                  p === totalReviewPages ||
+                  Math.abs(p - reviewPage) <= 1,
+              )
               .reduce<(number | "...")[]>((acc, p, idx, arr) => {
-                if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push("...");
+                if (idx > 0 && p - (arr[idx - 1] as number) > 1)
+                  acc.push("...");
                 acc.push(p);
                 return acc;
               }, [])
               .map((item, idx) =>
                 item === "..." ? (
-                  <span key={`ellipsis-${idx}`} className="w-8 h-8 flex items-center justify-center text-gray-400 text-sm">
+                  <span
+                    key={`ellipsis-${idx}`}
+                    className="w-8 h-8 flex items-center justify-center text-gray-400 text-sm"
+                  >
                     …
                   </span>
                 ) : (
@@ -633,10 +755,12 @@ export default function RecipeDetail() {
                   >
                     {item}
                   </button>
-                )
+                ),
               )}
             <button
-              onClick={() => setReviewPage((p) => Math.min(totalReviewPages, p + 1))}
+              onClick={() =>
+                setReviewPage((p) => Math.min(totalReviewPages, p + 1))
+              }
               disabled={reviewPage === totalReviewPages}
               className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
@@ -658,7 +782,8 @@ export default function RecipeDetail() {
                     : "bg-white text-gray-500 border-gray-200 hover:border-blue-400 hover:text-blue-500"
                 }`}
               >
-                <ThumbsUp className="w-4 h-4" />추천
+                <ThumbsUp className="w-4 h-4" />
+                추천
               </button>
               <button
                 onClick={() => setReviewThumbsUp(false)}
@@ -668,7 +793,8 @@ export default function RecipeDetail() {
                     : "bg-white text-gray-500 border-gray-200 hover:border-red-300 hover:text-red-400"
                 }`}
               >
-                <ThumbsDown className="w-4 h-4" />비추천
+                <ThumbsDown className="w-4 h-4" />
+                비추천
               </button>
             </div>
             <textarea
@@ -682,8 +808,15 @@ export default function RecipeDetail() {
             {previewUrls.length > 0 && (
               <div className="flex gap-2 mt-2 flex-wrap">
                 {previewUrls.map((url, idx) => (
-                  <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                    <img src={url} alt={`preview-${idx}`} className="w-full h-full object-cover" />
+                  <div
+                    key={idx}
+                    className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0"
+                  >
+                    <img
+                      src={url}
+                      alt={`preview-${idx}`}
+                      className="w-full h-full object-cover"
+                    />
                     <button
                       onClick={() => removePreview(idx)}
                       className="absolute top-0.5 right-0.5 bg-black bg-opacity-50 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-opacity-70 transition-all"
@@ -712,7 +845,8 @@ export default function RecipeDetail() {
                   className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-full text-xs text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                 >
                   <ImagePlus className="w-3.5 h-3.5" />
-                  사진 추가 {selectedFiles.length > 0 && `(${selectedFiles.length}/5)`}
+                  사진 추가{" "}
+                  {selectedFiles.length > 0 && `(${selectedFiles.length}/5)`}
                 </button>
               </div>
               <button
@@ -742,7 +876,9 @@ export default function RecipeDetail() {
 }
 
 function InfoCard({
-  icon, label, value,
+  icon,
+  label,
+  value,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -752,7 +888,9 @@ function InfoCard({
     <div className="flex flex-col items-center bg-white rounded-2xl shadow-sm border border-gray-100 p-4 gap-1">
       {icon}
       <span className="text-xs text-gray-400">{label}</span>
-      <span className="font-bold text-gray-700 text-sm text-center">{value}</span>
+      <span className="font-bold text-gray-700 text-sm text-center">
+        {value}
+      </span>
     </div>
   );
 }

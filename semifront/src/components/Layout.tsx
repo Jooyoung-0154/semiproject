@@ -6,10 +6,7 @@ import RecipeService from "../service/recipeService";
 import type { Member, Recipe_Info, Notification } from "../types/type.ts";
 import { useAuth } from "../context/AuthContext.tsx";
 import { API_BASE_URL } from "../config/api";
-<<<<<<< HEAD
 import { notificationService } from "../service/notificationService";
-=======
->>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -20,9 +17,11 @@ export default function Layout() {
   const [showSearchBox, setShowSearchBox] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notificationEnabled, setNotificationEnabled] = useState<boolean>(() => {
-    return localStorage.getItem("notificationEnabled") !== "false";
-  });
+  const [notificationEnabled, setNotificationEnabled] = useState<boolean>(
+    () => {
+      return localStorage.getItem("notificationEnabled") !== "false";
+    },
+  );
 
   const unreadCount = notificationEnabled
     ? notifications.filter((noti) => !noti.isRead).length
@@ -103,7 +102,9 @@ export default function Layout() {
       if (!noti.isRead) {
         await notificationService.read(noti.notiId);
         setNotifications((prev) =>
-          prev.map((item) => item.notiId === noti.notiId ? { ...item, isRead: true } : item),
+          prev.map((item) =>
+            item.notiId === noti.notiId ? { ...item, isRead: true } : item,
+          ),
         );
       }
       if (noti.type === "RECIPE_LIKE" || noti.type === "RECIPE_COMMENT") {
@@ -128,7 +129,10 @@ export default function Layout() {
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="text-2xl font-bold text-orange-600 tracking-tight">
+            <Link
+              to="/"
+              className="text-2xl font-bold text-orange-600 tracking-tight"
+            >
               🍳 Chef's Cuisine
             </Link>
 
@@ -145,7 +149,9 @@ export default function Layout() {
               {showSearchBox && (
                 <div className="absolute top-12 left-0 w-full bg-white border rounded-2xl shadow-lg z-50 overflow-hidden">
                   <div className="p-3 border-b">
-                    <p className="text-xs font-bold text-gray-500 mb-2">레시피</p>
+                    <p className="text-xs font-bold text-gray-500 mb-2">
+                      레시피
+                    </p>
                     {recipeResults.length > 0 ? (
                       recipeResults.map((recipe) => (
                         <button
@@ -160,11 +166,7 @@ export default function Layout() {
                           <div className="w-10 h-10 rounded-xl bg-orange-50 overflow-hidden flex items-center justify-center shrink-0">
                             {recipe.thumbImgUrl ? (
                               <img
-<<<<<<< HEAD
-                                src={recipe.thumbImgUrl.startsWith("/") ? `${API_BASE_URL}${recipe.thumbImgUrl}` : `${API_BASE_URL}/uploads/${recipe.thumbImgUrl}`}
-=======
                                 src={`${API_BASE_URL}${recipe.thumbImgUrl}`}
->>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
                                 alt={recipe.recipeNmKo}
                                 className="w-full h-full object-cover"
                               />
@@ -173,13 +175,19 @@ export default function Layout() {
                             )}
                           </div>
                           <div className="min-w-0 text-left">
-                            <p className="font-semibold text-gray-800 truncate">{recipe.recipeNmKo}</p>
-                            <p className="text-xs text-gray-400 truncate">{recipe.sumry || "레시피 설명이 없습니다."}</p>
+                            <p className="font-semibold text-gray-800 truncate">
+                              {recipe.recipeNmKo}
+                            </p>
+                            <p className="text-xs text-gray-400 truncate">
+                              {recipe.sumry || "레시피 설명이 없습니다."}
+                            </p>
                           </div>
                         </button>
                       ))
                     ) : (
-                      <p className="text-xs text-gray-400 px-3 py-2">검색된 레시피가 없습니다.</p>
+                      <p className="text-xs text-gray-400 px-3 py-2">
+                        검색된 레시피가 없습니다.
+                      </p>
                     )}
                   </div>
 
@@ -198,15 +206,11 @@ export default function Layout() {
                         >
                           <div className="w-8 h-8 rounded-full bg-orange-100 overflow-hidden flex items-center justify-center">
                             {member.profileImg ? (
-<<<<<<< HEAD
-                              <img src={`${API_BASE_URL}${member.profileImg}`} alt={member.nickname} className="w-full h-full object-cover" />
-=======
                               <img
                                 src={`${API_BASE_URL}${member.profileImg}`}
                                 alt={member.nickname}
                                 className="w-full h-full object-cover"
                               />
->>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
                             ) : (
                               <User className="w-4 h-4 text-orange-600" />
                             )}
@@ -215,7 +219,9 @@ export default function Layout() {
                         </button>
                       ))
                     ) : (
-                      <p className="text-xs text-gray-400 px-3 py-2">검색된 회원이 없습니다.</p>
+                      <p className="text-xs text-gray-400 px-3 py-2">
+                        검색된 회원이 없습니다.
+                      </p>
                     )}
                   </div>
                 </div>
@@ -224,9 +230,24 @@ export default function Layout() {
 
             <nav className="flex items-center gap-8">
               <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-                <Link to="/browse" className="hover:text-orange-600 transition-colors">레시피 둘러보기</Link>
-                <Link to="/write" className="hover:text-orange-600 transition-colors">레시피 작성</Link>
-                <Link to="/mypage" className="hover:text-orange-600 transition-colors">마이페이지</Link>
+                <Link
+                  to="/browse"
+                  className="hover:text-orange-600 transition-colors"
+                >
+                  레시피 둘러보기
+                </Link>
+                <Link
+                  to="/write"
+                  className="hover:text-orange-600 transition-colors"
+                >
+                  레시피 작성
+                </Link>
+                <Link
+                  to="/mypage"
+                  className="hover:text-orange-600 transition-colors"
+                >
+                  마이페이지
+                </Link>
               </div>
 
               <div className="flex items-center gap-3">
@@ -235,7 +256,10 @@ export default function Layout() {
                     <div className="relative">
                       <button
                         type="button"
-                        onClick={() => notificationEnabled && setShowNotifications((prev) => !prev)}
+                        onClick={() =>
+                          notificationEnabled &&
+                          setShowNotifications((prev) => !prev)
+                        }
                         className={`relative flex items-center justify-center w-10 h-10 rounded-full ${notificationEnabled ? "bg-gray-100 hover:bg-gray-200" : "bg-gray-50 opacity-50"}`}
                         title="알림"
                       >
@@ -256,7 +280,9 @@ export default function Layout() {
                                 <input
                                   type="checkbox"
                                   checked={notificationEnabled}
-                                  onChange={(e) => setNotificationEnabled(e.target.checked)}
+                                  onChange={(e) =>
+                                    setNotificationEnabled(e.target.checked)
+                                  }
                                 />
                                 ON/OFF
                               </label>
@@ -278,12 +304,18 @@ export default function Layout() {
                                   onClick={() => handleReadNotification(noti)}
                                   className={`w-full text-left px-4 py-3 border-b hover:bg-orange-50 ${noti.isRead ? "bg-white" : "bg-orange-50"}`}
                                 >
-                                  <p className="text-sm text-gray-800 font-medium leading-5">{noti.message}</p>
-                                  <p className="text-xs text-gray-400 mt-1">{noti.regDate}</p>
+                                  <p className="text-sm text-gray-800 font-medium leading-5">
+                                    {noti.message}
+                                  </p>
+                                  <p className="text-xs text-gray-400 mt-1">
+                                    {noti.regDate}
+                                  </p>
                                 </button>
                               ))
                             ) : (
-                              <p className="text-sm text-gray-400 text-center py-8">알림이 없습니다.</p>
+                              <p className="text-sm text-gray-400 text-center py-8">
+                                알림이 없습니다.
+                              </p>
                             )}
                           </div>
                         </div>
@@ -295,7 +327,9 @@ export default function Layout() {
                       <input
                         type="checkbox"
                         checked={notificationEnabled}
-                        onChange={(e) => setNotificationEnabled(e.target.checked)}
+                        onChange={(e) =>
+                          setNotificationEnabled(e.target.checked)
+                        }
                       />
                     </label>
 
