@@ -44,6 +44,7 @@
         WHERE USER_ID = #{userId}
     </select>
 
+<<<<<<< HEAD
     <select id="getRecipeWriterId" resultType="string">
         SELECT WRITER_ID
         FROM recipe
@@ -82,5 +83,39 @@
         WHERE rl.USER_ID = #{userId}
         ORDER BY r.RECIPE_ID DESC
     </select>
+=======
+	<!-- 유저가 좋아요한 레시피 목록 -->
+	<select id="getLikedRecipesByUser"
+		resultType="org.cloud.dto.Recipe_Info">
+		SELECT
+		r.RECIPE_ID AS recipeId,
+		r.RECIPE_NM_KO AS recipeNmKo,
+		r.SUMRY AS sumry,
+		r.NATION_CODE AS nationCode,
+		r.NATION_NM AS nationNm,
+		r.TY_CODE AS tyCode,
+		r.TY_NM AS tyNm,
+		r.COOKING_TIME AS cookingTime,
+		r.CALORIE AS calorie,
+		r.QNT AS qnt,
+		r.LEVEL_NM AS levelNm,
+		r.HIT AS hit,
+		r.LIKE_COUNT AS likeCount,
+		r.PRICE AS price,
+		r.WRITER_ID AS writerId,
+		m.NICKNAME AS writerNickname,
+		m.PROFILE_IMG AS writerProfileImg,
+		(SELECT img_url
+		FROM recipe_image
+		WHERE recipe_code = r.RECIPE_ID
+		ORDER BY sort_order ASC
+		LIMIT 1) AS thumbImgUrl
+		FROM recipe_like rl
+		JOIN RECIPE r ON rl.RECIPE_CODE = r.RECIPE_ID
+		LEFT JOIN member m ON r.WRITER_ID = m.ID
+		WHERE rl.USER_ID = #{userId}
+		ORDER BY r.RECIPE_ID DESC
+	</select>
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 
 </mapper>

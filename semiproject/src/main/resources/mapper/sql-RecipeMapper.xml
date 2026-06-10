@@ -18,11 +18,23 @@
 		r.LIKE_COUNT AS likeCount,
 		r.PRICE AS price,
 		r.WRITER_ID AS writerId,
+<<<<<<< HEAD
 		m.NICKNAME AS writerNickname,
 		m.PROFILE_IMG AS writerProfileImg,
 		(SELECT img_url FROM recipe_image WHERE recipe_code = r.RECIPE_ID
 		ORDER BY
 		sort_order ASC LIMIT 1) AS thumbImgUrl
+=======
+		r.CREATED_AT AS createdAt,
+		m.NICKNAME AS writerNickname,
+		m.PROFILE_IMG
+		AS writerProfileImg,
+		(SELECT img_url FROM recipe_image WHERE
+		recipe_code = r.RECIPE_ID
+		ORDER BY
+		sort_order ASC LIMIT 1) AS
+		thumbImgUrl
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 	</sql>
 
 	<select id="selectRecipeList"
@@ -58,6 +70,7 @@
 		parameterType="org.cloud.dto.RecipeSearchParams"
 		resultType="org.cloud.dto.Recipe_Info">
 
+<<<<<<< HEAD
 		SELECT DISTINCT
 		r.RECIPE_ID AS recipeId,
 		r.RECIPE_NM_KO AS recipeNmKo,
@@ -141,6 +154,94 @@
 			<if test="ageGroup == 'age60'">
 				AND TIMESTAMPDIFF(YEAR, m_age.BIRTH_DATE, CURDATE())
 				&gt;= 60
+=======
+		SELECT
+		r.RECIPE_ID AS recipeId,
+		r.RECIPE_NM_KO AS recipeNmKo,
+		r.SUMRY AS
+		sumry,
+		r.NATION_CODE AS nationCode,
+		r.NATION_NM AS nationNm,
+		r.TY_CODE AS
+		tyCode,
+		r.TY_NM AS tyNm,
+		r.COOKING_TIME AS cookingTime,
+		r.CALORIE AS
+		calorie,
+		r.QNT AS qnt,
+		r.LEVEL_NM AS levelNm,
+		r.HIT AS hit,
+		r.LIKE_COUNT
+		AS likeCount,
+		r.PRICE AS price,
+		r.WRITER_ID AS writerId,
+		m.NICKNAME AS
+		writerNickname,
+		m.PROFILE_IMG AS writerProfileImg,
+		(SELECT img_url FROM
+		recipe_image WHERE recipe_code = r.RECIPE_ID
+		ORDER BY
+		sort_order ASC
+		LIMIT 1) AS thumbImgUrl
+
+		FROM RECIPE r
+		LEFT JOIN
+		member m ON r.WRITER_ID =
+		m.ID
+
+		<if test="tagIds != null and tagIds.size() &gt; 0">
+			JOIN RECIPE_TAG rt ON r.recipe_id = rt.recipe_id
+		</if>
+
+		<if test="irdntNms != null and irdntNms.size() &gt; 0">
+			JOIN IRDNT_INFO ii ON r.recipe_id = ii.recipe_id
+		</if>
+
+		<where>
+			<if test="recipeNmKo != null and recipeNmKo != ''">
+				AND r.recipe_nm_ko LIKE CONCAT('%', #{recipeNmKo}, '%')
+			</if>
+
+			<if test="tagIds != null and tagIds.size() &gt; 0">
+				AND rt.tag_id IN
+				<foreach collection="tagIds" item="tid" open="("
+					separator="," close=")">
+					#{tid}
+				</foreach>
+			</if>
+
+			<if test="levelNm != null and levelNm != ''">
+				AND r.level_nm = #{levelNm}
+			</if>
+
+			<if test="irdntNms != null and irdntNms.size() &gt; 0">
+				AND ii.irdnt_nm IN
+				<foreach collection="irdntNms" item="nm" open="("
+					separator="," close=")">
+					#{nm}
+				</foreach>
+			</if>
+
+			<if test="ageGroup != null and ageGroup != 'all'">
+				AND r.WRITER_ID IS NOT NULL
+				AND r.WRITER_ID != ''
+				AND
+				m.BIRTH_DATE IS NOT NULL
+			</if>
+
+			<if test="ageGroup == 'age2030'">
+				AND TIMESTAMPDIFF(YEAR, m.BIRTH_DATE, CURDATE()) BETWEEN
+				20 AND 39
+			</if>
+
+			<if test="ageGroup == 'age4050'">
+				AND TIMESTAMPDIFF(YEAR, m.BIRTH_DATE, CURDATE()) BETWEEN
+				40 AND 59
+			</if>
+
+			<if test="ageGroup == 'age60'">
+				AND TIMESTAMPDIFF(YEAR, m.BIRTH_DATE, CURDATE()) &gt;= 60
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 			</if>
 		</where>
 
@@ -150,7 +251,11 @@
 
 		<choose>
 			<when test="sortType == 'all'">
+<<<<<<< HEAD
 				ORDER BY r.recipe_id DESC
+=======
+				ORDER BY r.CREATED_AT DESC, r.RECIPE_ID DESC
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 			</when>
 
 			<when test="sortType == 'scrap'">
@@ -360,6 +465,7 @@
 		UPDATE RECIPE SET HIT = HIT + 1 WHERE RECIPE_ID =
 		#{recipeId}
 	</update>
+<<<<<<< HEAD
 
 
     <select id="selectWriterIdByRecipeId" resultType="string">
@@ -367,5 +473,7 @@
         FROM RECIPE
         WHERE RECIPE_ID = #{recipeId}
     </select>
+=======
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 
 </mapper>

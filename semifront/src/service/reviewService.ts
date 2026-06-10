@@ -11,7 +11,13 @@ export const reviewService = {
   uploadImages: (reviewId: number, files: File[]) => {
     const formData = new FormData();
     files.forEach((f) => formData.append("files", f));
+<<<<<<< HEAD
     return api.post(`/review-images/${reviewId}/upload`, formData);
+=======
+    return api.post(`/review-images/${reviewId}/upload`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
   },
 
   getRecipeReviewImages: (recipeCode: string) =>

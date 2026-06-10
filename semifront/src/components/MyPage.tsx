@@ -21,9 +21,13 @@ export default function MyPage() {
 
   const [user, setUser] = useState<Member | null>(authUser);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+<<<<<<< HEAD
   const [activeTab, setActiveTab] = useState<"recipes" | "liked" | "posts">(
     "recipes",
   );
+=======
+  const [activeTab, setActiveTab] = useState<"recipes" | "liked" | "posts">("recipes");
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
   const [scrapPublic, setScrapPublic] = useState<boolean>(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
@@ -31,7 +35,8 @@ export default function MyPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const currentUserId = authUser?.id ?? "";
-  const displayUser = user ?? authUser;
+  const isOtherUserPage = Boolean(userId && userId !== authUser?.id);
+  const displayUser = user;
   const isOwnPage = Boolean(
     authUser?.id && displayUser?.id && authUser.id === displayUser.id,
   );
@@ -157,8 +162,26 @@ export default function MyPage() {
       </div>
     );
   }
+<<<<<<< HEAD
   if (!displayUser)
     return <div className="text-center py-8">유저 정보가 없습니다.</div>;
+=======
+  if (!displayUser) {
+    return (
+      <div className="text-center py-12 space-y-4">
+        <p className="text-lg font-semibold">
+          탈퇴했거나 존재하지 않는 회원입니다.
+        </p>
+        <button
+          onClick={() => navigate("/")}
+          className="inline-flex items-center justify-center rounded-full bg-orange-600 px-6 py-3 text-white font-semibold hover:bg-orange-700 transition"
+        >
+          메인으로 이동
+        </button>
+      </div>
+    );
+  }
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 
   return (
     <div className="mypage-container">

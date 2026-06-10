@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, FormEvent, useEffect } from "react";
-import { Upload, Plus, X, Tag as TagIcon } from "lucide-react";
+import { Upload, Plus, X, Tag as TagIcon, Sparkles } from "lucide-react";
 import api from "../api/axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Recipe_Info, Cooking_Info, Irdnt_Info, Tag } from "../types/type";
@@ -7,6 +7,10 @@ import { useAuth } from "../context/AuthContext";
 import { tagService } from "../service/tagService";
 import RecipeService from "../service/recipeService";
 import { API_BASE_URL } from "../config/api";
+<<<<<<< HEAD
+=======
+import askGemini from "../service/aiService";
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 
 export default function RecipeWrite() {
   const navigate = useNavigate();
@@ -53,6 +57,9 @@ export default function RecipeWrite() {
   // 5. 태그
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+
+  const [useAi, setUseAi] = useState(false);
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingEdit, setIsLoadingEdit] = useState(isEditMode);
@@ -235,15 +242,64 @@ export default function RecipeWrite() {
       ...seasonings.map((i) => ({ ...i, irdntTyNm: "양념" })),
     ].filter((i) => i.irdntNm.trim() !== "");
 
+  const buildRecipeContext = () => {
+    const allIngredients = mergeIngredients();
+    const ingredientText = allIngredients.length > 0
+      ? allIngredients.map((i) => `${i.irdntNm}${i.irdntCpcty ? ` ${i.irdntCpcty}` : ""}`).join(", ")
+      : "재료 없음";
+    const stepsText = cookingInfo
+      .map((s, i) => `${i + 1}. ${s.cookingDc}`)
+      .filter((s) => s.trim().length > 4)
+      .join("\n");
+    return { ingredientText, stepsText };
+  };
+
+  const buildAiPrompt = () => {
+    const { ingredientText, stepsText } = buildRecipeContext();
+    return `다음 레시피 정보를 바탕으로 레시피 소개글을 2~3문장으로 한국어로 작성해주세요. 소개글만 출력하세요.\n\n레시피 이름: ${recipeInfo.recipeNmKo}\n재료: ${ingredientText}\n조리 순서:\n${stepsText}`;
+  };
+
+  const buildCaloriePrompt = () => {
+    const { ingredientText, stepsText } = buildRecipeContext();
+    return `다음 레시피의 1인분 기준 총 칼로리를 kcal 단위로 추정해주세요. 숫자만 출력하세요 (예: 450).\n\n레시피 이름: ${recipeInfo.recipeNmKo}\n재료: ${ingredientText}\n조리 순서:\n${stepsText}`;
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      let finalSumry = recipeInfo.sumry;
+      let finalCalorie = recipeInfo.calorie;
+
+      setIsGeneratingAi(true);
+      try {
+        const aiTasks: Promise<string | undefined>[] = [askGemini(buildCaloriePrompt())];
+        if (useAi) aiTasks.push(askGemini(buildAiPrompt()));
+
+        const [calorieResult, summaryResult] = await Promise.all(aiTasks);
+
+        if (calorieResult) {
+          const parsed = calorieResult.match(/\d+/)?.[0];
+          if (parsed) {
+            finalCalorie = parsed;
+            setRecipeInfo((prev) => ({ ...prev, calorie: parsed }));
+          }
+        }
+        if (summaryResult) {
+          finalSumry = summaryResult;
+          setRecipeInfo((prev) => ({ ...prev, sumry: summaryResult }));
+        }
+      } catch {
+        alert("AI 처리에 실패했습니다. 기존 값으로 저장을 진행합니다.");
+      } finally {
+        setIsGeneratingAi(false);
+      }
+
       const updatedCookingInfo = await uploadStepImages();
       const allIngredients = mergeIngredients();
       const recipePayload = {
-        recipeInfo: { ...recipeInfo, cookingTime: `${recipeInfo.cookingTime}분`, qnt: `${recipeInfo.qnt}인분` },
+        recipeInfo: { ...recipeInfo, sumry: finalSumry, calorie: finalCalorie, cookingTime: `${recipeInfo.cookingTime}분`, qnt: `${recipeInfo.qnt}인분` },
         irdntInfo: allIngredients,
         cookingInfo: updatedCookingInfo,
         price: Number(recipeInfo.pcNm) || 0,
@@ -373,13 +429,34 @@ export default function RecipeWrite() {
               />
             </div>
             <div>
-              <label className="block font-medium mb-1">요리 설명</label>
-              <textarea
-                value={recipeInfo.sumry}
-                onChange={(e) => setRecipeInfo({ ...recipeInfo, sumry: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg h-24 resize-none"
-                placeholder="레시피를 간단히 소개해주세요"
-              />
+              <div className="flex items-center justify-between mb-1">
+                <label className="block font-medium">요리 설명</label>
+                <button
+                  type="button"
+                  onClick={() => setUseAi((prev) => !prev)}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold border transition-all ${
+                    useAi
+                      ? "bg-orange-500 text-white border-orange-500 shadow"
+                      : "bg-white text-gray-500 border-gray-300 hover:border-orange-400 hover:text-orange-500"
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  AI 요약 {useAi ? "ON" : "OFF"}
+                </button>
+              </div>
+              {useAi ? (
+                <div className="w-full px-4 py-2 border rounded-lg h-24 bg-orange-50 border-orange-200 text-sm text-orange-700 flex items-center justify-center gap-2">
+                  <Sparkles className="w-4 h-4 flex-shrink-0" />
+                  <span>등록 버튼을 누르면 AI가 자동으로 요약을 작성합니다</span>
+                </div>
+              ) : (
+                <textarea
+                  value={recipeInfo.sumry}
+                  onChange={(e) => setRecipeInfo({ ...recipeInfo, sumry: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-lg h-24 resize-none"
+                  placeholder="레시피를 간단히 소개해주세요"
+                />
+              )}
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
@@ -432,7 +509,11 @@ export default function RecipeWrite() {
             {(existingMainImgUrls.length > 0 || mainPreviews.length > 0) && (
               <div className="grid grid-cols-3 gap-3 mb-3">
                 {[
+<<<<<<< HEAD
                   ...existingMainImgUrls.map((url) => normalizeImageUrl(url)),
+=======
+                  ...existingMainImgUrls.map((url) => `${API_BASE_URL}${url}`),
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
                   ...mainPreviews,
                 ].map((preview, index) => (
                   <div
@@ -522,7 +603,11 @@ export default function RecipeWrite() {
                   {(stepPreviews[index] || existingStepImgUrls[index]) ? (
                     <div className="relative rounded-md overflow-hidden">
                       <img
+<<<<<<< HEAD
                         src={stepPreviews[index] || normalizeImageUrl(existingStepImgUrls[index])}
+=======
+                        src={stepPreviews[index] || `${API_BASE_URL}${existingStepImgUrls[index]}`}
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
                         alt={`Step ${index + 1} 이미지`}
                         className="w-full max-h-48 object-cover"
                       />
@@ -611,7 +696,7 @@ export default function RecipeWrite() {
               disabled={isSubmitting}
               className="flex-1 bg-orange-600 text-white py-3 rounded-xl font-bold hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? (isEditMode ? "수정 중..." : "등록 중...") : (isEditMode ? "레시피 수정 완료" : "레시피 등록 완료")}
+              {isGeneratingAi ? "AI 분석 중..." : isSubmitting ? (isEditMode ? "수정 중..." : "등록 중...") : (isEditMode ? "레시피 수정 완료" : "레시피 등록 완료")}
             </button>
             <button
               type="button"

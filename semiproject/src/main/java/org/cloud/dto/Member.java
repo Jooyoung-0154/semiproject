@@ -17,6 +17,7 @@ public class Member {
 
 	private LocalDate birthDate;
 	private String gender;
+	private String status;
 
 	private List<String> followerIds;
 	private List<String> followingIds;
@@ -148,6 +149,7 @@ public class Member {
 		this.scrapPublic = scrapPublic;
 	}
 
+<<<<<<< HEAD
 	public LocalDate getBirthDate() {
 		return birthDate;
 	}
@@ -165,4 +167,6 @@ public class Member {
 	}
 
 	
+=======
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 }

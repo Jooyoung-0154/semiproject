@@ -8,7 +8,7 @@ import { API_BASE_URL } from "../config/api";
 
 export default function MyInfo() {
   const navigate = useNavigate();
-  const { user: authUser } = useAuth();
+  const { user: authUser, logout } = useAuth();
 
   const [member, setMember] = useState<Member | null>(authUser);
   const [loading, setLoading] = useState(true);
@@ -17,6 +17,8 @@ export default function MyInfo() {
   const [intro, setIntro] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteText, setDeleteText] = useState("");
 
   useEffect(() => {
     const fetchMyInfo = async () => {
@@ -88,6 +90,38 @@ export default function MyInfo() {
     } catch (error) {
       console.error("회원정보 수정 실패:", error);
       alert("회원정보 수정 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleDeleteMember = () => {
+    const firstConfirm = window.confirm(
+      "정말 회원 탈퇴를 진행하시겠습니까?\n탈퇴 후에는 이 계정으로 다시 로그인할 수 없습니다.",
+    );
+
+    if (!firstConfirm) return;
+
+    // 2차 확인 모달 열기
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteMember = async () => {
+    if (!authUser?.id) return;
+
+    if (deleteText !== "회원탈퇴") {
+      alert("'회원탈퇴'를 정확히 입력해주세요.");
+      return;
+    }
+
+    try {
+      await memberService.deleteMember(authUser.id);
+
+      alert("회원 탈퇴가 완료되었습니다.");
+
+      logout();
+      navigate("/login");
+    } catch (error) {
+      console.error("회원 탈퇴 실패:", error);
+      alert("회원 탈퇴 중 오류가 발생했습니다.");
     }
   };
 
@@ -198,6 +232,58 @@ export default function MyInfo() {
           저장
         </button>
       </div>
+      <div className="mt-10 pt-6 border-t">
+        <h2 className="text-lg font-bold text-red-600">회원 탈퇴</h2>
+        <p className="text-sm text-gray-500 mt-2">
+          탈퇴 시 계정이 비활성화되며, 같은 계정으로 다시 로그인할 수 없습니다.
+        </p>
+
+        <button
+          onClick={handleDeleteMember}
+          className="mt-4 px-5 py-2 rounded-2xl border border-red-300 text-red-600 font-semibold hover:bg-red-50"
+        >
+          회원 탈퇴
+        </button>
+      </div>
+      {showDeleteModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2 className="modal-title text-red-600">회원 탈퇴 확인</h2>
+
+            <p className="text-sm text-gray-500 mt-2">
+              탈퇴를 계속하려면 아래 입력창에 <b>'회원탈퇴'</b>를 입력해주세요.
+            </p>
+
+            <input
+              type="text"
+              value={deleteText}
+              onChange={(e) => setDeleteText(e.target.value)}
+              placeholder="회원탈퇴 입력"
+              className="modal-input mt-4"
+            />
+
+            <div className="modal-actions">
+              <button
+                onClick={confirmDeleteMember}
+                disabled={deleteText !== "회원탈퇴"}
+                className="btn-modal-charge"
+              >
+                회원 탈퇴
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteText("");
+                }}
+                className="btn-modal-cancel"
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

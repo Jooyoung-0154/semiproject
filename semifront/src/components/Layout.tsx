@@ -6,7 +6,10 @@ import RecipeService from "../service/recipeService";
 import type { Member, Recipe_Info, Notification } from "../types/type.ts";
 import { useAuth } from "../context/AuthContext.tsx";
 import { API_BASE_URL } from "../config/api";
+<<<<<<< HEAD
 import { notificationService } from "../service/notificationService";
+=======
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -157,7 +160,11 @@ export default function Layout() {
                           <div className="w-10 h-10 rounded-xl bg-orange-50 overflow-hidden flex items-center justify-center shrink-0">
                             {recipe.thumbImgUrl ? (
                               <img
+<<<<<<< HEAD
                                 src={recipe.thumbImgUrl.startsWith("/") ? `${API_BASE_URL}${recipe.thumbImgUrl}` : `${API_BASE_URL}/uploads/${recipe.thumbImgUrl}`}
+=======
+                                src={`${API_BASE_URL}${recipe.thumbImgUrl}`}
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
                                 alt={recipe.recipeNmKo}
                                 className="w-full h-full object-cover"
                               />
@@ -191,7 +198,15 @@ export default function Layout() {
                         >
                           <div className="w-8 h-8 rounded-full bg-orange-100 overflow-hidden flex items-center justify-center">
                             {member.profileImg ? (
+<<<<<<< HEAD
                               <img src={`${API_BASE_URL}${member.profileImg}`} alt={member.nickname} className="w-full h-full object-cover" />
+=======
+                              <img
+                                src={`${API_BASE_URL}${member.profileImg}`}
+                                alt={member.nickname}
+                                className="w-full h-full object-cover"
+                              />
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
                             ) : (
                               <User className="w-4 h-4 text-orange-600" />
                             )}

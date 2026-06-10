@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.cloud.mapper.ReviewMapper">
@@ -55,3 +56,40 @@
     </select>
 
 </mapper>
+=======
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.cloud.mapper.ReviewMapper">
+
+    <insert id="insertReview" useGeneratedKeys="true" keyProperty="reviewId">
+        INSERT INTO review (RECIPE_CODE, ID, REVIEW_CONTENT, THUMBS_UP)
+        VALUES (#{recipeCode}, #{id}, #{reviewContent}, #{thumbsUp})
+    </insert>
+
+    <update id="updateReview">
+        UPDATE review
+        SET REVIEW_CONTENT = #{reviewContent},
+            THUMBS_UP = #{thumbsUp}
+        WHERE REVIEW_ID = #{reviewId}
+    </update>
+
+    <delete id="deleteReview">
+        DELETE FROM review
+        WHERE REVIEW_ID = #{reviewId}
+          AND (ID = #{requesterId} OR #{requesterId} = 'Admin')
+    </delete>
+
+    <select id="getReviewsByRecipeCode" resultType="org.cloud.dto.Review">
+        SELECT * FROM review
+        WHERE RECIPE_CODE = #{RECIPE_CODE}
+        ORDER BY REG_DATE DESC
+    </select>
+
+    <select id="getReviewsById" resultType="org.cloud.dto.Review">
+        SELECT * FROM review
+        WHERE ID = #{ID}
+        ORDER BY REG_DATE DESC
+    </select>
+
+</mapper>
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81

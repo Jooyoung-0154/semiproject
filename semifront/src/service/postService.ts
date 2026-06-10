@@ -27,8 +27,13 @@ export const postService = {
   modifyWithImage: (postId: number, formData: FormData) =>
     api.put(`/posts/${postId}/image`, formData),
 
+<<<<<<< HEAD
   deletePost: (postId: number, requesterId: string) =>
     api.delete(`/posts/${postId}`, { params: { requesterId } }),
+=======
+  // 게시글 삭제 (인증은 서버 세션으로 처리)
+  deletePost: (postId: number) => api.delete(`/posts/${postId}`),
+>>>>>>> 5ee042261809b2e907799f6894e7460b59020a81
 
   addComment: (comment: PostComment) => api.post("/posts/comment", comment),
 
