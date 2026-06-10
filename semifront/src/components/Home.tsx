@@ -62,6 +62,10 @@ export default function Home() {
     }
   };
 
+  const handleEditRecipe = (recipeId: string) => {
+    navigate(`/write?edit=${recipeId}`);
+  };
+
   return (
     <div className="space-y-10">
       <section
@@ -147,7 +151,8 @@ export default function Home() {
                     ),
                   )
                 }
-                onDelete={user?.id === "Admin" ? handleDeleteRecipe : undefined}
+                onDelete={user?.id === "Admin" || user?.id === recipe.writerId ? handleDeleteRecipe : undefined}
+                onEdit={user?.id === recipe.writerId ? handleEditRecipe : undefined}
               />
             ))}
           </div>
