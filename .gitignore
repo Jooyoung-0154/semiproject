@@ -127,6 +127,7 @@ gradle-app.setting
 .classpath
 .claude/
 data/
+docs/
 
 ### Gradle Patch ###
 # Java heap dump

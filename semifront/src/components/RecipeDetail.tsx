@@ -287,7 +287,7 @@ export default function RecipeDetail() {
                     key={tag.tagId}
                     className="px-3 py-1 bg-orange-50 text-orange-600 border border-orange-100 rounded-full text-sm font-medium"
                   >
-                    #{tag.tagName}
+                    {tag.tagName}
                   </span>
                 ))}
               </div>
