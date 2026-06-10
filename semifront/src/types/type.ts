@@ -71,6 +71,7 @@ export interface Post {
   postImg: string;
   regDate: string;
   likeCount: number;
+  liked?: boolean;
   comments: PostComment[]; // 댓글 목록
 }
 
@@ -147,4 +148,16 @@ export interface Review {
   reviewHit: number; // 리뷰 조회수
   thumbsUp: boolean; // 추천 여부 (Java의 boolean 대응)
   regDate: string; // 등록일
+}
+
+
+export interface Notification {
+  notiId: number;
+  receiverId: string;
+  senderId: string;
+  type: string;
+  targetId?: string;
+  message: string;
+  isRead: boolean;
+  regDate: string;
 }

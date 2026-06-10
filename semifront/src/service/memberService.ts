@@ -22,9 +22,7 @@ export const memberService = {
   updateProfileImage: (id: string, file: File) => {
     const formData = new FormData();
     formData.append("file", file);
-    return api.post(`/member/${id}/profile-image`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    return api.post(`/member/${id}/profile-image`, formData);
   },
 
   // 소개글

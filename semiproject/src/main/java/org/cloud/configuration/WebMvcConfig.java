@@ -7,17 +7,23 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-	@Override
-	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		String projectPath = System.getProperty("user.dir");
-		System.out.println("프로젝트 경로 : " + projectPath);
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String projectPath = System.getProperty("user.dir");
 
-		String uploadPath = "file:///" + projectPath + "/src/main/resources/static/uploads/";
-		String imagePath = "file:///" + projectPath + "/src/main/resources/static/image/";
-		
-		registry.addResourceHandler("/uploads/**").addResourceLocations(uploadPath).setCachePeriod(3600).resourceChain(true);
-		registry.addResourceHandler("/image/**").addResourceLocations(imagePath).setCachePeriod(3600).resourceChain(true);
-		registry.addResourceHandler("/resources/static/image/**").addResourceLocations(imagePath).setCachePeriod(3600).resourceChain(true);
-	}
+        /*
+         * 이미지 업로드 경로 통일
+         * - 새로 업로드되는 파일: C:/upload/
+         * - 기존에 저장된 파일: src/main/resources/static/uploads/
+         * 두 경로를 모두 /uploads/** 로 열어두면 기존 데이터와 신규 데이터 모두 화면에 표시됨.
+         */
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations(
+                        "file:///C:/upload/",
+                        "file:///" + projectPath + "/src/main/resources/static/uploads/"
+                );
 
+        registry.addResourceHandler("/image/**")
+                .addResourceLocations("file:///" + projectPath + "/src/main/resources/static/image/");
+    }
 }

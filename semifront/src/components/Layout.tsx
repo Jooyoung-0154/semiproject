@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Outlet, Link, useNavigate } from "react-router";
-import { User, LogIn, LogOut, ShieldCheck, Search } from "lucide-react";
+import { User, LogIn, LogOut, ShieldCheck, Search, Bell } from "lucide-react";
 import { memberService } from "../service/memberService.ts";
 import RecipeService from "../service/recipeService";
-import type { Member, Recipe_Info } from "../types/type.ts";
+import type { Member, Recipe_Info, Notification } from "../types/type.ts";
 import { useAuth } from "../context/AuthContext.tsx";
 import { API_BASE_URL } from "../config/api";
+import { notificationService } from "../service/notificationService";
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -14,6 +15,45 @@ export default function Layout() {
   const [memberResults, setMemberResults] = useState<Member[]>([]);
   const [recipeResults, setRecipeResults] = useState<Recipe_Info[]>([]);
   const [showSearchBox, setShowSearchBox] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationEnabled, setNotificationEnabled] = useState<boolean>(
+    () => {
+      return localStorage.getItem("notificationEnabled") !== "false";
+    },
+  );
+
+  const unreadCount = notificationEnabled
+    ? notifications.filter((noti) => !noti.isRead).length
+    : 0;
+
+  const fetchNotifications = async () => {
+    if (!user?.id || !notificationEnabled) {
+      setNotifications([]);
+      return;
+    }
+    try {
+      const response = await notificationService.getList(user.id);
+      setNotifications(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("알림 조회 실패:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    if (!user?.id || !notificationEnabled) return;
+    const timer = window.setInterval(fetchNotifications, 10000);
+    return () => window.clearInterval(timer);
+  }, [user?.id, notificationEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem("notificationEnabled", String(notificationEnabled));
+    if (!notificationEnabled) {
+      setShowNotifications(false);
+      setNotifications([]);
+    }
+  }, [notificationEnabled]);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -36,7 +76,6 @@ export default function Layout() {
           size: 5,
         });
         setRecipeResults(recipeRes.recipes ?? []);
-
         setShowSearchBox(true);
       } catch (error) {
         console.error("통합 검색 실패:", error);
@@ -46,13 +85,50 @@ export default function Layout() {
     return () => clearTimeout(timer);
   }, [keyword]);
 
+  const handleReadAllNotifications = async () => {
+    if (!user?.id) return;
+    try {
+      await notificationService.readAll(user.id);
+      setNotifications([]);
+      setShowNotifications(false);
+    } catch (error) {
+      console.error("전체 읽음 처리 실패:", error);
+      alert("알림 읽음 처리에 실패했습니다.");
+    }
+  };
+
+  const handleReadNotification = async (noti: Notification) => {
+    try {
+      if (!noti.isRead) {
+        await notificationService.read(noti.notiId);
+        setNotifications((prev) =>
+          prev.map((item) =>
+            item.notiId === noti.notiId ? { ...item, isRead: true } : item,
+          ),
+        );
+      }
+      if (noti.type === "RECIPE_LIKE" || noti.type === "RECIPE_COMMENT") {
+        navigate(`/recipe/${noti.targetId}`);
+        setShowNotifications(false);
+      }
+      if (noti.type === "POST_COMMENT") {
+        navigate(`/mypage`);
+        setShowNotifications(false);
+      }
+      if (noti.type === "GUESTBOOK" || noti.type === "FOLLOW") {
+        navigate(`/mypage`);
+        setShowNotifications(false);
+      }
+    } catch (error) {
+      console.error("알림 읽음 처리 실패:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* 상단 헤더 */}
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            {/* 로고 */}
             <Link
               to="/"
               className="text-2xl font-bold text-orange-600 tracking-tight"
@@ -60,7 +136,6 @@ export default function Layout() {
               🍳 Chef's Cuisine
             </Link>
 
-            {/* 통합 검색창 */}
             <div className="relative w-80 ml-6 hidden md:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -77,7 +152,6 @@ export default function Layout() {
                     <p className="text-xs font-bold text-gray-500 mb-2">
                       레시피
                     </p>
-
                     {recipeResults.length > 0 ? (
                       recipeResults.map((recipe) => (
                         <button
@@ -100,7 +174,6 @@ export default function Layout() {
                               <span className="text-lg">🍽️</span>
                             )}
                           </div>
-
                           <div className="min-w-0 text-left">
                             <p className="font-semibold text-gray-800 truncate">
                               {recipe.recipeNmKo}
@@ -120,7 +193,6 @@ export default function Layout() {
 
                   <div className="p-3">
                     <p className="text-xs font-bold text-gray-500 mb-2">회원</p>
-
                     {memberResults.length > 0 ? (
                       memberResults.map((member) => (
                         <button
@@ -156,7 +228,6 @@ export default function Layout() {
               )}
             </div>
 
-            {/* 네비게이션 메뉴 */}
             <nav className="flex items-center gap-8">
               <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
                 <Link
@@ -165,7 +236,6 @@ export default function Layout() {
                 >
                   레시피 둘러보기
                 </Link>
-
                 <Link
                   to="/write"
                   className="hover:text-orange-600 transition-colors"
@@ -180,10 +250,89 @@ export default function Layout() {
                 </Link>
               </div>
 
-              {/* 로그인/프로필 버튼 */}
               <div className="flex items-center gap-3">
                 {user ? (
                   <>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          notificationEnabled &&
+                          setShowNotifications((prev) => !prev)
+                        }
+                        className={`relative flex items-center justify-center w-10 h-10 rounded-full ${notificationEnabled ? "bg-gray-100 hover:bg-gray-200" : "bg-gray-50 opacity-50"}`}
+                        title="알림"
+                      >
+                        <Bell className="w-5 h-5 text-gray-700" />
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </button>
+
+                      {showNotifications && notificationEnabled && (
+                        <div className="absolute right-0 top-12 w-80 bg-white border border-gray-300 rounded-xl shadow-xl overflow-hidden z-[100]">
+                          <div className="flex items-center justify-between px-4 py-3 border-b bg-white">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm">알림</span>
+                              <label className="flex items-center gap-1 text-xs text-gray-500 cursor-pointer select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={notificationEnabled}
+                                  onChange={(e) =>
+                                    setNotificationEnabled(e.target.checked)
+                                  }
+                                />
+                                ON/OFF
+                              </label>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleReadAllNotifications}
+                              className="text-xs text-orange-600 font-semibold hover:underline"
+                            >
+                              전체 읽음
+                            </button>
+                          </div>
+                          <div className="max-h-80 overflow-y-auto">
+                            {notifications.length > 0 ? (
+                              notifications.map((noti) => (
+                                <button
+                                  type="button"
+                                  key={noti.notiId}
+                                  onClick={() => handleReadNotification(noti)}
+                                  className={`w-full text-left px-4 py-3 border-b hover:bg-orange-50 ${noti.isRead ? "bg-white" : "bg-orange-50"}`}
+                                >
+                                  <p className="text-sm text-gray-800 font-medium leading-5">
+                                    {noti.message}
+                                  </p>
+                                  <p className="text-xs text-gray-400 mt-1">
+                                    {noti.regDate}
+                                  </p>
+                                </button>
+                              ))
+                            ) : (
+                              <p className="text-sm text-gray-400 text-center py-8">
+                                알림이 없습니다.
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <label className="hidden md:flex items-center gap-1 text-xs text-gray-500 select-none">
+                      알림
+                      <input
+                        type="checkbox"
+                        checked={notificationEnabled}
+                        onChange={(e) =>
+                          setNotificationEnabled(e.target.checked)
+                        }
+                      />
+                    </label>
+
                     {user.id === "Admin" && (
                       <button
                         onClick={() => navigate("/admin")}
@@ -223,12 +372,10 @@ export default function Layout() {
         </div>
       </header>
 
-      {/* 메인 콘텐츠 영역 */}
       <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
         <Outlet />
       </main>
 
-      {/* 푸터 (추가해두면 사이트가 더 완성도 있어 보입니다) */}
       <footer className="bg-white border-t border-gray-200 py-8 mt-auto">
         <div className="max-w-7xl mx-auto px-4 text-center text-gray-500 text-sm">
           <p>© 2026 레시피 공유 플랫폼. All rights reserved.</p>
