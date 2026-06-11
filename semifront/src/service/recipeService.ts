@@ -18,9 +18,9 @@ export interface BrowseParams {
   ingredients?: string[];
   ingredientMode?: "OR" | "AND";
   sortType?: string;
-  ageGroup?: string;
   page?: number;
   size?: number;
+  cookingTimeFilter?: string;
 }
 
 export interface BrowseResult {
@@ -43,9 +43,9 @@ const RecipeService = {
           : undefined,
         ingredientMode: params.ingredientMode ?? "OR",
         sortType: params.sortType || "all",
-        ageGroup: params.ageGroup || "all",
         page: params.page || 1,
         size: params.size || 12,
+        cookingTimeFilter: params.cookingTimeFilter || "all",
       },
     });
     console.log("🔍 browse 응답 첫번째 레시피:", response.data?.recipes?.[0]);

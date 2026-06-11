@@ -59,7 +59,7 @@ export default function RecipesTab({ displayUser, currentUserId, isOwnPage }: Re
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="bg-white rounded-2xl shadow animate-pulse overflow-hidden">
             <div className="h-40 bg-gray-200" />
@@ -92,7 +92,7 @@ export default function RecipesTab({ displayUser, currentUserId, isOwnPage }: Re
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
         {pagedRecipes.map((recipe) => (
           <RecipeCard
             key={recipe.recipeId}

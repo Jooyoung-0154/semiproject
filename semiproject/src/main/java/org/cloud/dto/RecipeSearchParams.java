@@ -12,7 +12,7 @@ public class RecipeSearchParams {
     private int page = 1;           // 페이지 번호 (1부터 시작)
     private int size = 12;          // 페이지당 개수
     private String sortType = "all"; // 드롭다운
-    private String ageGroup = "all"; // all, age2030, age4050, age60
+    private String cookingTimeFilter = "all";    //조리시간
 
     public String getRecipeNmKo() { return recipeNmKo; }
     public void setRecipeNmKo(String recipeNmKo) { this.recipeNmKo = recipeNmKo; }
@@ -38,8 +38,8 @@ public class RecipeSearchParams {
     public String getSortType() { return sortType; }
     public void setSortType(String sortType) { this.sortType = sortType; }
     
-    public String getAgeGroup() { return ageGroup; }
-    public void setAgeGroup(String ageGroup) { this.ageGroup = ageGroup; }
+    public String getCookingTimeFilter() { return cookingTimeFilter; }
+    public void setCookingTimeFilter(String cookingTimeFilter) { this.cookingTimeFilter = cookingTimeFilter; }
 
     // MyBatis에서 OFFSET 계산용
     public int getOffset() { return (page - 1) * size; }

@@ -121,6 +121,20 @@
 				AND r.level_nm = #{levelNm}
 			</if>
 
+			<if test="cookingTimeFilter == 'under10'">
+				AND CAST(REGEXP_SUBSTR(r.COOKING_TIME, '[0-9]+') AS UNSIGNED) &lt;= 10
+			</if>
+
+			<if test="cookingTimeFilter == 'under30'">
+				AND CAST(REGEXP_SUBSTR(r.COOKING_TIME, '[0-9]+') AS UNSIGNED) &gt; 10
+				AND CAST(REGEXP_SUBSTR(r.COOKING_TIME, '[0-9]+') AS UNSIGNED) &lt;=
+				30
+			</if>
+
+			<if test="cookingTimeFilter == 'over30'">
+				AND CAST(REGEXP_SUBSTR(r.COOKING_TIME, '[0-9]+') AS UNSIGNED) &gt; 30
+			</if>
+
 			<if test="irdntNms != null and irdntNms.size() &gt; 0">
 				AND ii.irdnt_nm IN
 				<foreach collection="irdntNms" item="nm" open="("
@@ -128,32 +142,7 @@
 					#{nm}
 				</foreach>
 			</if>
-
-			<if test="ageGroup != null and ageGroup != 'all'">
-				AND r.WRITER_ID IS NOT NULL
-				AND r.WRITER_ID != ''
-				AND
-				m.BIRTH_DATE IS NOT NULL
-			</if>
-
-			<if test="ageGroup == 'age2030'">
-				AND TIMESTAMPDIFF(YEAR, m.BIRTH_DATE, CURDATE()) BETWEEN
-				20 AND 39
-			</if>
-
-			<if test="ageGroup == 'age4050'">
-				AND TIMESTAMPDIFF(YEAR, m.BIRTH_DATE, CURDATE()) BETWEEN
-				40 AND 59
-			</if>
-
-			<if test="ageGroup == 'age60'">
-				AND TIMESTAMPDIFF(YEAR, m.BIRTH_DATE, CURDATE()) &gt;= 60
-			</if>
 		</where>
-
-		<if test="ageGroup != null and ageGroup != 'all'">
-			GROUP BY r.RECIPE_ID
-		</if>
 
 		<choose>
 			<when test="sortType == 'all'">
@@ -369,10 +358,11 @@
 	</update>
 
 
-    <select id="selectWriterIdByRecipeId" resultType="string">
-        SELECT WRITER_ID
-        FROM RECIPE
-        WHERE RECIPE_ID = #{recipeId}
-    </select>
+	<select id="selectWriterIdByRecipeId" resultType="string">
+		SELECT
+		WRITER_ID
+		FROM RECIPE
+		WHERE RECIPE_ID = #{recipeId}
+	</select>
 
 </mapper>

@@ -23,6 +23,12 @@
         WHERE POST_ID = #{postId}
     </delete>
 
+    <delete id="deletePostLikesByPostId">
+        DELETE FROM post_like
+        WHERE POST_ID = #{postId}
+    </delete>
+
+
     <delete id="deletePost">
         DELETE FROM post
         WHERE POST_ID = #{postId}

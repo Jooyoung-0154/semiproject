@@ -14,6 +14,8 @@ import {
   ChevronRight,
   ImagePlus,
   X,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import RecipeService from "../service/recipeService";
 import { reviewService } from "../service/reviewService";
@@ -52,6 +54,10 @@ export default function RecipeDetail() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [editThumbsUp, setEditThumbsUp] = useState(true);
 
   const REVIEWS_PER_PAGE = 5;
   const [reviewerProfiles, setReviewerProfiles] = useState<Map<string, Member>>(
@@ -182,6 +188,50 @@ export default function RecipeDetail() {
       loadReviewerProfiles(updated.data);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleReviewEditStart = (review: Review) => {
+    setEditingReviewId(review.reviewId);
+    setEditContent(review.reviewContent);
+    setEditThumbsUp(review.thumbsUp);
+  };
+
+  const handleReviewEditSave = async (review: Review) => {
+    if (!editContent.trim()) return;
+    setIsSubmitting(true);
+    try {
+      await reviewService.modify(review.reviewId, {
+        ...review,
+        reviewContent: editContent.trim(),
+        thumbsUp: editThumbsUp,
+      });
+      setEditingReviewId(null);
+      const [updated, updatedImages] = await Promise.all([
+        reviewService.getRecipeReviews(recipeId!),
+        reviewService.getRecipeReviewImages(recipeId!),
+      ]);
+      setReviews(updated.data);
+      setReviewImages(updatedImages.data ?? []);
+      loadReviewerProfiles(updated.data);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReviewDelete = async (reviewId: number) => {
+    if (!window.confirm("리뷰를 삭제하시겠습니까?")) return;
+    try {
+      await reviewService.remove(reviewId);
+      const [updated, updatedImages] = await Promise.all([
+        reviewService.getRecipeReviews(recipeId!),
+        reviewService.getRecipeReviewImages(recipeId!),
+      ]);
+      setReviews(updated.data);
+      setReviewImages(updatedImages.data ?? []);
+      loadReviewerProfiles(updated.data);
+    } catch {
+      /* ignore */
     }
   };
 
@@ -669,43 +719,114 @@ export default function RecipeDetail() {
                         </div>
                       </div>
                     </div>
-                    <span className="text-xs text-gray-400 shrink-0 mt-1">
-                      {review.regDate ? review.regDate.slice(0, 10) : ""}
-                    </span>
+                    <div className="flex items-center gap-2 shrink-0 mt-1">
+                      <span className="text-xs text-gray-400">
+                        {review.regDate ? review.regDate.slice(0, 10) : ""}
+                      </span>
+                      {user?.id === review.id && editingReviewId !== review.reviewId && (
+                        <>
+                          <button
+                            onClick={() => handleReviewEditStart(review)}
+                            className="text-gray-400 hover:text-orange-500 transition-colors"
+                            title="수정"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleReviewDelete(review.reviewId)}
+                            className="text-gray-400 hover:text-red-500 transition-colors"
+                            title="삭제"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
 
-                  {(() => {
-                    const imgs = reviewImages.filter(
-                      (img) => img.reviewId === review.reviewId,
-                    );
-                    return imgs.length > 0 ? (
-                      <div
-                        className="flex gap-2 mt-3 pl-12 overflow-x-auto pb-1"
-                        style={{ scrollbarWidth: "thin" }}
-                      >
-                        {imgs.map((img) => (
-                          <div
-                            key={img.imageId}
-                            className="shrink-0 w-40 h-40 rounded-lg overflow-hidden bg-gray-100"
-                          >
-                            <img
-                              src={`${API_BASE_URL}${img.imageUrl}`}
-                              alt="후기 사진"
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (
-                                  e.currentTarget as HTMLImageElement
-                                ).style.display = "none";
-                              }}
-                            />
-                          </div>
-                        ))}
+                  {editingReviewId === review.reviewId ? (
+                    <div className="mt-3 pl-12 space-y-2">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setEditThumbsUp(true)}
+                          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full border-2 font-medium text-xs transition-all ${
+                            editThumbsUp
+                              ? "bg-blue-500 text-white border-blue-500"
+                              : "bg-white text-gray-500 border-gray-200 hover:border-blue-400 hover:text-blue-500"
+                          }`}
+                        >
+                          <ThumbsUp className="w-3.5 h-3.5" />
+                          추천
+                        </button>
+                        <button
+                          onClick={() => setEditThumbsUp(false)}
+                          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full border-2 font-medium text-xs transition-all ${
+                            !editThumbsUp
+                              ? "bg-red-400 text-white border-red-400"
+                              : "bg-white text-gray-500 border-gray-200 hover:border-red-300 hover:text-red-400"
+                          }`}
+                        >
+                          <ThumbsDown className="w-3.5 h-3.5" />
+                          비추천
+                        </button>
                       </div>
-                    ) : null;
-                  })()}
-                  <p className="text-gray-600 leading-relaxed text-sm mt-3 pl-12">
-                    {review.reviewContent}
-                  </p>
+                      <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-300 h-24"
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          onClick={() => setEditingReviewId(null)}
+                          className="px-4 py-1.5 rounded-full border border-gray-200 text-gray-500 text-sm hover:border-gray-400 transition-colors"
+                        >
+                          취소
+                        </button>
+                        <button
+                          onClick={() => handleReviewEditSave(review)}
+                          disabled={isSubmitting || !editContent.trim()}
+                          className="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {isSubmitting ? "저장 중..." : "저장"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {(() => {
+                        const imgs = reviewImages.filter(
+                          (img) => img.reviewId === review.reviewId,
+                        );
+                        return imgs.length > 0 ? (
+                          <div
+                            className="flex gap-2 mt-3 pl-12 overflow-x-auto pb-1"
+                            style={{ scrollbarWidth: "thin" }}
+                          >
+                            {imgs.map((img) => (
+                              <div
+                                key={img.imageId}
+                                className="shrink-0 w-40 h-40 rounded-lg overflow-hidden bg-gray-100"
+                              >
+                                <img
+                                  src={`${API_BASE_URL}${img.imageUrl}`}
+                                  alt="후기 사진"
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    (
+                                      e.currentTarget as HTMLImageElement
+                                    ).style.display = "none";
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        ) : null;
+                      })()}
+                      <p className="text-gray-600 leading-relaxed text-sm mt-3 pl-12">
+                        {review.reviewContent}
+                      </p>
+                    </>
+                  )}
                 </div>
               );
             })

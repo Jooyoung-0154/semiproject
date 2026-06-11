@@ -56,8 +56,7 @@ export default function Layout() {
   }, [user?.id, notificationEnabled]);
 
   useEffect(() => {
-    localStorage.setItem("notificationEnabled", String(notificationEnabled));
-
+    sessionStorage.setItem("notificationEnabled", String(notificationEnabled));
     if (!notificationEnabled) {
       setNotifications([]);
     } else {
@@ -162,7 +161,7 @@ export default function Layout() {
               🍳 Chef's Cuisine
             </Link>
 
-            <div className="relative w-80 ml-6 hidden md:block">
+            <div className="relative w-90 ml-6">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
               <input
@@ -260,12 +259,12 @@ export default function Layout() {
             </div>
 
             <nav className="flex items-center gap-8">
-              <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+              <div className="flex items-center gap-6 text-sm font-medium text-gray-600">
                 <Link
                   to="/browse"
                   className="hover:text-orange-600 transition-colors"
                 >
-                  레시피 둘러보기
+                  레시피 검색
                 </Link>
 
                 <Link
