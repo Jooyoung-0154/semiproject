@@ -25,7 +25,7 @@ public class ReviewService {
                     review.getId(),
                     "RECIPE_COMMENT",
                     review.getRecipeCode(),
-                    review.getId() + "님이 회원님의 레시피에 댓글을 남겼습니다."
+                    review.getId() + "님이 회원님의 레시피에 후기를 남겼습니다."
             );
         } catch (Exception e) {
             System.out.println("레시피 댓글 알림 저장 실패: " + e.getMessage());

@@ -5,6 +5,7 @@ import {
   X,
   Plus,
   ChefHat,
+  Clock3,
   Tag as TagIcon,
   Refrigerator,
   ChevronLeft,
@@ -35,10 +36,10 @@ export default function RecipeBrowse() {
   const [selectedLevel, setSelectedLevel] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [ingredientInput, setIngredientInput] = useState("");
+  const [cookingTimeFilter, setCookingTimeFilter] = useState("all");
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [ingredientMode, setIngredientMode] = useState<"OR" | "AND">("OR");
   const [sortType, setSortType] = useState("all");
-  const [ageGroup, setAgeGroup] = useState("all");
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedName(nameInput), 500);
@@ -73,7 +74,7 @@ export default function RecipeBrowse() {
           ingredients: ingredients.length ? ingredients : undefined,
           ingredientMode,
           sortType,
-          ageGroup,
+          cookingTimeFilter,
           page: targetPage,
           size: PAGE_SIZE,
         };
@@ -99,7 +100,7 @@ export default function RecipeBrowse() {
       userId,
       user,
       sortType,
-      ageGroup,
+      cookingTimeFilter,
     ],
   );
 
@@ -216,24 +217,25 @@ export default function RecipeBrowse() {
               ))}
             </div>
 
-            <div className="mt-4">
+            <div className="mt-5">
               <label className="block text-sm font-medium text-gray-600 mb-1">
-                <Users className="w-4 h-4 inline mr-1" />
-                연령대
+                <Clock3 className="w-4 h-4 inline mr-1" />
+                조리시간
               </label>
 
               <div className="flex gap-2 flex-wrap">
                 {[
                   { value: "all", label: "전체" },
-                  { value: "age2030", label: "청년층" },
-                  { value: "age4050", label: "중년층" },
-                  { value: "age60", label: "장년층" },
+                  { value: "under10", label: "뚝딱요리" },
+                  { value: "under30", label: "일상요리" },
+                  { value: "over30", label: "정성요리" },
                 ].map((item) => (
                   <button
                     key={item.value}
-                    onClick={() => setAgeGroup(item.value)}
+                    type="button"
+                    onClick={() => setCookingTimeFilter(item.value)}
                     className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                      ageGroup === item.value
+                      cookingTimeFilter === item.value
                         ? "bg-orange-600 text-white border-orange-600"
                         : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"
                     }`}
@@ -416,8 +418,16 @@ export default function RecipeBrowse() {
                   ),
                 )
               }
-              onDelete={user?.id === recipe.writerId || user?.id === "Admin" ? handleDeleteRecipe : undefined}
-              onEdit={user?.id === recipe.writerId ? (id) => navigate(`/write?edit=${id}`) : undefined}
+              onDelete={
+                user?.id === recipe.writerId || user?.id === "Admin"
+                  ? handleDeleteRecipe
+                  : undefined
+              }
+              onEdit={
+                user?.id === recipe.writerId
+                  ? (id) => navigate(`/write?edit=${id}`)
+                  : undefined
+              }
             />
           ))}
         </div>
