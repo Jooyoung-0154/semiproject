@@ -9,6 +9,7 @@ import {
   Refrigerator,
   ChevronLeft,
   ChevronRight,
+  Users,
 } from "lucide-react";
 import RecipeService, { BrowseParams } from "../service/recipeService";
 import { tagService } from "../service/tagService";
@@ -171,7 +172,7 @@ export default function RecipeBrowse() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">레시피 둘러보기</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">레시피 검색</h1>
 
       <div className="bg-white rounded-2xl shadow-md p-6 mb-8 space-y-4">
         <div className="flex gap-2">
@@ -197,10 +198,12 @@ export default function RecipeBrowse() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              <ChefHat className="w-4 h-4 inline mr-1" />
-              난이도
-            </label>
+            <div className="flex items-center mb-1 min-h-[26px]">
+              <label className="text-sm font-medium text-gray-600">
+                <ChefHat className="w-4 h-4 inline mr-1" />
+                난이도
+              </label>
+            </div>
             <div className="flex gap-2 flex-wrap">
               {LEVEL_OPTIONS.map((lv) => (
                 <button
@@ -215,15 +218,16 @@ export default function RecipeBrowse() {
 
             <div className="mt-4">
               <label className="block text-sm font-medium text-gray-600 mb-1">
+                <Users className="w-4 h-4 inline mr-1" />
                 연령대
               </label>
 
               <div className="flex gap-2 flex-wrap">
                 {[
                   { value: "all", label: "전체" },
-                  { value: "age2030", label: "2030대" },
-                  { value: "age4050", label: "4050대" },
-                  { value: "age60", label: "60대 이상" },
+                  { value: "age2030", label: "청년층" },
+                  { value: "age4050", label: "중년층" },
+                  { value: "age60", label: "장년층" },
                 ].map((item) => (
                   <button
                     key={item.value}
@@ -241,10 +245,12 @@ export default function RecipeBrowse() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              <TagIcon className="w-4 h-4 inline mr-1" />
-              태그
-            </label>
+            <div className="flex items-center mb-1 min-h-[26px]">
+              <label className="text-sm font-medium text-gray-600">
+                <TagIcon className="w-4 h-4 inline mr-1" />
+                태그
+              </label>
+            </div>
             <input
               type="text"
               value={tagInput}
