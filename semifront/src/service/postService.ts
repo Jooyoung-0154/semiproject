@@ -32,11 +32,9 @@ export const postService = {
   modifyWithImage: (postId: number, formData: FormData) =>
     api.put(`/posts/${postId}/image`, formData),
 
-  // 게시글 삭제: 서버에서 작성자/관리자 권한 확인을 위해 requesterId 전달
+  // 게시글 삭제: 백엔드 권한 확인용 requesterId 전달
   deletePost: (postId: number, requesterId: string) =>
-    api.delete(`/posts/${postId}`, {
-      params: { requesterId },
-    }),
+    api.delete(`/posts/${postId}`, { params: { requesterId } }),
 
   addComment: (comment: PostComment) => api.post("/posts/comment", comment),
 
