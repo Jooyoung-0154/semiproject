@@ -1,4 +1,10 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { Member } from "../types/type.ts";
 import { authService } from "../service/authService.ts";
 import { memberService } from "../service/memberService.ts";
@@ -78,7 +84,8 @@ export function normalizeMember(data: any): Member | null {
     followingCount: Number(member.followingCount) || 0,
     followerCount: Number(member.followerCount) || 0,
     recipeCount: Number(member.recipeCount) || 0,
-    scrapPublic: typeof member.scrapPublic === "boolean" ? member.scrapPublic : true,
+    scrapPublic:
+      typeof member.scrapPublic === "boolean" ? member.scrapPublic : true,
   };
 }
 
