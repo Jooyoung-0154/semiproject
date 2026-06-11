@@ -322,10 +322,10 @@ export default function Layout() {
                     {user.id === "Admin" && (
                       <button
                         onClick={() => navigate("/admin")}
-                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-full font-semibold hover:bg-red-700 transition-all shadow-md active:scale-95"
+                        className="flex items-center justify-center w-10 h-10 rounded-full bg-red-500 hover:bg-red-600 transition-all active:scale-95"
+                        title="관리자페이지"
                       >
-                        <ShieldCheck className="w-4 h-4" />
-                        <span>관리자</span>
+                        <ShieldCheck className="w-5 h-5 text-white" />
                       </button>
                     )}
                     <button
@@ -338,6 +338,7 @@ export default function Layout() {
                     <button
                       onClick={logout}
                       className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-semibold hover:bg-gray-200 transition-all"
+                      title="로그아웃"
                     >
                       <LogOut className="w-4 h-4" />
                       <span>로그아웃</span>
