@@ -19,7 +19,7 @@ export default function Layout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationEnabled, setNotificationEnabled] = useState<boolean>(
     () => {
-      return localStorage.getItem("notificationEnabled") !== "false";
+      return sessionStorage.getItem("notificationEnabled") !== "false";
     },
   );
 
@@ -48,7 +48,7 @@ export default function Layout() {
   }, [user?.id, notificationEnabled]);
 
   useEffect(() => {
-    localStorage.setItem("notificationEnabled", String(notificationEnabled));
+    sessionStorage.setItem("notificationEnabled", String(notificationEnabled));
     if (!notificationEnabled) {
       setShowNotifications(false);
       setNotifications([]);
