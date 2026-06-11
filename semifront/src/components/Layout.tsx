@@ -136,7 +136,7 @@ export default function Layout() {
               🍳 Chef's Cuisine
             </Link>
 
-            <div className="relative w-80 ml-6 hidden md:block">
+            <div className="relative w-90 ml-6">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
@@ -229,12 +229,12 @@ export default function Layout() {
             </div>
 
             <nav className="flex items-center gap-8">
-              <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+              <div className="flex items-center gap-6 text-sm font-medium text-gray-600">
                 <Link
                   to="/browse"
                   className="hover:text-orange-600 transition-colors"
                 >
-                  레시피 둘러보기
+                  레시피 검색
                 </Link>
                 <Link
                   to="/write"
@@ -246,7 +246,7 @@ export default function Layout() {
                   to="/mypage"
                   className="hover:text-orange-600 transition-colors"
                 >
-                  마이페이지
+                  집슐랭
                 </Link>
               </div>
 
@@ -256,11 +256,8 @@ export default function Layout() {
                     <div className="relative">
                       <button
                         type="button"
-                        onClick={() =>
-                          notificationEnabled &&
-                          setShowNotifications((prev) => !prev)
-                        }
-                        className={`relative flex items-center justify-center w-10 h-10 rounded-full ${notificationEnabled ? "bg-gray-100 hover:bg-gray-200" : "bg-gray-50 opacity-50"}`}
+                        onClick={() => setShowNotifications((prev) => !prev)}
+                        className="relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200"
                         title="알림"
                       >
                         <Bell className="w-5 h-5 text-gray-700" />
@@ -271,7 +268,7 @@ export default function Layout() {
                         )}
                       </button>
 
-                      {showNotifications && notificationEnabled && (
+                      {showNotifications && (
                         <div className="absolute right-0 top-12 w-80 bg-white border border-gray-300 rounded-xl shadow-xl overflow-hidden z-[100]">
                           <div className="flex items-center justify-between px-4 py-3 border-b bg-white">
                             <div className="flex items-center gap-2">
@@ -321,17 +318,6 @@ export default function Layout() {
                         </div>
                       )}
                     </div>
-
-                    <label className="hidden md:flex items-center gap-1 text-xs text-gray-500 select-none">
-                      알림
-                      <input
-                        type="checkbox"
-                        checked={notificationEnabled}
-                        onChange={(e) =>
-                          setNotificationEnabled(e.target.checked)
-                        }
-                      />
-                    </label>
 
                     {user.id === "Admin" && (
                       <button

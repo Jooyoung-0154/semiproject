@@ -36,7 +36,7 @@ export default function Home() {
         name: name || undefined,
         tagIds: selectedTagId != null ? [selectedTagId] : undefined,
         page: 1,
-        size: 9,
+        size: 8,
       });
       let loaded = result.recipes;
       loaded = await applyLikedStatus(loaded, user?.id);
@@ -118,7 +118,7 @@ export default function Home() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
@@ -138,7 +138,7 @@ export default function Home() {
             <p className="text-lg font-medium">등록된 레시피가 없어요.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6">
             {recipes.map((recipe) => (
               <RecipeCard
                 key={recipe.recipeId}

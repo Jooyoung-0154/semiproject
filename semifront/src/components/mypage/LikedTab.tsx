@@ -79,7 +79,7 @@ export default function LikedTab({ currentUserId, isOwnPage, displayUser }: Like
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
         {pagedRecipes.map((recipe) => {
           const isMyRecipe = recipe.writerId === currentUserId;
           return (
