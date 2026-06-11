@@ -157,7 +157,8 @@ export default function Home() {
                     : undefined
                 }
                 onEdit={
-                  user?.id === recipe.writerId ? handleEditRecipe : undefined
+                  user?.id === "Admin" ||user?.id === recipe.writerId 
+                  ? handleEditRecipe : undefined
                 }
               />
             ))}

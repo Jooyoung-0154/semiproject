@@ -16,7 +16,6 @@ export interface BrowseParams {
   tagIds?: number[];
   level?: string;
   ingredients?: string[];
-  ingredientMode?: "OR" | "AND";
   sortType?: string;
   page?: number;
   size?: number;
@@ -41,7 +40,6 @@ const RecipeService = {
         ingredients: params.ingredients?.length
           ? params.ingredients.join(",")
           : undefined,
-        ingredientMode: params.ingredientMode ?? "OR",
         sortType: params.sortType || "all",
         page: params.page || 1,
         size: params.size || 12,
