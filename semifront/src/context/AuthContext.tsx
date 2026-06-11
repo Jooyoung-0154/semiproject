@@ -1,4 +1,10 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { Member } from "../types/type.ts";
 import { authService } from "../service/authService.ts";
 import { memberService } from "../service/memberService.ts";
@@ -78,14 +84,15 @@ export function normalizeMember(data: any): Member | null {
     followingCount: Number(member.followingCount) || 0,
     followerCount: Number(member.followerCount) || 0,
     recipeCount: Number(member.recipeCount) || 0,
-    scrapPublic: typeof member.scrapPublic === "boolean" ? member.scrapPublic : true,
+    scrapPublic:
+      typeof member.scrapPublic === "boolean" ? member.scrapPublic : true,
   };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<Member | null>(() => {
     try {
-      const savedUser = localStorage.getItem("authUser");
+      const savedUser = sessionStorage.getItem("authUser");
       const parsed = savedUser ? JSON.parse(savedUser) : null;
       return normalizeMember(parsed);
     } catch {
@@ -101,13 +108,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("로그인 응답이 올바르지 않습니다.");
     }
     setUser(normalized);
-    localStorage.setItem("authUser", JSON.stringify(normalized));
+    sessionStorage.setItem("authUser", JSON.stringify(normalized));
   };
 
   const logout = () => {
     authService.logout().catch(() => {});
     setUser(null);
-    localStorage.removeItem("authUser");
+    sessionStorage.removeItem("authUser");
   };
 
   const register = async (member: RegisterParams) => {
