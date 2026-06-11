@@ -85,7 +85,7 @@ export function normalizeMember(data: any): Member | null {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<Member | null>(() => {
     try {
-      const savedUser = localStorage.getItem("authUser");
+      const savedUser = sessionStorage.getItem("authUser");
       const parsed = savedUser ? JSON.parse(savedUser) : null;
       return normalizeMember(parsed);
     } catch {
@@ -101,13 +101,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("로그인 응답이 올바르지 않습니다.");
     }
     setUser(normalized);
-    localStorage.setItem("authUser", JSON.stringify(normalized));
+    sessionStorage.setItem("authUser", JSON.stringify(normalized));
   };
 
   const logout = () => {
     authService.logout().catch(() => {});
     setUser(null);
-    localStorage.removeItem("authUser");
+    sessionStorage.removeItem("authUser");
   };
 
   const register = async (member: RegisterParams) => {
