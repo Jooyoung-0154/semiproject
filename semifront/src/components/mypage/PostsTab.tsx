@@ -46,7 +46,7 @@ export default function PostsTab({
   const fetchPosts = async () => {
     try {
       setIsLoadingPosts(true);
-      const response = await postService.getList(displayUser.id);
+      const response = await postService.getList(displayUser.id, currentUserId);
       setPostList(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("게시글 불러오기 실패:", error);
@@ -117,7 +117,7 @@ export default function PostsTab({
   const handleDeletePost = async (postId: number) => {
     if (!window.confirm("정말 이 게시글을 삭제하시겠습니까?")) return;
     try {
-      await postService.deletePost(postId);
+      await postService.deletePost(postId, currentUserId);
       await fetchPosts();
     } catch (error) {
       console.error("게시글 삭제 실패:", error);

@@ -17,7 +17,7 @@ export default function LoginPage() {
 
     try {
       await login({ id, password });
-      navigate("/mypage");
+      navigate("/");
     } catch (err) {
       console.error(err);
       let message = "로그인에 실패했습니다. 다시 시도해주세요.";

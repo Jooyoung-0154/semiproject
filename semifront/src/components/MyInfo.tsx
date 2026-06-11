@@ -85,7 +85,7 @@ export default function MyInfo() {
         setSelectedFile(null);
         setPreviewImage("");
 
-        localStorage.setItem("authUser", JSON.stringify(refreshed));
+        sessionStorage.setItem("authUser", JSON.stringify(refreshed));
       }
     } catch (error) {
       console.error("회원정보 수정 실패:", error);
