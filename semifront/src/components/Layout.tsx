@@ -19,7 +19,7 @@ export default function Layout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationEnabled, setNotificationEnabled] = useState<boolean>(
     () => {
-      return localStorage.getItem("notificationEnabled") !== "false";
+      return sessionStorage.getItem("notificationEnabled") !== "false";
     },
   );
 
@@ -28,16 +28,10 @@ export default function Layout() {
     : 0;
 
   const fetchNotifications = async () => {
-    if (!user?.id) {
+    if (!user?.id || !notificationEnabled) {
       setNotifications([]);
       return;
     }
-
-    if (!notificationEnabled) {
-      setNotifications([]);
-      return;
-    }
-
     try {
       const response = await notificationService.getList(user.id);
       setNotifications(Array.isArray(response.data) ? response.data : []);
@@ -48,20 +42,16 @@ export default function Layout() {
 
   useEffect(() => {
     fetchNotifications();
-
     if (!user?.id || !notificationEnabled) return;
-
     const timer = window.setInterval(fetchNotifications, 10000);
     return () => window.clearInterval(timer);
   }, [user?.id, notificationEnabled]);
 
   useEffect(() => {
-    localStorage.setItem("notificationEnabled", String(notificationEnabled));
-
+    sessionStorage.setItem("notificationEnabled", String(notificationEnabled));
     if (!notificationEnabled) {
+      setShowNotifications(false);
       setNotifications([]);
-    } else {
-      fetchNotifications();
     }
   }, [notificationEnabled]);
 
@@ -85,7 +75,6 @@ export default function Layout() {
           page: 1,
           size: 5,
         });
-
         setRecipeResults(recipeRes.recipes ?? []);
         setShowSearchBox(true);
       } catch (error) {
@@ -98,20 +87,13 @@ export default function Layout() {
 
   const handleReadAllNotifications = async () => {
     if (!user?.id) return;
-
-    const backup = notifications;
-
-    // 화면 즉시 초기화
-    setNotifications([]);
-
     try {
       await notificationService.readAll(user.id);
+      setNotifications([]);
+      setShowNotifications(false);
     } catch (error) {
       console.error("전체 읽음 처리 실패:", error);
       alert("알림 읽음 처리에 실패했습니다.");
-
-      // 실패하면 원래 목록 복구
-      setNotifications(backup);
     }
   };
 
@@ -119,24 +101,20 @@ export default function Layout() {
     try {
       if (!noti.isRead) {
         await notificationService.read(noti.notiId);
-
         setNotifications((prev) =>
           prev.map((item) =>
             item.notiId === noti.notiId ? { ...item, isRead: true } : item,
           ),
         );
       }
-
       if (noti.type === "RECIPE_LIKE" || noti.type === "RECIPE_COMMENT") {
         navigate(`/recipe/${noti.targetId}`);
         setShowNotifications(false);
       }
-
-      if (noti.type === "POST_COMMENT" || noti.type === "POST_LIKE") {
+      if (noti.type === "POST_COMMENT") {
         navigate(`/mypage`);
         setShowNotifications(false);
       }
-
       if (noti.type === "GUESTBOOK" || noti.type === "FOLLOW") {
         navigate(`/mypage`);
         setShowNotifications(false);
@@ -144,10 +122,6 @@ export default function Layout() {
     } catch (error) {
       console.error("알림 읽음 처리 실패:", error);
     }
-  };
-
-  const toggleNotificationEnabled = () => {
-    setNotificationEnabled((prev) => !prev);
   };
 
   return (
@@ -162,9 +136,8 @@ export default function Layout() {
               🍳 Chef's Cuisine
             </Link>
 
-            <div className="relative w-80 ml-6 hidden md:block">
+            <div className="relative w-90 ml-6">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-
               <input
                 type="text"
                 value={keyword}
@@ -179,7 +152,6 @@ export default function Layout() {
                     <p className="text-xs font-bold text-gray-500 mb-2">
                       레시피
                     </p>
-
                     {recipeResults.length > 0 ? (
                       recipeResults.map((recipe) => (
                         <button
@@ -202,7 +174,6 @@ export default function Layout() {
                               <span className="text-lg">🍽️</span>
                             )}
                           </div>
-
                           <div className="min-w-0 text-left">
                             <p className="font-semibold text-gray-800 truncate">
                               {recipe.recipeNmKo}
@@ -222,7 +193,6 @@ export default function Layout() {
 
                   <div className="p-3">
                     <p className="text-xs font-bold text-gray-500 mb-2">회원</p>
-
                     {memberResults.length > 0 ? (
                       memberResults.map((member) => (
                         <button
@@ -245,7 +215,6 @@ export default function Layout() {
                               <User className="w-4 h-4 text-orange-600" />
                             )}
                           </div>
-
                           <span className="font-medium">{member.nickname}</span>
                         </button>
                       ))
@@ -260,26 +229,24 @@ export default function Layout() {
             </div>
 
             <nav className="flex items-center gap-8">
-              <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+              <div className="flex items-center gap-6 text-sm font-medium text-gray-600">
                 <Link
                   to="/browse"
                   className="hover:text-orange-600 transition-colors"
                 >
-                  레시피 둘러보기
+                  레시피 검색
                 </Link>
-
                 <Link
                   to="/write"
                   className="hover:text-orange-600 transition-colors"
                 >
                   레시피 작성
                 </Link>
-
                 <Link
                   to="/mypage"
                   className="hover:text-orange-600 transition-colors"
                 >
-                  마이페이지
+                  집슐랭
                 </Link>
               </div>
 
@@ -293,14 +260,7 @@ export default function Layout() {
                         className="relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200"
                         title="알림"
                       >
-                        <Bell
-                          className={`w-5 h-5 ${
-                            notificationEnabled
-                              ? "text-gray-700"
-                              : "text-gray-400"
-                          }`}
-                        />
-
+                        <Bell className="w-5 h-5 text-gray-700" />
                         {unreadCount > 0 && (
                           <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center">
                             {unreadCount}
@@ -313,58 +273,33 @@ export default function Layout() {
                           <div className="flex items-center justify-between px-4 py-3 border-b bg-white">
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-sm">알림</span>
-
-                              <button
-                                type="button"
-                                onClick={toggleNotificationEnabled}
-                                className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors ${
-                                  notificationEnabled
-                                    ? "bg-orange-500"
-                                    : "bg-gray-300"
-                                }`}
-                                title="알림 ON/OFF"
-                              >
-                                <span
-                                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                    notificationEnabled
-                                      ? "translate-x-5"
-                                      : "translate-x-1"
-                                  }`}
+                              <label className="flex items-center gap-1 text-xs text-gray-500 cursor-pointer select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={notificationEnabled}
+                                  onChange={(e) =>
+                                    setNotificationEnabled(e.target.checked)
+                                  }
                                 />
-                              </button>
-
-                              <span className="text-[11px] text-gray-500">
-                                {notificationEnabled ? "ON" : "OFF"}
-                              </span>
+                                ON/OFF
+                              </label>
                             </div>
-
                             <button
                               type="button"
                               onClick={handleReadAllNotifications}
-                              disabled={
-                                !notificationEnabled ||
-                                notifications.length === 0
-                              }
-                              className="text-xs text-orange-600 font-semibold hover:underline disabled:text-gray-300 disabled:no-underline"
+                              className="text-xs text-orange-600 font-semibold hover:underline"
                             >
                               전체 읽음
                             </button>
                           </div>
-
                           <div className="max-h-80 overflow-y-auto">
-                            {!notificationEnabled ? (
-                              <p className="text-sm text-gray-400 text-center py-8">
-                                알림이 꺼져 있습니다.
-                              </p>
-                            ) : notifications.length > 0 ? (
+                            {notifications.length > 0 ? (
                               notifications.map((noti) => (
                                 <button
                                   type="button"
                                   key={noti.notiId}
                                   onClick={() => handleReadNotification(noti)}
-                                  className={`w-full text-left px-4 py-3 border-b hover:bg-orange-50 ${
-                                    noti.isRead ? "bg-white" : "bg-orange-50"
-                                  }`}
+                                  className={`w-full text-left px-4 py-3 border-b hover:bg-orange-50 ${noti.isRead ? "bg-white" : "bg-orange-50"}`}
                                 >
                                   <p className="text-sm text-gray-800 font-medium leading-5">
                                     {noti.message}
@@ -393,7 +328,6 @@ export default function Layout() {
                         <span>관리자</span>
                       </button>
                     )}
-
                     <button
                       onClick={() => navigate("/mypage")}
                       className="flex items-center gap-2 px-5 py-2 bg-orange-600 text-white rounded-full font-semibold hover:bg-orange-700 transition-all shadow-md active:scale-95"
@@ -401,7 +335,6 @@ export default function Layout() {
                       <User className="w-4 h-4" />
                       <span>{user.nickname}</span>
                     </button>
-
                     <button
                       onClick={logout}
                       className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-semibold hover:bg-gray-200 transition-all"
