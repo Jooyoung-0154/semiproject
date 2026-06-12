@@ -1,12 +1,19 @@
-import { useState, useEffect, useMemo } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import {
   Heart,
   MessageCircle,
   Clock,
   Pencil,
   Trash2,
-  Send,
   X,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 import { Post, Member } from "../../types/type";
 import { postService } from "../../service/postService";
@@ -20,6 +27,7 @@ interface PostsTabProps {
 
 type PostSortType = "latest" | "like";
 
+const MAX_POST_IMAGES = 5;
 const POSTS_PER_PAGE = 4;
 
 const normalizeImageUrl = (path?: string | null) => {
@@ -31,6 +39,14 @@ const normalizeImageUrl = (path?: string | null) => {
   }
   if (cleanPath.startsWith("/")) return `${API_BASE_URL}${cleanPath}`;
   return `${API_BASE_URL}/uploads/${cleanPath}`;
+};
+
+const getPostImages = (postImg?: string | null) => {
+  if (!postImg) return [];
+  return String(postImg)
+    .split(",")
+    .map((item) => normalizeImageUrl(item))
+    .filter((item): item is string => Boolean(item));
 };
 
 const formatPostDate = (value?: string | null) => {
@@ -61,10 +77,12 @@ export default function PostsTab({
 
   const [isPostCreateMode, setIsPostCreateMode] = useState(false);
   const [newPostContent, setNewPostContent] = useState("");
-  const [newPostImage, setNewPostImage] = useState<File | null>(null);
-  const [newPostImagePreview, setNewPostImagePreview] = useState("");
+  const [newPostImages, setNewPostImages] = useState<File[]>([]);
+  const [newPostImagePreviews, setNewPostImagePreviews] = useState<string[]>(
+    [],
+  );
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
-  const [, setEditingPostImg] = useState("");
+  const [editingPostImg, setEditingPostImg] = useState("");
   const [commentInputs, setCommentInputs] = useState<Record<number, string>>(
     {},
   );
@@ -73,6 +91,9 @@ export default function PostsTab({
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
   const [popupImageUrl, setPopupImageUrl] = useState<string | null>(null);
   const [commentModalPost, setCommentModalPost] = useState<Post | null>(null);
+  const [imageIndexByPostId, setImageIndexByPostId] = useState<
+    Record<number, number>
+  >({});
 
   useEffect(() => {
     fetchPosts();
@@ -128,21 +149,27 @@ export default function PostsTab({
     }
   };
 
-  const handlePostImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null;
-    setNewPostImage(file);
-    setNewPostImagePreview(file ? URL.createObjectURL(file) : "");
+  const handlePostImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length > MAX_POST_IMAGES) {
+      alert(`사진은 최대 ${MAX_POST_IMAGES}장까지 등록할 수 있습니다.`);
+      e.target.value = "";
+      return;
+    }
+
+    setNewPostImages(files);
+    setNewPostImagePreviews(files.map((file) => URL.createObjectURL(file)));
   };
 
   const clearPostForm = () => {
     setNewPostContent("");
-    setNewPostImage(null);
-    setNewPostImagePreview("");
+    setNewPostImages([]);
+    setNewPostImagePreviews([]);
     setEditingPostId(null);
     setEditingPostImg("");
   };
 
-  const handleSubmitPost = async (e: React.FormEvent) => {
+  const handleSubmitPost = async (e: FormEvent) => {
     e.preventDefault();
 
     const content = newPostContent.trim();
@@ -157,11 +184,25 @@ export default function PostsTab({
       return;
     }
 
+    if (newPostImages.length > MAX_POST_IMAGES) {
+      alert(`사진은 최대 ${MAX_POST_IMAGES}장까지 등록할 수 있습니다.`);
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append("writerId", currentUserId);
       formData.append("content", content);
-      if (newPostImage) formData.append("image", newPostImage);
+
+      if (
+        editingPostId !== null &&
+        editingPostImg &&
+        newPostImages.length === 0
+      ) {
+        formData.append("postImg", editingPostImg);
+      }
+
+      newPostImages.forEach((file) => formData.append("images", file));
 
       if (editingPostId !== null) {
         await postService.modifyWithImage(editingPostId, formData);
@@ -184,8 +225,8 @@ export default function PostsTab({
     setEditingPostId(post.postId);
     setNewPostContent(post.content ?? "");
     setEditingPostImg(post.postImg ?? "");
-    setNewPostImage(null);
-    setNewPostImagePreview("");
+    setNewPostImages([]);
+    setNewPostImagePreviews([]);
     setIsPostCreateMode(true);
   };
 
@@ -347,25 +388,13 @@ export default function PostsTab({
     }
   };
 
-  const renderCommentForm = (postId: number) => (
-    <form
-      className="post-comment-write-form-final"
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSubmitComment(postId);
-      }}
-    >
-      <input
-        value={commentInputs[postId] ?? ""}
-        onChange={(e) => handleCommentInputChange(postId, e.target.value)}
-        placeholder="댓글을 작성해주세요..."
-        className="post-comment-input-final"
-      />
-      <button type="submit" className="btn-comment-submit-final">
-        등록
-      </button>
-    </form>
-  );
+  const changeImage = (postId: number, length: number, direction: 1 | -1) => {
+    setImageIndexByPostId((prev) => {
+      const current = prev[postId] ?? 0;
+      const next = (current + direction + length) % length;
+      return { ...prev, [postId]: next };
+    });
+  };
 
   const renderComments = (post: Post) => {
     const comments = post.comments ?? [];
@@ -499,18 +528,24 @@ export default function PostsTab({
             />
 
             <label className="file-input-label">
-              사진 첨부
+              사진 첨부 최대 {MAX_POST_IMAGES}장
               <input
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={handlePostImageChange}
                 className="file-input"
               />
             </label>
 
-            {newPostImagePreview && (
-              <div className="image-preview">
-                <img src={newPostImagePreview} alt="미리보기" />
+            {newPostImagePreviews.length > 0 && (
+              <div className="post-write-preview-grid">
+                {newPostImagePreviews.map((preview, index) => (
+                  <div key={preview} className="post-write-preview-item">
+                    <img src={preview} alt={`미리보기 ${index + 1}`} />
+                    <span>{index + 1}</span>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -538,155 +573,136 @@ export default function PostsTab({
           게시글을 불러오는 중입니다...
         </div>
       ) : sortedPostList.length > 0 ? (
-        <>
-          <div className="post-board-list post-board-list-final">
-            {pagedPostList.map((post) => {
-              const imageSrc = normalizeImageUrl(post.postImg);
-              const comments = post.comments ?? [];
-              const canEditPost = post.writerId === currentUserId;
-              const canDeletePost =
-                post.writerId === currentUserId ||
-                currentUserId === "Admin" ||
-                currentUserId === "admin";
+        <div className="post-board-list post-board-list-insta">
+          {sortedPostList.map((post) => {
+            const images = getPostImages(post.postImg);
+            const hasImages = images.length > 0;
+            const imageIndex = Math.min(
+              imageIndexByPostId[post.postId] ?? 0,
+              Math.max(images.length - 1, 0),
+            );
+            const currentImage = hasImages ? images[imageIndex] : null;
+            const comments = post.comments ?? [];
+            const canEditPost = post.writerId === currentUserId;
+            const canDeletePost =
+              post.writerId === currentUserId ||
+              currentUserId === "Admin" ||
+              currentUserId === "admin";
 
-              return (
-                <article
-                  key={post.postId}
-                  className={`post-card-final ${imageSrc ? "has-image" : "no-image"}`}
-                >
-                  <div className="post-meta-final post-meta-final-top">
-                    <div className="post-date-final">
-                      <Clock className="w-4 h-4" />
-                      <span>{formatPostDate(post.regDate)}</span>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleToggleLike(post)}
-                      className={`post-like-final ${post.liked ? "liked" : ""}`}
-                      title="좋아요"
-                    >
-                      <Heart
-                        className="w-5 h-5"
-                        fill={post.liked ? "#ec4899" : "none"}
-                      />
-                      <span>{post.likeCount ?? 0}</span>
-                    </button>
+            return (
+              <article key={post.postId} className="post-card-insta">
+                <div className="post-card-insta-header">
+                  <div className="post-date-final">
+                    <Clock className="w-4 h-4" />
+                    <span>{formatPostDate(post.regDate)}</span>
                   </div>
-
-                  {imageSrc && (
-                    <button
-                      type="button"
-                      className="post-photo-final"
-                      onClick={() => setPopupImageUrl(imageSrc)}
-                      title="사진 크게 보기"
-                    >
-                      <img
-                        src={imageSrc}
-                        alt="게시글 이미지"
-                        className="post-photo-img-final"
-                      />
-                    </button>
-                  )}
-
-                  <section className="post-content-final">
-                    <h4 className="post-content-title-final">게시글</h4>
-                    <div className="post-content-text-final">
-                      {post.content}
-                    </div>
-                  </section>
-
-                  <div className="post-comment-summary-final">
-                    <div className="post-comment-count-final">
-                      <MessageCircle className="w-4 h-4" />
-                      <span>댓글 {comments.length}개</span>
-                    </div>
-
-                    <button
-                      type="button"
-                      className="btn-comment-open-final"
-                      onClick={() => setCommentModalPost(post)}
-                    >
-                      댓글 모두 보기
-                      <span>›</span>
-                    </button>
-                  </div>
-
-                  {renderCommentForm(post.postId)}
 
                   {canDeletePost && (
-                    <div className="post-actions-final">
+                    <div className="post-actions-insta">
                       {canEditPost && (
                         <button
                           type="button"
                           onClick={() => handleEditPost(post)}
-                          className="post-action-btn-final edit"
+                          className="post-action-icon-insta edit"
                           title="게시글 수정"
                         >
-                          <Pencil className="w-3.5 h-3.5" />
-                          <span>수정</span>
+                          <Pencil className="w-4 h-4" />
                         </button>
                       )}
 
                       <button
                         type="button"
                         onClick={() => handleDeletePost(post.postId)}
-                        className="post-action-btn-final delete"
+                        className="post-action-icon-insta delete"
                         title="게시글 삭제"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>삭제</span>
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   )}
-                </article>
-              );
-            })}
-          </div>
+                </div>
 
-          {postTotalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-6">
-              <button
-                type="button"
-                onClick={() => setPostPage((prev) => Math.max(prev - 1, 1))}
-                disabled={postPage === 1}
-                className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              >
-                &lt;
-              </button>
+                {hasImages && currentImage ? (
+                  <div className="post-photo-slider-insta">
+                    <button
+                      type="button"
+                      className="post-photo-click-insta"
+                      onClick={() => setPopupImageUrl(currentImage)}
+                      title="사진 크게 보기"
+                    >
+                      <img src={currentImage} alt="게시글 이미지" />
+                    </button>
 
-              {Array.from({ length: postTotalPages }).map((_, index) => {
-                const page = index + 1;
+                    {images.length > 1 && (
+                      <>
+                        <button
+                          type="button"
+                          className="post-slide-btn-insta left"
+                          onClick={() =>
+                            changeImage(post.postId, images.length, -1)
+                          }
+                          title="이전 사진"
+                        >
+                          <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <button
+                          type="button"
+                          className="post-slide-btn-insta right"
+                          onClick={() =>
+                            changeImage(post.postId, images.length, 1)
+                          }
+                          title="다음 사진"
+                        >
+                          <ChevronRight className="w-5 h-5" />
+                        </button>
+                        <div className="post-image-count-insta">
+                          {imageIndex + 1} / {images.length}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <section className="post-no-image-text-insta">
+                    <h4>게시글</h4>
+                    <div>{post.content}</div>
+                  </section>
+                )}
 
-                return (
+                <div className="post-reaction-row-insta">
                   <button
-                    key={page}
                     type="button"
-                    onClick={() => setPostPage(page)}
-                    className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold transition-all ${
-                      postPage === page
-                        ? "bg-orange-500 text-white"
-                        : "border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500"
-                    }`}
+                    onClick={() => handleToggleLike(post)}
+                    className={`post-like-insta ${post.liked ? "liked" : ""}`}
+                    title="좋아요"
                   >
-                    {page}
+                    <Heart
+                      className="w-5 h-5"
+                      fill={post.liked ? "#ef4444" : "none"}
+                    />
+                    <span>{post.likeCount ?? 0}</span>
                   </button>
-                );
-              })}
 
-              <button
-                type="button"
-                onClick={() =>
-                  setPostPage((prev) => Math.min(prev + 1, postTotalPages))
-                }
-                disabled={postPage === postTotalPages}
-                className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              >
-                &gt;
-              </button>
-            </div>
-          )}
-        </>
+                  <button
+                    type="button"
+                    className="post-comment-bubble-insta"
+                    onClick={() => setCommentModalPost(post)}
+                    title="댓글 보기"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    <span>{comments.length}</span>
+                  </button>
+                </div>
+
+                {hasImages && (
+                  <section className="post-content-insta">
+                    <h4>게시글</h4>
+                    <div>{post.content}</div>
+                  </section>
+                )}
+              </article>
+            );
+          })}
+        </div>
       ) : (
         <div className="text-center py-12 text-gray-400">
           게시글이 없습니다.
@@ -695,13 +711,13 @@ export default function PostsTab({
 
       {commentModalPost && (
         <div
-          className="post-comment-modal-overlay"
+          className="post-comment-modal-overlay post-comment-drawer-overlay"
           onClick={() => setCommentModalPost(null)}
           role="button"
           tabIndex={0}
         >
           <div
-            className="post-comment-modal"
+            className="post-comment-drawer"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="post-comment-modal-header">
@@ -720,6 +736,29 @@ export default function PostsTab({
             </div>
 
             {renderComments(commentModalPost)}
+
+            <form
+              className="post-comment-modal-form-insta"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmitComment(commentModalPost.postId);
+              }}
+            >
+              <input
+                value={commentInputs[commentModalPost.postId] ?? ""}
+                onChange={(e) =>
+                  handleCommentInputChange(
+                    commentModalPost.postId,
+                    e.target.value,
+                  )
+                }
+                placeholder="댓글을 남겨주세요..."
+                className="post-comment-input-final"
+              />
+              <button type="submit" className="btn-comment-submit-final">
+                등록
+              </button>
+            </form>
           </div>
         </div>
       )}
