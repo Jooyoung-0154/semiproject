@@ -2,6 +2,8 @@ package org.cloud.control;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -60,12 +62,19 @@ public class PostController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public boolean write(
             @ModelAttribute Post post,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
             @RequestParam(value = "image", required = false) MultipartFile image
     ) throws IOException {
-        if (image != null && !image.isEmpty()) {
-            String savedFileName = saveImage(image);
-            post.setPostImg(savedFileName);
+        List<MultipartFile> uploadImages = normalizeUploadImages(images, image);
+
+        if (uploadImages.size() > 5) {
+            throw new IllegalArgumentException("게시판 사진은 최대 5장까지 등록 가능합니다.");
         }
+
+        if (!uploadImages.isEmpty()) {
+            post.setPostImg(saveImages(uploadImages));
+        }
+
         return postService.writePost(post);
     }
 
@@ -79,13 +88,20 @@ public class PostController {
     public boolean modifyWithImage(
             @PathVariable int postId,
             @ModelAttribute Post post,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
             @RequestParam(value = "image", required = false) MultipartFile image
     ) throws IOException {
         post.setPostId(postId);
-        if (image != null && !image.isEmpty()) {
-            String savedFileName = saveImage(image);
-            post.setPostImg(savedFileName);
+        List<MultipartFile> uploadImages = normalizeUploadImages(images, image);
+
+        if (uploadImages.size() > 5) {
+            throw new IllegalArgumentException("게시판 사진은 최대 5장까지 등록 가능합니다.");
         }
+
+        if (!uploadImages.isEmpty()) {
+            post.setPostImg(saveImages(uploadImages));
+        }
+
         return postService.modifyPost(post);
     }
 
@@ -122,6 +138,34 @@ public class PostController {
             @RequestParam String userId
     ) {
         return postService.toggleLike(postId, userId);
+    }
+
+    private List<MultipartFile> normalizeUploadImages(List<MultipartFile> images, MultipartFile image) {
+        List<MultipartFile> uploadImages = new ArrayList<>();
+
+        if (images != null) {
+            for (MultipartFile file : images) {
+                if (file != null && !file.isEmpty()) {
+                    uploadImages.add(file);
+                }
+            }
+        }
+
+        if (uploadImages.isEmpty() && image != null && !image.isEmpty()) {
+            uploadImages.add(image);
+        }
+
+        return uploadImages;
+    }
+
+    private String saveImages(List<MultipartFile> images) throws IOException {
+        List<String> savedNames = new ArrayList<>();
+
+        for (MultipartFile image : images) {
+            savedNames.add(saveImage(image));
+        }
+
+        return String.join(",", savedNames);
     }
 
     private String saveImage(MultipartFile image) throws IOException {

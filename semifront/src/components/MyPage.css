@@ -2802,32 +2802,20 @@ post-comments-title {
   z-index: 9998;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   padding: 24px;
   background: rgba(15, 23, 42, 0.46);
 }
 
 .post-comment-modal {
-  width: min(520px, 92vw);
-  max-height: 82vh;
+  width: min(420px, 92vw);
+  max-height: 88vh;
   display: flex;
   flex-direction: column;
   border-radius: 22px;
   background: #ffffff;
   box-shadow: 0 24px 80px rgba(15, 23, 42, 0.34);
   overflow: hidden;
-  animation: postCommentModalPop 0.16s ease-out;
-}
-
-@keyframes postCommentModalPop {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 .post-comment-modal-header {
@@ -3008,29 +2996,429 @@ post-comments-title {
 }
 
 /* =========================================================
-   2026-06-11 게시판 UI 최종 미세수정
-   - 작성일/좋아요 라인을 카드 최상단으로 이동
-   - 댓글 모두보기 모달은 조회 전용으로 변경
+   2026-06-11 게시판 UI 마무리 수정
+   - 작성일/좋아요를 카드 최상단으로 이동
+   - 사진 없는 게시글은 사진 영역 대신 글 영역을 크게 사용
+   - 사진/글 게시글 모두 긴 내용은 스크롤 처리
+   - 댓글 모두보기 모달은 조회 전용
    ========================================================= */
-.post-meta-final-top {
-  margin-top: 0 !important;
-  margin-bottom: 16px !important;
+
+.post-card-final {
+  padding: 24px 24px 22px;
+  border-radius: 20px;
+}
+
+.post-meta-final.top {
+  margin-top: 0;
+  margin-bottom: 16px;
   padding-bottom: 0;
   border-bottom: 0;
 }
 
-.post-card-final .post-photo-final {
-  margin-top: 0;
+.post-photo-final {
+  margin: 0 0 18px 0;
+}
+
+.post-photo-img-final {
+  max-height: 470px;
+  min-height: 280px;
+}
+
+.post-card-final.has-image .post-content-final {
+  padding: 0 0 16px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .post-card-final.no-image .post-content-final {
-  margin-top: 4px;
+  padding: 20px 22px;
+  min-height: 220px;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #fffaf6 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 247, 237, 0.8);
 }
 
-.post-comment-modal .post-comment-modal-form {
+.post-card-final.no-image .post-content-text-final {
+  max-height: 260px;
+}
+
+.post-content-text-final {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.post-comment-count-button-final {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.post-comment-count-button-final:hover {
+  color: #ea580c;
+}
+
+.post-comment-modal-form {
   display: none !important;
 }
 
-.post-comment-modal-list {
-  max-height: calc(82vh - 78px);
+@media (max-width: 900px) {
+  .post-card-final.no-image .post-content-final {
+    min-height: 160px;
+  }
 }
+
+/* =========================================================
+   2026-06-11 게시판 인스타형 UI 최종 수정
+   요구사항 1~9 반영
+   - 사진 최대 5장 등록 UI
+   - 사진 1장: 화살표 숨김 / 2장 이상: 좌우 넘김 표시
+   - 말풍선 클릭 시 오른쪽 댓글 창 표시
+   - 사진 없는 게시글은 사진 위치에 글 영역 표시
+   - 긴 글은 스크롤 처리
+   - 날짜 위쪽 여백 축소
+   ========================================================= */
+.post-board-list-insta {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.post-card-insta {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 18px 22px 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
+}
+
+.post-card-insta-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.post-card-insta .post-date-final {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.post-actions-insta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.post-action-icon-insta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.16s ease, background 0.16s ease;
+}
+
+.post-action-icon-insta:hover {
+  transform: translateY(-1px);
+}
+
+.post-action-icon-insta.edit {
+  background: #eef2ff;
+  color: #2563eb;
+}
+
+.post-action-icon-insta.delete {
+  background: #fff1f2;
+  color: #ef4444;
+}
+
+.post-photo-slider-insta {
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f8fafc;
+  box-shadow: inset 0 0 0 1px rgba(226, 232, 240, 0.9);
+}
+
+.post-photo-click-insta {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.post-photo-click-insta img {
+  display: block;
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+}
+
+.post-slide-btn-insta {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #334155;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+}
+
+.post-slide-btn-insta.left {
+  left: 12px;
+}
+
+.post-slide-btn-insta.right {
+  right: 12px;
+}
+
+.post-image-count-insta {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.68);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.post-no-image-text-insta {
+  min-height: 320px;
+  max-height: 420px;
+  padding: 24px 26px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #fffaf6 100%);
+  overflow-y: auto;
+}
+
+.post-no-image-text-insta h4,
+.post-content-insta h4 {
+  margin: 0 0 14px 0;
+  color: #9a3412;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.post-no-image-text-insta div,
+.post-content-insta div {
+  color: #334155;
+  font-size: 15px;
+  line-height: 1.85;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.post-reaction-row-insta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.post-like-insta,
+.post-comment-bubble-insta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: color 0.16s ease, transform 0.16s ease;
+}
+
+.post-like-insta:hover,
+.post-comment-bubble-insta:hover {
+  transform: translateY(-1px);
+}
+
+.post-like-insta.liked {
+  color: #ef4444;
+}
+
+.post-content-insta {
+  max-height: 210px;
+  margin-top: 18px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.post-no-image-text-insta::-webkit-scrollbar,
+.post-content-insta::-webkit-scrollbar,
+.post-comment-modal-list::-webkit-scrollbar {
+  width: 7px;
+}
+
+.post-no-image-text-insta::-webkit-scrollbar-thumb,
+.post-content-insta::-webkit-scrollbar-thumb,
+.post-comment-modal-list::-webkit-scrollbar-thumb {
+  background: #fdba74;
+  border-radius: 999px;
+}
+
+.post-write-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.post-write-preview-item {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+}
+
+.post-write-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.post-write-preview-item span {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.post-comment-drawer-overlay {
+  justify-content: center !important;
+  align-items: center !important;
+  background: rgba(15, 23, 42, 0.46) !important;
+}
+
+.post-comment-drawer {
+  width: min(440px, 92vw);
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.34);
+  overflow: hidden;
+}
+
+.post-comment-modal-form-insta {
+  display: flex;
+  gap: 10px;
+  padding: 16px 18px 18px;
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+@media (max-width: 900px) {
+  .post-card-insta {
+    padding: 16px;
+  }
+
+  .post-photo-click-insta img {
+    height: 300px;
+  }
+
+  .post-no-image-text-insta {
+    min-height: 220px;
+  }
+
+  .post-comment-modal-form-insta {
+    flex-direction: column;
+  }
+
+  .post-comment-modal-form-insta .btn-comment-submit-final {
+    width: 100%;
+  }
+}
+
+
+/* =========================================================
+   2026-06-12 게시판 댓글창 위치 수정
+   - 말풍선 버튼 클릭 시 댓글창을 중앙 팝업이 아니라 게시글 오른쪽 사이드 패널처럼 표시
+   - 기존 댓글 목록/작성/수정/삭제 기능은 그대로 유지
+   ========================================================= */
+
+.post-comment-drawer-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  padding: 24px clamp(24px, 8vw, 150px) 24px 24px !important;
+  background: rgba(15, 23, 42, 0.46) !important;
+}
+
+.post-comment-drawer {
+  width: min(390px, 92vw) !important;
+  max-height: 82vh !important;
+  margin: 0 !important;
+  border-radius: 22px !important;
+  background: #ffffff !important;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.34) !important;
+  overflow: hidden !important;
+  animation: postCommentDrawerSlideIn 0.18s ease-out;
+}
+
+@keyframes postCommentDrawerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 1100px) {
+  .post-comment-drawer-overlay {
+    justify-content: center !important;
+    padding: 20px !important;
+  }
+
+  .post-comment-drawer {
+    width: min(440px, 94vw) !important;
+  }
+}
+
