@@ -5,10 +5,12 @@ import {
   X,
   Plus,
   ChefHat,
+  Clock3,
   Tag as TagIcon,
   Refrigerator,
   ChevronLeft,
   ChevronRight,
+  Users,
 } from "lucide-react";
 import RecipeService, { BrowseParams } from "../service/recipeService";
 import { tagService } from "../service/tagService";
@@ -34,10 +36,9 @@ export default function RecipeBrowse() {
   const [selectedLevel, setSelectedLevel] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [ingredientInput, setIngredientInput] = useState("");
+  const [cookingTimeFilter, setCookingTimeFilter] = useState("all");
   const [ingredients, setIngredients] = useState<string[]>([]);
-  const [ingredientMode, setIngredientMode] = useState<"OR" | "AND">("OR");
   const [sortType, setSortType] = useState("all");
-  const [ageGroup, setAgeGroup] = useState("all");
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedName(nameInput), 500);
@@ -70,9 +71,8 @@ export default function RecipeBrowse() {
           tagIds: selectedTagIds.length ? selectedTagIds : undefined,
           level: selectedLevel || undefined,
           ingredients: ingredients.length ? ingredients : undefined,
-          ingredientMode,
           sortType,
-          ageGroup,
+          cookingTimeFilter,
           page: targetPage,
           size: PAGE_SIZE,
         };
@@ -94,11 +94,10 @@ export default function RecipeBrowse() {
       selectedLevel,
       selectedTagIds,
       ingredients,
-      ingredientMode,
       userId,
       user,
       sortType,
-      ageGroup,
+      cookingTimeFilter,
     ],
   );
 
@@ -152,7 +151,6 @@ export default function RecipeBrowse() {
     setTagInput("");
     setIngredients([]);
     setIngredientInput("");
-    setIngredientMode("OR");
     setTimeout(() => doSearch(1), 0);
   };
   const getPageRange = () => {
@@ -171,7 +169,7 @@ export default function RecipeBrowse() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">레시피 둘러보기</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">레시피 검색</h1>
 
       <div className="bg-white rounded-2xl shadow-md p-6 mb-8 space-y-4">
         <div className="flex gap-2">
@@ -197,10 +195,12 @@ export default function RecipeBrowse() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              <ChefHat className="w-4 h-4 inline mr-1" />
-              난이도
-            </label>
+            <div className="flex items-center mb-1 min-h-[26px]">
+              <label className="text-sm font-medium text-gray-600">
+                <ChefHat className="w-4 h-4 inline mr-1" />
+                난이도
+              </label>
+            </div>
             <div className="flex gap-2 flex-wrap">
               {LEVEL_OPTIONS.map((lv) => (
                 <button
@@ -213,23 +213,25 @@ export default function RecipeBrowse() {
               ))}
             </div>
 
-            <div className="mt-4">
+            <div className="mt-5">
               <label className="block text-sm font-medium text-gray-600 mb-1">
-                연령대
+                <Clock3 className="w-4 h-4 inline mr-1" />
+                조리시간
               </label>
 
               <div className="flex gap-2 flex-wrap">
                 {[
                   { value: "all", label: "전체" },
-                  { value: "age2030", label: "2030대" },
-                  { value: "age4050", label: "4050대" },
-                  { value: "age60", label: "60대 이상" },
+                  { value: "under10", label: "뚝딱요리" },
+                  { value: "under30", label: "일상요리" },
+                  { value: "over30", label: "정성요리" },
                 ].map((item) => (
                   <button
                     key={item.value}
-                    onClick={() => setAgeGroup(item.value)}
+                    type="button"
+                    onClick={() => setCookingTimeFilter(item.value)}
                     className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                      ageGroup === item.value
+                      cookingTimeFilter === item.value
                         ? "bg-orange-600 text-white border-orange-600"
                         : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"
                     }`}
@@ -241,10 +243,12 @@ export default function RecipeBrowse() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              <TagIcon className="w-4 h-4 inline mr-1" />
-              태그
-            </label>
+            <div className="flex items-center mb-1 min-h-[26px]">
+              <label className="text-sm font-medium text-gray-600">
+                <TagIcon className="w-4 h-4 inline mr-1" />
+                태그
+              </label>
+            </div>
             <input
               type="text"
               value={tagInput}
@@ -271,36 +275,11 @@ export default function RecipeBrowse() {
             </div>
           </div>
           <div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center mb-1 min-h-[26px]">
               <label className="text-sm font-medium text-gray-600">
                 <Refrigerator className="w-4 h-4 inline mr-1" />
                 재료로 찾기
               </label>
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-gray-500 mr-1">검색 조건</span>
-                <button
-                  type="button"
-                  onClick={() => setIngredientMode("OR")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-l-full border transition-colors ${
-                    ingredientMode === "OR"
-                      ? "bg-orange-500 text-white border-orange-500"
-                      : "bg-white text-gray-500 border-gray-300 hover:border-orange-400"
-                  }`}
-                >
-                  OR
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIngredientMode("AND")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-r-full border transition-colors ${
-                    ingredientMode === "AND"
-                      ? "bg-orange-500 text-white border-orange-500"
-                      : "bg-white text-gray-500 border-gray-300 hover:border-orange-400"
-                  }`}
-                >
-                  AND
-                </button>
-              </div>
             </div>
             <div className="flex gap-2">
               <input
@@ -410,8 +389,16 @@ export default function RecipeBrowse() {
                   ),
                 )
               }
-              onDelete={user?.id === recipe.writerId || user?.id === "Admin" ? handleDeleteRecipe : undefined}
-              onEdit={user?.id === recipe.writerId ? (id) => navigate(`/write?edit=${id}`) : undefined}
+              onDelete={
+                user?.id === recipe.writerId || user?.id === "Admin"
+                  ? handleDeleteRecipe
+                  : undefined
+              }
+              onEdit={
+                user?.id === recipe.writerId || user?.id === "Admin"
+                  ? (id) => navigate(`/write?edit=${id}`)
+                  : undefined
+              }
             />
           ))}
         </div>

@@ -62,7 +62,7 @@
 		parameterType="org.cloud.dto.RecipeSearchParams"
 		resultType="org.cloud.dto.Recipe_Info">
 
-		SELECT
+		SELECT DISTINCT
 		r.RECIPE_ID AS recipeId,
 		r.RECIPE_NM_KO AS recipeNmKo,
 		r.SUMRY AS
@@ -82,6 +82,7 @@
 		AS likeCount,
 		r.PRICE AS price,
 		r.WRITER_ID AS writerId,
+		r.CREATED_AT AS createdAt,
 		m.NICKNAME AS
 		writerNickname,
 		m.PROFILE_IMG AS writerProfileImg,
@@ -98,10 +99,6 @@
 
 		<if test="tagIds != null and tagIds.size() &gt; 0">
 			JOIN RECIPE_TAG rt ON r.recipe_id = rt.recipe_id
-		</if>
-
-		<if test="irdntNms != null and irdntNms.size() &gt; 0">
-			JOIN IRDNT_INFO ii ON r.recipe_id = ii.recipe_id
 		</if>
 
 		<where>
@@ -121,39 +118,32 @@
 				AND r.level_nm = #{levelNm}
 			</if>
 
+			<if test="cookingTimeFilter == 'under10'">
+				AND CAST(REGEXP_SUBSTR(r.COOKING_TIME, '[0-9]+') AS UNSIGNED) &lt;= 10
+			</if>
+
+			<if test="cookingTimeFilter == 'under30'">
+				AND CAST(REGEXP_SUBSTR(r.COOKING_TIME, '[0-9]+') AS UNSIGNED) &gt; 10
+				AND CAST(REGEXP_SUBSTR(r.COOKING_TIME, '[0-9]+') AS UNSIGNED) &lt;=
+				30
+			</if>
+
+			<if test="cookingTimeFilter == 'over30'">
+				AND CAST(REGEXP_SUBSTR(r.COOKING_TIME, '[0-9]+') AS UNSIGNED) &gt; 30
+			</if>
+
 			<if test="irdntNms != null and irdntNms.size() &gt; 0">
-				AND ii.irdnt_nm IN
-				<foreach collection="irdntNms" item="nm" open="("
-					separator="," close=")">
-					#{nm}
-				</foreach>
-			</if>
-
-			<if test="ageGroup != null and ageGroup != 'all'">
-				AND r.WRITER_ID IS NOT NULL
-				AND r.WRITER_ID != ''
-				AND
-				m.BIRTH_DATE IS NOT NULL
-			</if>
-
-			<if test="ageGroup == 'age2030'">
-				AND TIMESTAMPDIFF(YEAR, m.BIRTH_DATE, CURDATE()) BETWEEN
-				20 AND 39
-			</if>
-
-			<if test="ageGroup == 'age4050'">
-				AND TIMESTAMPDIFF(YEAR, m.BIRTH_DATE, CURDATE()) BETWEEN
-				40 AND 59
-			</if>
-
-			<if test="ageGroup == 'age60'">
-				AND TIMESTAMPDIFF(YEAR, m.BIRTH_DATE, CURDATE()) &gt;= 60
+				AND r.recipe_id IN (
+					SELECT recipe_id FROM IRDNT_INFO
+					WHERE irdnt_nm IN
+					<foreach collection="irdntNms" item="nm" open="(" separator="," close=")">
+						#{nm}
+					</foreach>
+					GROUP BY recipe_id
+					HAVING COUNT(DISTINCT irdnt_nm) = ${irdntNms.size()}
+				)
 			</if>
 		</where>
-
-		<if test="ageGroup != null and ageGroup != 'all'">
-			GROUP BY r.RECIPE_ID
-		</if>
 
 		<choose>
 			<when test="sortType == 'all'">
@@ -191,17 +181,10 @@
 
 	<select id="countRecipeList"
 		parameterType="org.cloud.dto.RecipeSearchParams" resultType="int">
-		<if
-			test="irdntNms != null and irdntNms.size() &gt; 0 and ingredientAnd">
-			SELECT COUNT(*) FROM (
-		</if>
 		SELECT COUNT(DISTINCT r.recipe_id)
 		FROM RECIPE r
 		<if test="tagIds != null and tagIds.size() &gt; 0">
 			JOIN RECIPE_TAG rt ON r.recipe_id = rt.recipe_id
-		</if>
-		<if test="irdntNms != null and irdntNms.size() &gt; 0">
-			JOIN IRDNT_INFO ii ON r.recipe_id = ii.recipe_id
 		</if>
 		<where>
 			<if test="recipeNmKo != null and recipeNmKo != ''">
@@ -218,20 +201,17 @@
 				AND r.level_nm = #{levelNm}
 			</if>
 			<if test="irdntNms != null and irdntNms.size() &gt; 0">
-				AND ii.irdnt_nm IN
-				<foreach collection="irdntNms" item="nm" open="("
-					separator="," close=")">
-					#{nm}
-				</foreach>
+				AND r.recipe_id IN (
+					SELECT recipe_id FROM IRDNT_INFO
+					WHERE irdnt_nm IN
+					<foreach collection="irdntNms" item="nm" open="(" separator="," close=")">
+						#{nm}
+					</foreach>
+					GROUP BY recipe_id
+					HAVING COUNT(DISTINCT irdnt_nm) = ${irdntNms.size()}
+				)
 			</if>
 		</where>
-		<if
-			test="irdntNms != null and irdntNms.size() &gt; 0 and ingredientAnd">
-			GROUP BY r.recipe_id
-			HAVING COUNT(DISTINCT ii.irdnt_nm) =
-			${irdntNms.size}
-			) AS cnt_sub
-		</if>
 	</select>
 
 	<select id="selectRecipesByWriterId"
@@ -369,10 +349,11 @@
 	</update>
 
 
-    <select id="selectWriterIdByRecipeId" resultType="string">
-        SELECT WRITER_ID
-        FROM RECIPE
-        WHERE RECIPE_ID = #{recipeId}
-    </select>
+	<select id="selectWriterIdByRecipeId" resultType="string">
+		SELECT
+		WRITER_ID
+		FROM RECIPE
+		WHERE RECIPE_ID = #{recipeId}
+	</select>
 
 </mapper>

@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import {
   Heart,
   MessageCircle,
@@ -22,6 +28,7 @@ interface PostsTabProps {
 type PostSortType = "latest" | "like";
 
 const MAX_POST_IMAGES = 5;
+const POSTS_PER_PAGE = 4;
 
 const normalizeImageUrl = (path?: string | null) => {
   if (!path) return null;
@@ -66,23 +73,35 @@ export default function PostsTab({
 }: PostsTabProps) {
   const [postList, setPostList] = useState<Post[]>([]);
   const [postSortType, setPostSortType] = useState<PostSortType>("latest");
+  const [postPage, setPostPage] = useState(1);
+
   const [isPostCreateMode, setIsPostCreateMode] = useState(false);
   const [newPostContent, setNewPostContent] = useState("");
   const [newPostImages, setNewPostImages] = useState<File[]>([]);
-  const [newPostImagePreviews, setNewPostImagePreviews] = useState<string[]>([]);
+  const [newPostImagePreviews, setNewPostImagePreviews] = useState<string[]>(
+    [],
+  );
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [editingPostImg, setEditingPostImg] = useState("");
-  const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
+  const [commentInputs, setCommentInputs] = useState<Record<number, string>>(
+    {},
+  );
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingCommentContent, setEditingCommentContent] = useState("");
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
   const [popupImageUrl, setPopupImageUrl] = useState<string | null>(null);
   const [commentModalPost, setCommentModalPost] = useState<Post | null>(null);
-  const [imageIndexByPostId, setImageIndexByPostId] = useState<Record<number, number>>({});
+  const [imageIndexByPostId, setImageIndexByPostId] = useState<
+    Record<number, number>
+  >({});
 
   useEffect(() => {
     fetchPosts();
   }, [displayUser.id, currentUserId]);
+
+  useEffect(() => {
+    setPostPage(1);
+  }, [postSortType, displayUser.id]);
 
   const sortedPostList = useMemo(() => {
     const copied = [...postList];
@@ -101,19 +120,30 @@ export default function PostsTab({
 
     return copied.sort(
       (a, b) =>
-        new Date(b.regDate ?? 0).getTime() -
-        new Date(a.regDate ?? 0).getTime(),
+        new Date(b.regDate ?? 0).getTime() - new Date(a.regDate ?? 0).getTime(),
     );
   }, [postList, postSortType]);
+
+  const postTotalPages = Math.ceil(sortedPostList.length / POSTS_PER_PAGE);
+
+  const pagedPostList = sortedPostList.slice(
+    (postPage - 1) * POSTS_PER_PAGE,
+    postPage * POSTS_PER_PAGE,
+  );
 
   const fetchPosts = async () => {
     try {
       setIsLoadingPosts(true);
-      const response = await postService.getByWriter(displayUser.id, currentUserId);
+      const response = await postService.getByWriter(
+        displayUser.id,
+        currentUserId,
+      );
       setPostList(Array.isArray(response.data) ? response.data : []);
+      setPostPage(1);
     } catch (error) {
       console.error("게시글 불러오기 실패:", error);
       setPostList([]);
+      setPostPage(1);
     } finally {
       setIsLoadingPosts(false);
     }
@@ -164,7 +194,11 @@ export default function PostsTab({
       formData.append("writerId", currentUserId);
       formData.append("content", content);
 
-      if (editingPostId !== null && editingPostImg && newPostImages.length === 0) {
+      if (
+        editingPostId !== null &&
+        editingPostImg &&
+        newPostImages.length === 0
+      ) {
         formData.append("postImg", editingPostImg);
       }
 
@@ -248,7 +282,10 @@ export default function PostsTab({
 
   const reloadPosts = async () => {
     try {
-      const response = await postService.getByWriter(displayUser.id, currentUserId);
+      const response = await postService.getByWriter(
+        displayUser.id,
+        currentUserId,
+      );
       const nextPosts = Array.isArray(response.data) ? response.data : [];
       setPostList(nextPosts);
       syncModalPost(nextPosts);
@@ -334,7 +371,10 @@ export default function PostsTab({
     if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
 
     try {
-      const response = await postService.deleteComment(commentId, currentUserId);
+      const response = await postService.deleteComment(
+        commentId,
+        currentUserId,
+      );
 
       if (response.data === false) {
         alert("댓글 삭제에 실패했습니다. 다시 시도해주세요.");
@@ -432,7 +472,9 @@ export default function PostsTab({
       <div className="post-board-toolbar">
         <div>
           <h3 className="section-title">게시판</h3>
-          <p className="post-board-subtitle">사진과 글로 일상을 공유해보세요.</p>
+          <p className="post-board-subtitle">
+            사진과 글로 일상을 공유해보세요.
+          </p>
         </div>
 
         <div className="post-board-toolbar-actions">
@@ -535,7 +577,10 @@ export default function PostsTab({
           {sortedPostList.map((post) => {
             const images = getPostImages(post.postImg);
             const hasImages = images.length > 0;
-            const imageIndex = Math.min(imageIndexByPostId[post.postId] ?? 0, Math.max(images.length - 1, 0));
+            const imageIndex = Math.min(
+              imageIndexByPostId[post.postId] ?? 0,
+              Math.max(images.length - 1, 0),
+            );
             const currentImage = hasImages ? images[imageIndex] : null;
             const comments = post.comments ?? [];
             const canEditPost = post.writerId === currentUserId;
@@ -593,7 +638,9 @@ export default function PostsTab({
                         <button
                           type="button"
                           className="post-slide-btn-insta left"
-                          onClick={() => changeImage(post.postId, images.length, -1)}
+                          onClick={() =>
+                            changeImage(post.postId, images.length, -1)
+                          }
                           title="이전 사진"
                         >
                           <ChevronLeft className="w-5 h-5" />
@@ -601,7 +648,9 @@ export default function PostsTab({
                         <button
                           type="button"
                           className="post-slide-btn-insta right"
-                          onClick={() => changeImage(post.postId, images.length, 1)}
+                          onClick={() =>
+                            changeImage(post.postId, images.length, 1)
+                          }
                           title="다음 사진"
                         >
                           <ChevronRight className="w-5 h-5" />
@@ -655,7 +704,9 @@ export default function PostsTab({
           })}
         </div>
       ) : (
-        <div className="text-center py-12 text-gray-400">게시글이 없습니다.</div>
+        <div className="text-center py-12 text-gray-400">
+          게시글이 없습니다.
+        </div>
       )}
 
       {commentModalPost && (
@@ -665,7 +716,10 @@ export default function PostsTab({
           role="button"
           tabIndex={0}
         >
-          <div className="post-comment-drawer" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="post-comment-drawer"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="post-comment-modal-header">
               <div>
                 <p className="post-comment-modal-title">댓글</p>
@@ -692,7 +746,12 @@ export default function PostsTab({
             >
               <input
                 value={commentInputs[commentModalPost.postId] ?? ""}
-                onChange={(e) => handleCommentInputChange(commentModalPost.postId, e.target.value)}
+                onChange={(e) =>
+                  handleCommentInputChange(
+                    commentModalPost.postId,
+                    e.target.value,
+                  )
+                }
                 placeholder="댓글을 남겨주세요..."
                 className="post-comment-input-final"
               />
@@ -711,7 +770,10 @@ export default function PostsTab({
           role="button"
           tabIndex={0}
         >
-          <div className="post-image-popup-content" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="post-image-popup-content"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               type="button"
               className="post-image-popup-close"

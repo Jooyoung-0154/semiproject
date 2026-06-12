@@ -46,11 +46,13 @@
 		UPDATE member SET INTRO = #{intro} WHERE ID = #{id}
 	</update>
 
+	<!-- 팔로잉 카운터 -->
 	<update id="addFollowingCount">
 		UPDATE member SET FOLLOWING_COUNT = FOLLOWING_COUNT +
 		#{amount} WHERE ID =
 		#{ID}
 	</update>
+	
 	<!-- 스크랩 공개 여부 변경 -->
 	<update id="updateScrapPublic">
 		UPDATE member SET SCRAP_PUBLIC = #{scrapPublic} WHERE ID = #{id}
