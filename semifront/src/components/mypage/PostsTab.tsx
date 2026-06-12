@@ -20,6 +20,8 @@ interface PostsTabProps {
 
 type PostSortType = "latest" | "like";
 
+const POSTS_PER_PAGE = 4;
+
 const normalizeImageUrl = (path?: string | null) => {
   if (!path) return null;
   const cleanPath = String(path).trim();
@@ -55,13 +57,17 @@ export default function PostsTab({
 }: PostsTabProps) {
   const [postList, setPostList] = useState<Post[]>([]);
   const [postSortType, setPostSortType] = useState<PostSortType>("latest");
+  const [postPage, setPostPage] = useState(1);
+
   const [isPostCreateMode, setIsPostCreateMode] = useState(false);
   const [newPostContent, setNewPostContent] = useState("");
   const [newPostImage, setNewPostImage] = useState<File | null>(null);
   const [newPostImagePreview, setNewPostImagePreview] = useState("");
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [, setEditingPostImg] = useState("");
-  const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
+  const [commentInputs, setCommentInputs] = useState<Record<number, string>>(
+    {},
+  );
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingCommentContent, setEditingCommentContent] = useState("");
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
@@ -71,6 +77,10 @@ export default function PostsTab({
   useEffect(() => {
     fetchPosts();
   }, [displayUser.id, currentUserId]);
+
+  useEffect(() => {
+    setPostPage(1);
+  }, [postSortType, displayUser.id]);
 
   const sortedPostList = useMemo(() => {
     const copied = [...postList];
@@ -89,10 +99,16 @@ export default function PostsTab({
 
     return copied.sort(
       (a, b) =>
-        new Date(b.regDate ?? 0).getTime() -
-        new Date(a.regDate ?? 0).getTime(),
+        new Date(b.regDate ?? 0).getTime() - new Date(a.regDate ?? 0).getTime(),
     );
   }, [postList, postSortType]);
+
+  const postTotalPages = Math.ceil(sortedPostList.length / POSTS_PER_PAGE);
+
+  const pagedPostList = sortedPostList.slice(
+    (postPage - 1) * POSTS_PER_PAGE,
+    postPage * POSTS_PER_PAGE,
+  );
 
   const fetchPosts = async () => {
     try {
@@ -102,9 +118,11 @@ export default function PostsTab({
         currentUserId,
       );
       setPostList(Array.isArray(response.data) ? response.data : []);
+      setPostPage(1);
     } catch (error) {
       console.error("게시글 불러오기 실패:", error);
       setPostList([]);
+      setPostPage(1);
     } finally {
       setIsLoadingPosts(false);
     }
@@ -312,7 +330,10 @@ export default function PostsTab({
     if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
 
     try {
-      const response = await postService.deleteComment(commentId, currentUserId);
+      const response = await postService.deleteComment(
+        commentId,
+        currentUserId,
+      );
 
       if (response.data === false) {
         alert("댓글 삭제에 실패했습니다. 다시 시도해주세요.");
@@ -422,7 +443,9 @@ export default function PostsTab({
       <div className="post-board-toolbar">
         <div>
           <h3 className="section-title">게시판</h3>
-          <p className="post-board-subtitle">사진과 글로 일상을 공유해보세요.</p>
+          <p className="post-board-subtitle">
+            사진과 글로 일상을 공유해보세요.
+          </p>
         </div>
 
         <div className="post-board-toolbar-actions">
@@ -515,110 +538,159 @@ export default function PostsTab({
           게시글을 불러오는 중입니다...
         </div>
       ) : sortedPostList.length > 0 ? (
-        <div className="post-board-list post-board-list-final">
-          {sortedPostList.map((post) => {
-            const imageSrc = normalizeImageUrl(post.postImg);
-            const comments = post.comments ?? [];
-            const canEditPost = post.writerId === currentUserId;
-            const canDeletePost =
-              post.writerId === currentUserId ||
-              currentUserId === "Admin" ||
-              currentUserId === "admin";
+        <>
+          <div className="post-board-list post-board-list-final">
+            {pagedPostList.map((post) => {
+              const imageSrc = normalizeImageUrl(post.postImg);
+              const comments = post.comments ?? [];
+              const canEditPost = post.writerId === currentUserId;
+              const canDeletePost =
+                post.writerId === currentUserId ||
+                currentUserId === "Admin" ||
+                currentUserId === "admin";
 
-            return (
-              <article
-                key={post.postId}
-                className={`post-card-final ${imageSrc ? "has-image" : "no-image"}`}
-              >
-                <div className="post-meta-final post-meta-final-top">
-                  <div className="post-date-final">
-                    <Clock className="w-4 h-4" />
-                    <span>{formatPostDate(post.regDate)}</span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleToggleLike(post)}
-                    className={`post-like-final ${post.liked ? "liked" : ""}`}
-                    title="좋아요"
-                  >
-                    <Heart
-                      className="w-5 h-5"
-                      fill={post.liked ? "#ec4899" : "none"}
-                    />
-                    <span>{post.likeCount ?? 0}</span>
-                  </button>
-                </div>
-
-                {imageSrc && (
-                  <button
-                    type="button"
-                    className="post-photo-final"
-                    onClick={() => setPopupImageUrl(imageSrc)}
-                    title="사진 크게 보기"
-                  >
-                    <img
-                      src={imageSrc}
-                      alt="게시글 이미지"
-                      className="post-photo-img-final"
-                    />
-                  </button>
-                )}
-
-                <section className="post-content-final">
-                  <h4 className="post-content-title-final">게시글</h4>
-                  <div className="post-content-text-final">{post.content}</div>
-                </section>
-
-                <div className="post-comment-summary-final">
-                  <div className="post-comment-count-final">
-                    <MessageCircle className="w-4 h-4" />
-                    <span>댓글 {comments.length}개</span>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="btn-comment-open-final"
-                    onClick={() => setCommentModalPost(post)}
-                  >
-                    댓글 모두 보기
-                    <span>›</span>
-                  </button>
-                </div>
-
-                {renderCommentForm(post.postId)}
-
-                {canDeletePost && (
-                  <div className="post-actions-final">
-                    {canEditPost && (
-                      <button
-                        type="button"
-                        onClick={() => handleEditPost(post)}
-                        className="post-action-btn-final edit"
-                        title="게시글 수정"
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                        <span>수정</span>
-                      </button>
-                    )}
+              return (
+                <article
+                  key={post.postId}
+                  className={`post-card-final ${imageSrc ? "has-image" : "no-image"}`}
+                >
+                  <div className="post-meta-final post-meta-final-top">
+                    <div className="post-date-final">
+                      <Clock className="w-4 h-4" />
+                      <span>{formatPostDate(post.regDate)}</span>
+                    </div>
 
                     <button
                       type="button"
-                      onClick={() => handleDeletePost(post.postId)}
-                      className="post-action-btn-final delete"
-                      title="게시글 삭제"
+                      onClick={() => handleToggleLike(post)}
+                      className={`post-like-final ${post.liked ? "liked" : ""}`}
+                      title="좋아요"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>삭제</span>
+                      <Heart
+                        className="w-5 h-5"
+                        fill={post.liked ? "#ec4899" : "none"}
+                      />
+                      <span>{post.likeCount ?? 0}</span>
                     </button>
                   </div>
-                )}
-              </article>
-            );
-          })}
-        </div>
+
+                  {imageSrc && (
+                    <button
+                      type="button"
+                      className="post-photo-final"
+                      onClick={() => setPopupImageUrl(imageSrc)}
+                      title="사진 크게 보기"
+                    >
+                      <img
+                        src={imageSrc}
+                        alt="게시글 이미지"
+                        className="post-photo-img-final"
+                      />
+                    </button>
+                  )}
+
+                  <section className="post-content-final">
+                    <h4 className="post-content-title-final">게시글</h4>
+                    <div className="post-content-text-final">
+                      {post.content}
+                    </div>
+                  </section>
+
+                  <div className="post-comment-summary-final">
+                    <div className="post-comment-count-final">
+                      <MessageCircle className="w-4 h-4" />
+                      <span>댓글 {comments.length}개</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="btn-comment-open-final"
+                      onClick={() => setCommentModalPost(post)}
+                    >
+                      댓글 모두 보기
+                      <span>›</span>
+                    </button>
+                  </div>
+
+                  {renderCommentForm(post.postId)}
+
+                  {canDeletePost && (
+                    <div className="post-actions-final">
+                      {canEditPost && (
+                        <button
+                          type="button"
+                          onClick={() => handleEditPost(post)}
+                          className="post-action-btn-final edit"
+                          title="게시글 수정"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                          <span>수정</span>
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeletePost(post.postId)}
+                        className="post-action-btn-final delete"
+                        title="게시글 삭제"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>삭제</span>
+                      </button>
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+
+          {postTotalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-6">
+              <button
+                type="button"
+                onClick={() => setPostPage((prev) => Math.max(prev - 1, 1))}
+                disabled={postPage === 1}
+                className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              >
+                &lt;
+              </button>
+
+              {Array.from({ length: postTotalPages }).map((_, index) => {
+                const page = index + 1;
+
+                return (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => setPostPage(page)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold transition-all ${
+                      postPage === page
+                        ? "bg-orange-500 text-white"
+                        : "border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={() =>
+                  setPostPage((prev) => Math.min(prev + 1, postTotalPages))
+                }
+                disabled={postPage === postTotalPages}
+                className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              >
+                &gt;
+              </button>
+            </div>
+          )}
+        </>
       ) : (
-        <div className="text-center py-12 text-gray-400">게시글이 없습니다.</div>
+        <div className="text-center py-12 text-gray-400">
+          게시글이 없습니다.
+        </div>
       )}
 
       {commentModalPost && (
@@ -648,7 +720,6 @@ export default function PostsTab({
             </div>
 
             {renderComments(commentModalPost)}
-
           </div>
         </div>
       )}
