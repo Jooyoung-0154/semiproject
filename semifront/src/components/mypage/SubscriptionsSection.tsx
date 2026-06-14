@@ -51,7 +51,7 @@ export default function SubscriptionsSection({ displayUser }: SubscriptionsSecti
                 <div className="sub-profile-flex">
                   {sub.profileImg ? (
                     <img
-                      src={`${API_BASE_URL}${sub.profileImg}`}
+                      src={`${API_BASE_URL}/${sub.profileImg}`}
                       alt={sub.nickname}
                       className="sub-avatar-img"
                       onError={(e) => {

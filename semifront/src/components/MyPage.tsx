@@ -183,7 +183,7 @@ export default function MyPage() {
             <div className="profile-avatar">
               {displayUser.profileImg ? (
                 <img
-                  src={`${API_BASE_URL}${displayUser.profileImg}`}
+                  src={`${API_BASE_URL}/${displayUser.profileImg}`}
                   alt="프로필"
                   className="profile-avatar-img"
                 />

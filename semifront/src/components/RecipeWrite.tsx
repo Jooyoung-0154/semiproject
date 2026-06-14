@@ -86,7 +86,7 @@ export default function RecipeWrite() {
     if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://"))
       return cleanPath;
     if (cleanPath.startsWith("/")) return `${API_BASE_URL}${cleanPath}`;
-    return `${API_BASE_URL}/uploads/${cleanPath}`;
+    return `${API_BASE_URL}/${cleanPath}`;
   };
 
   useEffect(() => {

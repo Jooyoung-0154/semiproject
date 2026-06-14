@@ -29,11 +29,11 @@ export default function RecipeCard({
 }: RecipeCardProps) {
   const navigate = useNavigate();
   const thumbSrc = recipe.thumbImgUrl
-    ? `${API_BASE_URL}${recipe.thumbImgUrl}`
+    ? `${API_BASE_URL}/${recipe.thumbImgUrl}`
     : null;
   const levelColor = LEVEL_COLOR[recipe.levelNm] ?? "bg-gray-100 text-gray-600";
   const profileImgSrc = recipe.writerProfileImg
-    ? `${API_BASE_URL}${recipe.writerProfileImg}`
+    ? `${API_BASE_URL}/${recipe.writerProfileImg}`
     : null;
   const hasAuthor = !!(
     recipe.writerId ||

@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { Outlet, Link, useNavigate } from "react-router";
+import { useEffect, useRef, useState } from "react";
+import { Outlet, Link, useNavigate, useLocation } from "react-router";
 import { User, LogIn, LogOut, ShieldCheck, Search, Bell } from "lucide-react";
+import TopChefNav from "./TopChefNav";
 import { memberService } from "../service/memberService.ts";
 import RecipeService from "../service/recipeService";
 import type { Member, Recipe_Info, Notification } from "../types/type.ts";
@@ -149,9 +150,33 @@ export default function Layout() {
     setNotificationEnabled((prev) => !prev);
   };
 
+  const location = useLocation();
+  const isOnTopChef = location.pathname === "/topchef";
+
+  const [showTopChefPanel, setShowTopChefPanel] = useState(false);
+  const topChefRef = useRef<HTMLDivElement>(null);
+  const locationRef = useRef(location);
+  locationRef.current = location;
+
+  // /topchef 진입 시 자동 열기, 이탈 시 닫기
+  useEffect(() => {
+    setShowTopChefPanel(isOnTopChef);
+  }, [isOnTopChef]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (locationRef.current.pathname === "/topchef") return;
+      if (topChefRef.current && !topChefRef.current.contains(e.target as Node)) {
+        setShowTopChefPanel(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white shadow-sm sticky top-0 z-50">
+      <header className="bg-white shadow-sm sticky top-0 z-50" ref={topChefRef}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link
@@ -193,7 +218,7 @@ export default function Layout() {
                           <div className="w-10 h-10 rounded-xl bg-orange-50 overflow-hidden flex items-center justify-center shrink-0">
                             {recipe.thumbImgUrl ? (
                               <img
-                                src={`${API_BASE_URL}${recipe.thumbImgUrl}`}
+                                src={`${API_BASE_URL}/${recipe.thumbImgUrl}`}
                                 alt={recipe.recipeNmKo}
                                 className="w-full h-full object-cover"
                               />
@@ -236,7 +261,7 @@ export default function Layout() {
                           <div className="w-8 h-8 rounded-full bg-orange-100 overflow-hidden flex items-center justify-center">
                             {member.profileImg ? (
                               <img
-                                src={`${API_BASE_URL}${member.profileImg}`}
+                                src={`${API_BASE_URL}/${member.profileImg}`}
                                 alt={member.nickname}
                                 className="w-full h-full object-cover"
                               />
@@ -274,12 +299,14 @@ export default function Layout() {
                   레시피 작성
                 </Link>
 
-                <Link
-                  to="/mypage"
-                  className="hover:text-orange-600 transition-colors"
-                >
-                  집슐랭
-                </Link>
+                <div ref={topChefRef}>
+                  <button
+                    onClick={() => setShowTopChefPanel((prev) => !prev)}
+                    className={`hover:text-orange-600 transition-colors ${showTopChefPanel ? "text-orange-600 font-semibold" : ""}`}
+                  >
+                    홈스토랑
+                  </button>
+                </div>
               </div>
 
               <div className="flex items-center gap-3">
@@ -421,6 +448,17 @@ export default function Layout() {
                 )}
               </div>
             </nav>
+          </div>
+        </div>
+
+        {/* 홈스토랑 드롭다운 — 헤더 전체 너비 */}
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out border-t border-gray-100 bg-white ${
+            showTopChefPanel ? "max-h-72 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <TopChefNav onClose={() => !isOnTopChef && setShowTopChefPanel(false)} />
           </div>
         </div>
       </header>

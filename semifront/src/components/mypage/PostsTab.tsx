@@ -38,7 +38,7 @@ const normalizeImageUrl = (path?: string | null) => {
     return cleanPath;
   }
   if (cleanPath.startsWith("/")) return `${API_BASE_URL}${cleanPath}`;
-  return `${API_BASE_URL}/uploads/${cleanPath}`;
+  return `${API_BASE_URL}/${cleanPath}`;
 };
 
 const getPostImages = (postImg?: string | null) => {
@@ -81,9 +81,9 @@ export default function PostsTab({
   const [newPostImagePreviews, setNewPostImagePreviews] = useState<string[]>(
     [],
   );
-  const [editingPostId, setEditingPostId] = useState<number | null>(null);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingPostImg, setEditingPostImg] = useState("");
-  const [commentInputs, setCommentInputs] = useState<Record<number, string>>(
+  const [commentInputs, setCommentInputs] = useState<Record<string, string>>(
     {},
   );
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
@@ -92,7 +92,7 @@ export default function PostsTab({
   const [popupImageUrl, setPopupImageUrl] = useState<string | null>(null);
   const [commentModalPost, setCommentModalPost] = useState<Post | null>(null);
   const [imageIndexByPostId, setImageIndexByPostId] = useState<
-    Record<number, number>
+    Record<string, number>
   >({});
 
   useEffect(() => {
@@ -230,7 +230,7 @@ export default function PostsTab({
     setIsPostCreateMode(true);
   };
 
-  const handleDeletePost = async (postId: number) => {
+  const handleDeletePost = async (postId: string) => {
     if (!window.confirm("정말 이 게시글을 삭제하시겠습니까?")) return;
 
     try {
@@ -266,7 +266,7 @@ export default function PostsTab({
     }
   };
 
-  const handleCommentInputChange = (postId: number, value: string) => {
+  const handleCommentInputChange = (postId: string, value: string) => {
     setCommentInputs((prev) => ({ ...prev, [postId]: value }));
   };
 
@@ -294,7 +294,7 @@ export default function PostsTab({
     }
   };
 
-  const handleSubmitComment = async (postId: number) => {
+  const handleSubmitComment = async (postId: string) => {
     const content = (commentInputs[postId] ?? "").trim();
 
     if (!content) {
@@ -388,7 +388,7 @@ export default function PostsTab({
     }
   };
 
-  const changeImage = (postId: number, length: number, direction: 1 | -1) => {
+  const changeImage = (postId: string, length: number, direction: 1 | -1) => {
     setImageIndexByPostId((prev) => {
       const current = prev[postId] ?? 0;
       const next = (current + direction + length) % length;
