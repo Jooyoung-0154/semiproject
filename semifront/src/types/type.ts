@@ -150,6 +150,14 @@ export interface Review {
 }
 
 
+/* 멤버 프로필 배경 이미지 */
+export interface MemberBgImage {
+  bgImgId: number;
+  memberId: string;
+  imgUrl: string;
+  sortOrder: number;
+}
+
 export interface Notification {
   notiId: number;
   receiverId: string;

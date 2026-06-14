@@ -13,6 +13,7 @@ import RecipesTab from "./mypage/RecipesTab";
 import LikedTab from "./mypage/LikedTab";
 import GuestbookSection from "./mypage/GuestbookSection";
 import SubscriptionsSection from "./mypage/SubscriptionsSection";
+import ProfileBgSlideshow from "./ProfileBgSlideshow";
 
 export default function MyPage() {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ export default function MyPage() {
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [hasBg, setHasBg] = useState(false);
 
   const currentUserId = authUser?.id ?? "";
   const isOtherUserPage = Boolean(userId && userId !== authUser?.id);
@@ -177,7 +179,12 @@ export default function MyPage() {
   return (
     <div className="mypage-container">
       {/* 프로필 카드 */}
-      <div className="profile-card">
+      <div className={`profile-card${hasBg ? ' has-bg' : ''}`}>
+        <ProfileBgSlideshow
+          memberId={displayUser.id}
+          isOwnPage={isOwnPage}
+          onHasBg={setHasBg}
+        />
         <div className="profile-flex">
           <div className="profile-info-section">
             <div className="profile-avatar">
