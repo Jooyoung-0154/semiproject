@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { User } from "lucide-react";
+import { FaYoutube, FaInstagram, FaFacebook } from "react-icons/fa";
 import "./MyPage.css";
 import { Member } from "../types/type.ts";
 import { memberService } from "../service/memberService.ts";
@@ -30,7 +31,6 @@ export default function MyPage() {
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [hasBg, setHasBg] = useState(false);
 
   const currentUserId = authUser?.id ?? "";
   const displayUser = user;
@@ -177,13 +177,10 @@ export default function MyPage() {
 
   return (
     <div className="mypage-container">
+      <ProfileBgSlideshow memberId={displayUser.id} />
+
       {/* 프로필 카드 */}
-      <div className={`profile-card${hasBg ? ' has-bg' : ''}`}>
-        <ProfileBgSlideshow
-          memberId={displayUser.id}
-          isOwnPage={isOwnPage}
-          onHasBg={setHasBg}
-        />
+      <div className="profile-card">
         <div className="profile-flex">
           <div className="profile-info-section">
             <div className="profile-avatar">
@@ -207,6 +204,25 @@ export default function MyPage() {
                 <span>팔로워 {displayUser.followerCount}명</span>
                 <span>팔로잉 {displayUser.followingCount}명</span>
               </div>
+              {(displayUser.snsYoutube || displayUser.snsInstagram || displayUser.snsFacebook) && (
+                <div className="profile-sns">
+                  {displayUser.snsYoutube && (
+                    <a href={displayUser.snsYoutube} target="_blank" rel="noopener noreferrer" className="profile-sns-link">
+                      <FaYoutube size={18} />
+                    </a>
+                  )}
+                  {displayUser.snsInstagram && (
+                    <a href={displayUser.snsInstagram} target="_blank" rel="noopener noreferrer" className="profile-sns-link">
+                      <FaInstagram size={18} />
+                    </a>
+                  )}
+                  {displayUser.snsFacebook && (
+                    <a href={displayUser.snsFacebook} target="_blank" rel="noopener noreferrer" className="profile-sns-link">
+                      <FaFacebook size={18} />
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           </div>
           <div className="wallet-section">
@@ -312,7 +328,8 @@ export default function MyPage() {
       {showPasswordModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2 className="modal-title">비밀번호 확인</h2>
+            <h2 className="modal-title">내 정보</h2>
+            <p className="modal-label">정보 수정을 위해 비밀번호를 입력하세요.</p>
             <input
               type="password"
               placeholder="비밀번호 입력"
@@ -322,6 +339,7 @@ export default function MyPage() {
                 if (e.key === "Enter") handlePasswordConfirm();
               }}
               className="modal-input"
+              style={{ marginTop: "0.5rem" }}
             />
             <div className="modal-actions">
               <button

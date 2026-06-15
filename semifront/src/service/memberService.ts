@@ -51,4 +51,8 @@ export const memberService = {
   // 스크랩 공개 여부 변경
   updateScrapPublic: (id: string, scrapPublic: boolean) =>
     api.put(`/member/${id}/scrap-public`, null, { params: { scrapPublic } }),
+
+  // SNS 링크 변경
+  updateSnsSocial: (id: string, youtube: string, instagram: string, facebook: string) =>
+    api.put(`/member/${id}/sns`, null, { params: { youtube, instagram, facebook } }),
 };

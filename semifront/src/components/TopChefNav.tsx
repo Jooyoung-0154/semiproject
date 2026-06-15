@@ -93,7 +93,7 @@ function NavChefCard({ chef, member, onClick }: NavChefCardProps) {
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 border-gray-100 bg-white hover:border-orange-400 transition-all shrink-0 w-24 h-full"
+      className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 border-gray-300 bg-white hover:border-orange-400 transition-all shrink-0 w-24 h-full"
     >
       <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center overflow-hidden border-2 border-orange-200">
         {member?.profileImg ? (
@@ -110,7 +110,7 @@ function NavChefCard({ chef, member, onClick }: NavChefCardProps) {
         <p className="text-xs font-semibold text-gray-700 truncate">
           {member?.nickname ?? "···"}
         </p>
-        <p className="text-[10px] text-gray-400">{chef.specialty}</p>
+        <p className="text-[10px] text-gray-400">{chef.specialty.join(" · ")}</p>
       </div>
     </button>
   );

@@ -16,6 +16,9 @@ export interface Member {
   followerCount: number; // 나를 팔로우하는 사람들의 수
   recipeCount?: number; // 작성한 레시피 수
   scrapPublic?: boolean; // 스크랩 레시피 공개 여부
+  snsYoutube?: string;
+  snsInstagram?: string;
+  snsFacebook?: string;
 }
 
 //방명록
@@ -156,6 +159,9 @@ export interface MemberBgImage {
   memberId: string;
   imgUrl: string;
   sortOrder: number;
+  posX?: number;   // 가로 위치 0-100 (default 50)
+  posY?: number;   // 세로 위치 0-100 (default 50)
+  bgSize?: number; // 확대 100-200 (default 120)
 }
 
 export interface Notification {

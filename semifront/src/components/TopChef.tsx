@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
 import { User } from "lucide-react";
+import { FaYoutube, FaInstagram, FaFacebook } from "react-icons/fa";
 import { memberService } from "../service/memberService";
 import RecipeService from "../service/recipeService";
 import RecipeCard from "./RecipeCard";
@@ -15,7 +16,7 @@ export default function TopChef() {
   const [chefMember, setChefMember] = useState<Member | null>(null);
   const [chefRecipes, setChefRecipes] = useState<Recipe_Info[]>([]);
   const [selectedChefId, setSelectedChefId] = useState<string | null>(null);
-  const [selectedSpecialty, setSelectedSpecialty] = useState<string>("");
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string[]>([]);
   const [loadingMember, setLoadingMember] = useState(false);
   const [loadingRecipes, setLoadingRecipes] = useState(false);
 
@@ -32,6 +33,7 @@ export default function TopChef() {
         setSelectedSpecialty(found.specialty);
         break;
       }
+
     }
 
     const load = async () => {
@@ -102,11 +104,11 @@ export default function TopChef() {
             <div className="flex-1 text-white">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-2xl font-bold">{chefMember.nickname}</span>
-                {selectedSpecialty && (
-                  <span className="text-xs px-2.5 py-0.5 bg-white/25 rounded-full font-medium">
-                    {selectedSpecialty}
+                {selectedSpecialty.length > 0 && selectedSpecialty.map((s, i) => (
+                  <span key={i} className="text-xs px-2.5 py-0.5 bg-white/25 rounded-full font-medium">
+                    {s}
                   </span>
-                )}
+                ))}
               </div>
               {chefMember.intro && (
                 <p className="text-sm text-white/80 mb-3 line-clamp-2 max-w-lg">
@@ -117,6 +119,28 @@ export default function TopChef() {
                 <span>🍳 레시피 {chefMember.recipeCount ?? chefRecipes.length}개</span>
                 <span>❤️ 팔로워 {chefMember.followerCount ?? 0}</span>
               </div>
+              {(chefMember.snsYoutube || chefMember.snsInstagram || chefMember.snsFacebook) && (
+                <div className="flex items-center gap-3 mt-2">
+                  {chefMember.snsYoutube && (
+                    <a href={chefMember.snsYoutube} target="_blank" rel="noopener noreferrer"
+                      className="text-white/80 hover:text-white transition">
+                      <FaYoutube size={20} />
+                    </a>
+                  )}
+                  {chefMember.snsInstagram && (
+                    <a href={chefMember.snsInstagram} target="_blank" rel="noopener noreferrer"
+                      className="text-white/80 hover:text-white transition">
+                      <FaInstagram size={20} />
+                    </a>
+                  )}
+                  {chefMember.snsFacebook && (
+                    <a href={chefMember.snsFacebook} target="_blank" rel="noopener noreferrer"
+                      className="text-white/80 hover:text-white transition">
+                      <FaFacebook size={20} />
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

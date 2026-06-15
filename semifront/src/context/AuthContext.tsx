@@ -86,6 +86,9 @@ export function normalizeMember(data: any): Member | null {
     recipeCount: Number(member.recipeCount) || 0,
     scrapPublic:
       typeof member.scrapPublic === "boolean" ? member.scrapPublic : true,
+    snsYoutube: member.snsYoutube ?? undefined,
+    snsInstagram: member.snsInstagram ?? undefined,
+    snsFacebook: member.snsFacebook ?? undefined,
   };
 }
 
