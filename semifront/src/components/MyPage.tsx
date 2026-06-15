@@ -33,7 +33,6 @@ export default function MyPage() {
   const [hasBg, setHasBg] = useState(false);
 
   const currentUserId = authUser?.id ?? "";
-  const isOtherUserPage = Boolean(userId && userId !== authUser?.id);
   const displayUser = user;
   const isOwnPage = Boolean(
     authUser?.id && displayUser?.id && authUser.id === displayUser.id,

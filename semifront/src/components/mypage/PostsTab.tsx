@@ -103,6 +103,7 @@ export default function PostsTab({
     setPostPage(1);
   }, [postSortType, displayUser.id]);
 
+
   const sortedPostList = useMemo(() => {
     const copied = [...postList];
 
@@ -125,7 +126,6 @@ export default function PostsTab({
   }, [postList, postSortType]);
 
   const postTotalPages = Math.ceil(sortedPostList.length / POSTS_PER_PAGE);
-
   const pagedPostList = sortedPostList.slice(
     (postPage - 1) * POSTS_PER_PAGE,
     postPage * POSTS_PER_PAGE,
@@ -574,7 +574,7 @@ export default function PostsTab({
         </div>
       ) : sortedPostList.length > 0 ? (
         <div className="post-board-list post-board-list-insta">
-          {sortedPostList.map((post) => {
+          {pagedPostList.map((post) => {
             const images = getPostImages(post.postImg);
             const hasImages = images.length > 0;
             const imageIndex = Math.min(
@@ -706,6 +706,30 @@ export default function PostsTab({
       ) : (
         <div className="text-center py-12 text-gray-400">
           게시글이 없습니다.
+        </div>
+      )}
+
+      {postTotalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-4">
+          <button
+            type="button"
+            onClick={() => setPostPage((p) => Math.max(1, p - 1))}
+            disabled={postPage === 1}
+            className="p-1 rounded hover:bg-gray-100 disabled:opacity-30"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <span className="text-sm text-gray-600">
+            {postPage} / {postTotalPages}
+          </span>
+          <button
+            type="button"
+            onClick={() => setPostPage((p) => Math.min(postTotalPages, p + 1))}
+            disabled={postPage === postTotalPages}
+            className="p-1 rounded hover:bg-gray-100 disabled:opacity-30"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </div>
       )}
 

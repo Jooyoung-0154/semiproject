@@ -65,18 +65,6 @@ export default function RecipeDetail() {
   );
   const [reviewPage, setReviewPage] = useState(1);
 
-  const normalizeImageUrl = (path?: string | null) => {
-    if (!path) return null;
-    const cleanPath = String(path).trim();
-    if (!cleanPath) return null;
-    if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
-      return cleanPath;
-    }
-    if (cleanPath.startsWith("/")) {
-      return `${API_BASE_URL}${cleanPath}`;
-    }
-    return `${API_BASE_URL}/${cleanPath}`;
-  };
 
   const loadReviewerProfiles = async (reviewList: Review[]) => {
     const uniqueIds = [...new Set(reviewList.map((r) => r.id))];

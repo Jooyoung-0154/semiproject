@@ -6,7 +6,7 @@ import RecipeService from "../service/recipeService";
 import RecipeCard from "./RecipeCard";
 import type { Member, Recipe_Info } from "../types/type";
 import { API_BASE_URL } from "../config/api";
-import { CHEF_TABS } from "../data/topChefData";
+import { CHEF_TABS } from "../exam/topChefData";
 
 export default function TopChef() {
   const location = useLocation();

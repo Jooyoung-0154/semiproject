@@ -4,7 +4,7 @@ import { User } from "lucide-react";
 import { memberService } from "../service/memberService";
 import type { Member } from "../types/type";
 import { API_BASE_URL } from "../config/api";
-import { CHEF_TABS, type ChefEntry, type ChefTab } from "../data/topChefData";
+import { CHEF_TABS, type ChefEntry, type ChefTab } from "../exam/topChefData";
 
 interface Props {
   onClose: () => void;

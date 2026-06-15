@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Heart, ChefHat, Clock, Trash2, User, Eye, Cog, Pencil} from "lucide-react";
+import { Heart, ChefHat, Clock, Trash2, User, Eye, Pencil} from "lucide-react";
 import likeService from "../service/likeService";
 import { Recipe_Info } from "../types/type";
 import { API_BASE_URL } from "../config/api";
@@ -183,7 +183,9 @@ export default function RecipeCard({
                     onClick={() => onEdit(recipe.recipeId)}
                     className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-600 transition font-medium"
                   >
-                    <Pencil className="w-3.5 h-3.5"/> 
+                    <span title="수정">
+                      <Pencil className="w-3.5 h-3.5"/>
+                    </span> 
                   </button>
                 )}
                 {onDelete && (
@@ -191,7 +193,9 @@ export default function RecipeCard({
                     onClick={() => onDelete(recipe.recipeId)}
                     className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition font-medium"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <span title="삭제">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </span>
                   </button>
                 )}
               </div>
