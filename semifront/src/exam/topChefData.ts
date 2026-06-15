@@ -1,6 +1,6 @@
 export interface ChefEntry {
-  id: string;       // 멤버 ID
-  specialty: string; // 전문 분야
+  id: string;
+  specialty: string[]; // 전문 분야 (여러 개 가능)
 }
 
 export interface ChefTab {
@@ -30,6 +30,13 @@ export const CHEF_TABS: ChefTab[] = [
     label: "아시안",
     chefs: [
       // { id: "멤버ID", specialty: "초밥" },
+    ],
+  },
+  {
+    id: "chinese",
+    label: "중식",
+    chefs: [
+      { id: "Jooyoung1", specialty: ["중식"] },
     ],
   },
 ];

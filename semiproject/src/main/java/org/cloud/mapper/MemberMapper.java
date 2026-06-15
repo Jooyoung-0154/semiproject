@@ -51,4 +51,6 @@ public interface MemberMapper {
     int updateIntro(@Param("id") String id, @Param("intro") String intro);
 
     int updateScrapPublic(@Param("id") String id, @Param("scrapPublic") boolean scrapPublic);
+
+    int updateSnsSocial(Member member);
 }

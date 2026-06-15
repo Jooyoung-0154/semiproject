@@ -128,12 +128,24 @@
         STATUS AS status,
         FOLLOWING_COUNT as followingCount,
         FOLLOWER_COUNT as followerCount,
-        SCRAP_PUBLIC as scrapPublic
+        SCRAP_PUBLIC as scrapPublic,
+        SNS_YOUTUBE as snsYoutube,
+        SNS_INSTAGRAM as snsInstagram,
+        SNS_FACEBOOK as snsFacebook
     FROM
         member
     WHERE
         BINARY ID = #{id} AND STATUS = 'ACTIVE'
 	</select>
+
+	<!-- SNS 링크 변경 -->
+	<update id="updateSnsSocial">
+		UPDATE member
+		SET SNS_YOUTUBE   = #{snsYoutube},
+		    SNS_INSTAGRAM = #{snsInstagram},
+		    SNS_FACEBOOK  = #{snsFacebook}
+		WHERE ID = #{id}
+	</update>
 
 
 </mapper>

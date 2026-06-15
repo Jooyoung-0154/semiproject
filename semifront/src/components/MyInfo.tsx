@@ -3,6 +3,7 @@ import { User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, normalizeMember } from "../context/AuthContext.tsx";
 import { memberService } from "../service/memberService.ts";
+import { memberBgImageService } from "../service/memberBgImageService.ts";
 import type { Member } from "../types/type.ts";
 import { API_BASE_URL } from "../config/api";
 
@@ -19,6 +20,12 @@ export default function MyInfo() {
   const [previewImage, setPreviewImage] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteText, setDeleteText] = useState("");
+  const [snsYoutube, setSnsYoutube] = useState("");
+  const [snsInstagram, setSnsInstagram] = useState("");
+  const [snsFacebook, setSnsFacebook] = useState("");
+  const [showBgModal, setShowBgModal] = useState(false);
+  const [bgImages, setBgImages] = useState<import("../types/type").MemberBgImage[]>([]);
+  const [bgLocalSettings, setBgLocalSettings] = useState<Record<number, { posX: number; posY: number; bgSize: number }>>({});
 
   useEffect(() => {
     const fetchMyInfo = async () => {
@@ -35,6 +42,21 @@ export default function MyInfo() {
         if (normalized) {
           setNickname(normalized.nickname ?? "");
           setIntro(normalized.intro ?? "");
+          setSnsYoutube(normalized.snsYoutube ?? "");
+          setSnsInstagram(normalized.snsInstagram ?? "");
+          setSnsFacebook(normalized.snsFacebook ?? "");
+        }
+
+        try {
+          const bgRes = await memberBgImageService.getBgImages(authUser.id);
+          setBgImages(bgRes.data);
+          const init: Record<number, { posX: number; posY: number; bgSize: number }> = {};
+          bgRes.data.forEach(img => {
+            init[img.bgImgId] = { posX: img.posX ?? 50, posY: img.posY ?? 50, bgSize: img.bgSize ?? 120 };
+          });
+          setBgLocalSettings(init);
+        } catch {
+          setBgImages([]);
         }
       } catch (error) {
         console.error("내 정보 불러오기 실패:", error);
@@ -44,7 +66,7 @@ export default function MyInfo() {
     };
 
     fetchMyInfo();
-  }, [authUser]);
+  }, [authUser?.id]);
 
   const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,6 +92,13 @@ export default function MyInfo() {
       if (selectedFile) {
         await memberService.updateProfileImage(authUser.id, selectedFile);
       }
+
+      await memberService.updateSnsSocial(
+        authUser.id,
+        snsYoutube.trim(),
+        snsInstagram.trim(),
+        snsFacebook.trim()
+      );
 
       alert("회원정보가 수정되었습니다.");
       navigate("/mypage");
@@ -215,23 +244,202 @@ export default function MyInfo() {
             placeholder="자신을 소개해주세요."
           />
         </div>
+
+        <div>
+          <p className="text-sm text-gray-500 mb-2">SNS 링크</p>
+          <div className="flex flex-col gap-2">
+            {[
+              { label: "YouTube", value: snsYoutube, setter: setSnsYoutube, placeholder: "https://youtube.com/@채널명" },
+              { label: "Instagram", value: snsInstagram, setter: setSnsInstagram, placeholder: "https://instagram.com/계정명" },
+              { label: "Facebook", value: snsFacebook, setter: setSnsFacebook, placeholder: "https://facebook.com/계정명" },
+            ].map(({ label, value, setter, placeholder }) => (
+              <div key={label} className="flex items-center gap-2">
+                <span className="text-xs text-gray-400 w-20 shrink-0">{label}</span>
+                <input
+                  type="url"
+                  value={value}
+                  onChange={(e) => setter(e.target.value)}
+                  placeholder={placeholder}
+                  className="flex-1 border rounded-xl px-3 py-2 text-sm"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="mt-8 flex justify-end gap-3">
+      <div className="mt-8 flex justify-between items-center gap-3">
         <button
-          onClick={() => navigate("/mypage")}
-          className="bg-gray-200 text-gray-700 px-6 py-3 rounded-2xl font-semibold hover:bg-gray-300"
+          onClick={() => setShowBgModal(true)}
+          className="flex items-center gap-2 bg-gray-100 text-gray-600 px-5 py-3 rounded-2xl font-semibold hover:bg-gray-200 transition text-sm"
         >
-          돌아가기
+          🖼️ 배경 이미지 관리
         </button>
 
-        <button
-          onClick={handleSave}
-          className="bg-orange-600 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-orange-700"
-        >
-          저장
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => navigate("/mypage")}
+            className="bg-gray-200 text-gray-700 px-6 py-3 rounded-2xl font-semibold hover:bg-gray-300"
+          >
+            돌아가기
+          </button>
+          <button
+            onClick={handleSave}
+            className="bg-orange-600 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-orange-700"
+          >
+            저장
+          </button>
+        </div>
       </div>
+
+      {showBgModal && (
+        <div className="modal-overlay" onClick={() => setShowBgModal(false)}>
+          <div className="modal-content bg-modal-wide" onClick={e => e.stopPropagation()}>
+            <h2 className="modal-title">배경 이미지 관리</h2>
+
+            <div className="bg-manage-list">
+              {bgImages.length === 0 && (
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                  등록된 배경 이미지가 없습니다.
+                </p>
+              )}
+              {bgImages.map((img, i) => {
+                const s = bgLocalSettings[img.bgImgId] ?? { posX: img.posX ?? 50, posY: img.posY ?? 50, bgSize: img.bgSize ?? 120 };
+                return (
+                  <div key={img.bgImgId} className="bg-manage-item-v2">
+                    <div className="bg-sort-col">
+                      <button
+                        onClick={async () => {
+                          if (i === 0) return;
+                          try {
+                            const reordered = [...bgImages];
+                            [reordered[i - 1], reordered[i]] = [reordered[i], reordered[i - 1]];
+                            const updated = reordered.map((it, idx) => ({ ...it, sortOrder: idx + 1 }));
+                            await memberBgImageService.updateSortOrders(updated);
+                            setBgImages(updated);
+                          } catch (e) {
+                            console.error(e);
+                            alert('순서 변경에 실패했습니다.');
+                          }
+                        }}
+                        disabled={i === 0}
+                      >▲</button>
+                      <span>{i + 1}</span>
+                      <button
+                        onClick={async () => {
+                          if (i === bgImages.length - 1) return;
+                          try {
+                            const reordered = [...bgImages];
+                            [reordered[i], reordered[i + 1]] = [reordered[i + 1], reordered[i]];
+                            const updated = reordered.map((it, idx) => ({ ...it, sortOrder: idx + 1 }));
+                            await memberBgImageService.updateSortOrders(updated);
+                            setBgImages(updated);
+                          } catch (e) {
+                            console.error(e);
+                            alert('순서 변경에 실패했습니다.');
+                          }
+                        }}
+                        disabled={i === bgImages.length - 1}
+                      >▼</button>
+                    </div>
+
+                    <div className="bg-manage-body">
+                      <div className="bg-preview-row">
+                        <div
+                          className="bg-preview-box"
+                          style={{
+                            backgroundImage: `url(${API_BASE_URL}/${img.imgUrl})`,
+                            backgroundPosition: `${s.posX}% ${s.posY}%`,
+                            backgroundSize: `${s.bgSize}%`,
+                          }}
+                        />
+                        <button
+                          className="bg-delete-btn-v2"
+                          onClick={async () => {
+                            try {
+                              await memberBgImageService.deleteBgImage(img.bgImgId);
+                              setBgImages(prev => prev.filter(it => it.bgImgId !== img.bgImgId));
+                            } catch {
+                              alert('삭제에 실패했습니다.');
+                            }
+                          }}
+                        >삭제</button>
+                      </div>
+
+                      <div className="bg-manage-sliders">
+                        {(["posX", "posY", "bgSize"] as const).map((key) => (
+                          <label key={key} className="bg-slider-row">
+                            <span>{key === "posX" ? "좌우" : key === "posY" ? "상하" : "확대"}</span>
+                            <input
+                              type="range"
+                              min={key === "bgSize" ? 50 : 0}
+                              max={key === "bgSize" ? 200 : 100}
+                              value={s[key]}
+                              onChange={e =>
+                                setBgLocalSettings(prev => ({
+                                  ...prev,
+                                  [img.bgImgId]: { ...prev[img.bgImgId], [key]: Number(e.target.value) },
+                                }))
+                              }
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="bg-modal-footer">
+              <label className="bg-upload-label cursor-pointer">
+                + 이미지 추가
+                <input
+                  type="file" accept="image/*" className="file-input"
+                  onChange={async e => {
+                    const file = e.target.files?.[0];
+                    if (!file || !authUser?.id) return;
+                    try {
+                      await memberBgImageService.uploadBgImage(authUser.id, file, bgImages.length + 1);
+                      const res = await memberBgImageService.getBgImages(authUser.id);
+                      setBgImages(res.data);
+                    } catch {
+                      alert('업로드에 실패했습니다.');
+                    }
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {bgImages.length > 0 && (
+                  <button
+                    className="btn-modal-charge"
+                    onClick={async () => {
+                      try {
+                        const updated = bgImages.map(img => ({
+                          ...img,
+                          ...bgLocalSettings[img.bgImgId],
+                        }));
+                        await memberBgImageService.updateSortOrders(updated);
+                        setBgImages(updated);
+                        alert('저장되었습니다.');
+                      } catch (e) {
+                        console.error(e);
+                        alert('저장에 실패했습니다. 백엔드 콘솔을 확인해주세요.');
+                      }
+                    }}
+                  >
+                    변경사항 저장
+                  </button>
+                )}
+                <button className="btn-modal-cancel" onClick={() => setShowBgModal(false)}>
+                  닫기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="mt-10 pt-6 border-t">
         <h2 className="text-lg font-bold text-red-600">회원 탈퇴</h2>
         <p className="text-sm text-gray-500 mt-2">

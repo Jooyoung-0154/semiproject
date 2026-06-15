@@ -37,6 +37,11 @@ public class Member {
 	// 스크랩 레시피 공개 여부
 	private boolean scrapPublic = true;
 
+	// SNS 링크
+	private String snsYoutube;
+	private String snsInstagram;
+	private String snsFacebook;
+
 	public String getId() {
 		return id;
 	}

@@ -165,4 +165,13 @@ public class MemberController {
     public boolean updateScrapPublic(@PathVariable String id, @RequestParam boolean scrapPublic) {
         return memberService.updateScrapPublic(id, scrapPublic);
     }
+
+    @PutMapping("/{id}/sns")
+    public boolean updateSnsSocial(
+            @PathVariable String id,
+            @RequestParam(required = false) String youtube,
+            @RequestParam(required = false) String instagram,
+            @RequestParam(required = false) String facebook) {
+        return memberService.updateSnsSocial(id, youtube, instagram, facebook);
+    }
 }

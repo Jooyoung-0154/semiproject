@@ -3,8 +3,9 @@
 <mapper namespace="org.cloud.mapper.MemberBgImageMapper">
 
     <insert id="insertBgImage">
-        INSERT INTO member_bg_image (MEMBER_ID, IMG_URL, SORT_ORDER)
-        VALUES (#{memberId}, #{imgUrl}, #{sortOrder})
+        INSERT INTO member_bg_image (MEMBER_ID, IMG_URL, SORT_ORDER, POS_X, POS_Y, BG_SIZE)
+        VALUES (#{memberId}, #{imgUrl}, #{sortOrder},
+                COALESCE(#{posX}, 50), COALESCE(#{posY}, 50), COALESCE(#{bgSize}, 120))
     </insert>
 
     <select id="getBgImagesByMemberId" resultType="org.cloud.dto.MemberBgImage">
@@ -12,7 +13,10 @@
             BG_IMG_ID   AS bgImgId,
             MEMBER_ID   AS memberId,
             IMG_URL     AS imgUrl,
-            SORT_ORDER  AS sortOrder
+            SORT_ORDER  AS sortOrder,
+            POS_X       AS posX,
+            POS_Y       AS posY,
+            BG_SIZE     AS bgSize
         FROM member_bg_image
         WHERE MEMBER_ID = #{memberId}
         ORDER BY SORT_ORDER ASC
@@ -30,7 +34,10 @@
 
     <update id="updateSortOrder">
         UPDATE member_bg_image
-        SET SORT_ORDER = #{sortOrder}
+        SET SORT_ORDER = #{sortOrder},
+            POS_X      = COALESCE(#{posX}, 50),
+            POS_Y      = COALESCE(#{posY}, 50),
+            BG_SIZE    = COALESCE(#{bgSize}, 120)
         WHERE BG_IMG_ID = #{bgImgId}
     </update>
 

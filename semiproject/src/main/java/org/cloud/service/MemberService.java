@@ -103,4 +103,13 @@ public class MemberService {
     public boolean updateScrapPublic(String id, boolean scrapPublic) {
         return memberMapper.updateScrapPublic(id, scrapPublic) > 0;
     }
+
+    public boolean updateSnsSocial(String id, String youtube, String instagram, String facebook) {
+        Member m = new Member();
+        m.setId(id);
+        m.setSnsYoutube(youtube);
+        m.setSnsInstagram(instagram);
+        m.setSnsFacebook(facebook);
+        return memberMapper.updateSnsSocial(m) > 0;
+    }
 }
