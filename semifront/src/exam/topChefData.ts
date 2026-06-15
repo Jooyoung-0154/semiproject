@@ -19,24 +19,24 @@ export const CHEF_TABS: ChefTab[] = [
     ],
   },
   {
-    id: "western",
-    label: "양식",
+    id: "chinese",
+    label: "중식",
     chefs: [
-      // { id: "멤버ID", specialty: "파스타" },
+      { id: "Jooyoung1", specialty: ["중식", "동파육"] },
     ],
   },
   {
-    id: "asian",
-    label: "아시안",
+    id: "japanese",
+    label: "일식",
     chefs: [
       // { id: "멤버ID", specialty: "초밥" },
     ],
   },
   {
-    id: "chinese",
-    label: "중식",
+    id: "western",
+    label: "양식",
     chefs: [
-      { id: "Jooyoung1", specialty: ["중식"] },
+      //{ id: "멤버ID", specialty: ["파스타"] },
     ],
   },
 ];

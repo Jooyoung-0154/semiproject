@@ -196,6 +196,22 @@ export default function RecipeWrite() {
     });
   };
 
+  // 재료 blur 핸들러
+  const handleIngredientBlur = (
+    setter: React.Dispatch<React.SetStateAction<Irdnt_Info[]>>,
+    items: Irdnt_Info[],
+    index: number,
+    tyNm: string,
+  ) => {
+    const item = items[index];
+    const isLast = index === items.length - 1;
+    if (isLast && item.irdntNm.trim() !== "") {
+      addIngredient(setter, tyNm);
+    } else if (item.irdntNm.trim() === "" && items.length > 1) {
+      removeIngredient(setter, index);
+    }
+  };
+
   // 조리 과정
   const addStep = () => {
     setCookingInfo([
@@ -212,6 +228,17 @@ export default function RecipeWrite() {
     setStepImages([...stepImages, null]);
     setStepPreviews([...stepPreviews, ""]);
     setExistingStepImgUrls([...existingStepImgUrls, ""]);
+  };
+
+  // 조리 과정 blur 핸들러
+  const handleStepBlur = (index: number) => {
+    const step = cookingInfo[index];
+    const isLast = index === cookingInfo.length - 1;
+    if (isLast && step.cookingDc.trim() !== "") {
+      addStep();
+    } else if (step.cookingDc.trim() === "" && cookingInfo.length > 1) {
+      removeStep(index);
+    }
   };
 
   const removeStep = (index: number) => {
@@ -417,24 +444,15 @@ export default function RecipeWrite() {
     placeholder: string,
   ) => (
     <div className="space-y-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
-      <div className="flex justify-between items-center mb-1">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm text-orange-700 bg-orange-50 border border-orange-200 px-3 py-1 rounded-full">
-            {label}
+      <div className="flex items-center gap-2 mb-1">
+        <span className="font-semibold text-sm text-orange-700 bg-orange-50 border border-orange-200 px-3 py-1 rounded-full">
+          {label}
+        </span>
+        {label === "부재료" && (
+          <span className="text-xs text-gray-500 px-2 py-1">
+            * 없어도 되지만 있으면 더 맛있어지는 재료예요!
           </span>
-          {label === "부재료" && (
-            <span className="text-xs text-gray-500 px-2 py-1 ">
-              * 없어도 되지만 있으면 더 맛있어지는 재료예요!
-            </span>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={() => addIngredient(setter, tyNm)}
-          className="text-orange-600 flex items-center gap-1 text-sm font-bold hover:text-orange-700"
-        >
-          <Plus className="w-4 h-4" /> 추가
-        </button>
+        )}
       </div>
       {items.length === 0 ? (
         <p className="text-sm text-gray-400 text-center py-1">
@@ -452,6 +470,7 @@ export default function RecipeWrite() {
               onChange={(e) =>
                 updateIngredient(setter, index, "irdntNm", e.target.value)
               }
+              onBlur={() => handleIngredientBlur(setter, items, index, tyNm)}
               className="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-orange-400 bg-white"
             />
             <input
@@ -472,6 +491,15 @@ export default function RecipeWrite() {
           </div>
         ))
       )}
+      <div className="flex justify-end pt-1">
+        <button
+          type="button"
+          onClick={() => addIngredient(setter, tyNm)}
+          className="text-orange-600 flex items-center gap-1 text-sm font-bold hover:text-orange-700"
+        >
+          <Plus className="w-4 h-4" /> 추가
+        </button>
+      </div>
     </div>
   );
 
@@ -678,15 +706,8 @@ export default function RecipeWrite() {
 
           {/* 조리 순서 */}
           <section className="space-y-4">
-            <div className="flex justify-between items-center border-b pb-2">
+            <div className="border-b pb-2">
               <h2 className="text-xl font-semibold">조리 순서</h2>
-              <button
-                type="button"
-                onClick={addStep}
-                className="text-orange-600 flex items-center gap-1 text-sm font-bold hover:text-orange-700"
-              >
-                <Plus className="w-4 h-4" /> 단계 추가
-              </button>
             </div>
             {cookingInfo.map((step, index) => (
               <div
@@ -716,6 +737,7 @@ export default function RecipeWrite() {
                     };
                     setCookingInfo(newArr);
                   }}
+                  onBlur={() => handleStepBlur(index)}
                   className="w-full px-3 py-2 border rounded-md min-h-[80px] resize-none focus:outline-none focus:ring-1 focus:ring-orange-400"
                   required
                 />
@@ -770,6 +792,15 @@ export default function RecipeWrite() {
                 </div>
               </div>
             ))}
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={addStep}
+                className="text-orange-600 flex items-center gap-1 text-sm font-bold hover:text-orange-700"
+              >
+                <Plus className="w-4 h-4" /> 단계 추가
+              </button>
+            </div>
           </section>
 
           {/* 태그 */}

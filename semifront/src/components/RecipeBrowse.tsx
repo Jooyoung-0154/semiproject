@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, KeyboardEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef, useCallback, KeyboardEvent } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Search,
   X,
@@ -29,29 +29,59 @@ const LEVEL_LABELS: Record<string, string> = {
 export default function RecipeBrowse() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [nameInput, setNameInput] = useState("");
-  const [debouncedName, setDebouncedName] = useState("");
-  const [selectedLevel, setSelectedLevel] = useState("");
-  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+  // 모든 필터 상태를 URL params에서 파생
+  const debouncedName = searchParams.get("name") ?? "";
+  const selectedLevel = searchParams.get("level") ?? "";
+  const selectedTagIds = searchParams.getAll("tagId").map(Number);
+  const ingredients = searchParams.getAll("ingredient");
+  const cookingTimeFilter = searchParams.get("timeFilter") ?? "all";
+  const sortType = searchParams.get("sort") ?? "all";
+  const page = Number(searchParams.get("page") ?? "1");
+
+  // 로컬 UI 상태만 (입력 중인 텍스트 등)
+  const [nameInput, setNameInput] = useState(debouncedName);
   const [ingredientInput, setIngredientInput] = useState("");
-  const [cookingTimeFilter, setCookingTimeFilter] = useState("all");
-  const [ingredients, setIngredients] = useState<string[]>([]);
-  const [sortType, setSortType] = useState("all");
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedName(nameInput), 500);
-    return () => clearTimeout(timer);
-  }, [nameInput]);
-
+  const [tagInput, setTagInput] = useState("");
   const [recipes, setRecipes] = useState<Recipe_Info[]>([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [page, setPage] = useState(1);
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [tagInput, setTagInput] = useState("");
+
   const PAGE_SIZE = 12;
+  const initialized = useRef(false);
+
+  const updateParams = useCallback(
+    (updater: (p: URLSearchParams) => void) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          updater(next);
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
+  // nameInput 디바운스 → URL 업데이트 (마운트 시 초기화 방지)
+  useEffect(() => {
+    if (!initialized.current) {
+      initialized.current = true;
+      return;
+    }
+    const timer = setTimeout(() => {
+      updateParams((p) => {
+        if (nameInput) p.set("name", nameInput);
+        else p.delete("name");
+        p.delete("page");
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [nameInput, updateParams]);
 
   useEffect(() => {
     tagService
@@ -61,8 +91,10 @@ export default function RecipeBrowse() {
   }, []);
 
   const userId = user?.id;
-  const doSearch = useCallback(
-    async (targetPage: number) => {
+
+  // URL params 변경 시 검색 실행
+  useEffect(() => {
+    const doSearch = async () => {
       setIsLoading(true);
       try {
         const params: BrowseParams = {
@@ -72,7 +104,7 @@ export default function RecipeBrowse() {
           ingredients: ingredients.length ? ingredients : undefined,
           sortType,
           cookingTimeFilter,
-          page: targetPage,
+          page,
           size: PAGE_SIZE,
         };
         const result = await RecipeService.browse(params);
@@ -81,57 +113,96 @@ export default function RecipeBrowse() {
         setRecipes(loaded);
         setTotal(result.total);
         setTotalPages(result.totalPages);
-        setPage(targetPage);
       } catch (e) {
         console.error("검색 오류:", e);
       } finally {
         setIsLoading(false);
       }
-    },
-    [
-      debouncedName,
-      selectedLevel,
-      selectedTagIds,
-      ingredients,
-      userId,
-      user,
-      sortType,
-      cookingTimeFilter,
-    ],
-  );
+    };
+    doSearch();
+  }, [searchParams.toString(), userId]);
 
-  useEffect(() => {
-    doSearch(1);
-  }, [doSearch]);
+  const handleSearch = () => {
+    updateParams((p) => {
+      if (nameInput) p.set("name", nameInput);
+      else p.delete("name");
+      p.delete("page");
+    });
+  };
 
-  const handleSearch = () => doSearch(1);
+  const setSelectedLevel = (lv: string) =>
+    updateParams((p) => {
+      if (lv) p.set("level", lv);
+      else p.delete("level");
+      p.delete("page");
+    });
+
+  const setCookingTimeFilter = (value: string) =>
+    updateParams((p) => {
+      if (value === "all") p.delete("timeFilter");
+      else p.set("timeFilter", value);
+      p.delete("page");
+    });
+
+  const setSortType = (value: string) =>
+    updateParams((p) => {
+      if (value === "all") p.delete("sort");
+      else p.set("sort", value);
+      p.delete("page");
+    });
+
   const addIngredient = () => {
     const trimmed = ingredientInput.trim();
-    if (trimmed && !ingredients.includes(trimmed))
-      setIngredients([...ingredients, trimmed]);
+    if (trimmed && !ingredients.includes(trimmed)) {
+      updateParams((p) => {
+        p.append("ingredient", trimmed);
+        p.delete("page");
+      });
+    }
     setIngredientInput("");
   };
+
   const handleIngredientKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
       addIngredient();
     }
   };
+
   const removeIngredient = (item: string) =>
-    setIngredients(ingredients.filter((i) => i !== item));
-  const toggleTag = (tag: Tag) => {
-    setSelectedTagIds((prev) =>
-      prev.includes(tag.tagId)
-        ? prev.filter((id) => id !== tag.tagId)
-        : [...prev, tag.tagId],
-    );
-  };
-  const clearTags = () => setSelectedTagIds([]);
+    updateParams((p) => {
+      const current = p.getAll("ingredient");
+      p.delete("ingredient");
+      current.filter((i) => i !== item).forEach((i) => p.append("ingredient", i));
+      p.delete("page");
+    });
+
+  const toggleTag = (tag: Tag) =>
+    updateParams((p) => {
+      const currentIds = p.getAll("tagId").map(Number);
+      p.delete("tagId");
+      if (currentIds.includes(tag.tagId)) {
+        currentIds
+          .filter((id) => id !== tag.tagId)
+          .forEach((id) => p.append("tagId", String(id)));
+      } else {
+        [...currentIds, tag.tagId].forEach((id) => p.append("tagId", String(id)));
+      }
+      p.delete("page");
+    });
+
+  const clearTags = () =>
+    updateParams((p) => {
+      p.delete("tagId");
+      p.delete("page");
+    });
+
   const filteredTags = tagInput.trim()
     ? tags.filter((t) =>
         t.tagName.toLowerCase().includes(tagInput.trim().toLowerCase()),
       )
     : tags;
+
   const handleDeleteRecipe = async (recipeId: string) => {
     if (!window.confirm("정말 이 레시피를 삭제하시겠습니까?")) return;
     const ok = await RecipeService.deleteRecipe(recipeId);
@@ -144,14 +215,17 @@ export default function RecipeBrowse() {
 
   const resetFilters = () => {
     setNameInput("");
-    setDebouncedName("");
-    setSelectedLevel("");
-    setSelectedTagIds([]);
     setTagInput("");
-    setIngredients([]);
     setIngredientInput("");
-    setTimeout(() => doSearch(1), 0);
+    setSearchParams(new URLSearchParams(), { replace: true });
   };
+
+  const doSearch = (targetPage: number) =>
+    updateParams((p) => {
+      if (targetPage === 1) p.delete("page");
+      else p.set("page", String(targetPage));
+    });
+
   const getPageRange = () => {
     const range: number[] = [];
     let start = Math.max(1, page - 2);
@@ -160,6 +234,7 @@ export default function RecipeBrowse() {
     for (let i = start; i <= end; i++) range.push(i);
     return range;
   };
+
   const hasActiveFilter =
     nameInput ||
     selectedLevel ||

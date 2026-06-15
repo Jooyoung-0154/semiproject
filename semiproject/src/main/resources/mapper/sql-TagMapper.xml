@@ -20,7 +20,7 @@
             TAG_ID as tagId,
             TAG_NAME as tagName
         FROM tag 
-        ORDER BY TAG_NAME ASC
+        ORDER BY TAG_ID ASC
     </select>
 
     <!-- 레시피와 태그 연결 (중간 테이블 저장) -->
