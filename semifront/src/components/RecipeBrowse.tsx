@@ -10,7 +10,6 @@ import {
   Refrigerator,
   ChevronLeft,
   ChevronRight,
-  Users,
 } from "lucide-react";
 import RecipeService, { BrowseParams } from "../service/recipeService";
 import { tagService } from "../service/tagService";

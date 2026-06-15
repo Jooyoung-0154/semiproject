@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.cloud.mapper.MemberBgImageMapper">
+
+    <insert id="insertBgImage">
+        INSERT INTO member_bg_image (MEMBER_ID, IMG_URL, SORT_ORDER)
+        VALUES (#{memberId}, #{imgUrl}, #{sortOrder})
+    </insert>
+
+    <select id="getBgImagesByMemberId" resultType="org.cloud.dto.MemberBgImage">
+        SELECT
+            BG_IMG_ID   AS bgImgId,
+            MEMBER_ID   AS memberId,
+            IMG_URL     AS imgUrl,
+            SORT_ORDER  AS sortOrder
+        FROM member_bg_image
+        WHERE MEMBER_ID = #{memberId}
+        ORDER BY SORT_ORDER ASC
+    </select>
+
+    <delete id="deleteBgImageById">
+        DELETE FROM member_bg_image
+        WHERE BG_IMG_ID = #{bgImgId}
+    </delete>
+
+    <delete id="deleteAllBgImagesByMemberId">
+        DELETE FROM member_bg_image
+        WHERE MEMBER_ID = #{memberId}
+    </delete>
+
+    <update id="updateSortOrder">
+        UPDATE member_bg_image
+        SET SORT_ORDER = #{sortOrder}
+        WHERE BG_IMG_ID = #{bgImgId}
+    </update>
+
+</mapper>

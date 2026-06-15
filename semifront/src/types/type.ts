@@ -51,7 +51,7 @@ export interface Irdnt_Info {
 //게시글 댓글
 export interface PostComment {
   commentId: number;
-  postId: number;
+  postId: string;
   writerId: string;
   content: string;
   regDate: string;
@@ -65,7 +65,7 @@ export interface Follow {
 
 /* 자유 게시글*/
 export interface Post {
-  postId: number;
+  postId: string;
   writerId: string;
   content: string;
   postImg: string;
@@ -135,21 +135,28 @@ export interface RecipeTag {
 /* 리뷰 이미지 */
 export interface ReviewImage {
   imageId: number;
-  reviewId: number;
+  reviewId: string;
   imageUrl: string;
 }
 
 /* 레시피 리뷰*/
 export interface Review {
-  reviewId: number; // 리뷰 ID
+  reviewId: string; // 리뷰 ID
   recipeCode: string; // 레시피 코드
   id: string; // 작성자 ID
   reviewContent: string; // 리뷰 내용
-  reviewHit: number; // 리뷰 조회수
   thumbsUp: boolean; // 추천 여부 (Java의 boolean 대응)
   regDate: string; // 등록일
 }
 
+
+/* 멤버 프로필 배경 이미지 */
+export interface MemberBgImage {
+  bgImgId: number;
+  memberId: string;
+  imgUrl: string;
+  sortOrder: number;
+}
 
 export interface Notification {
   notiId: number;

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Heart, ChefHat, Clock, Trash2, User, Eye, Cog, Pencil} from "lucide-react";
+import { Heart, ChefHat, Clock, Trash2, User, Eye, Pencil} from "lucide-react";
 import likeService from "../service/likeService";
 import { Recipe_Info } from "../types/type";
 import { API_BASE_URL } from "../config/api";
@@ -29,11 +29,11 @@ export default function RecipeCard({
 }: RecipeCardProps) {
   const navigate = useNavigate();
   const thumbSrc = recipe.thumbImgUrl
-    ? `${API_BASE_URL}${recipe.thumbImgUrl}`
+    ? `${API_BASE_URL}/${recipe.thumbImgUrl}`
     : null;
   const levelColor = LEVEL_COLOR[recipe.levelNm] ?? "bg-gray-100 text-gray-600";
   const profileImgSrc = recipe.writerProfileImg
-    ? `${API_BASE_URL}${recipe.writerProfileImg}`
+    ? `${API_BASE_URL}/${recipe.writerProfileImg}`
     : null;
   const hasAuthor = !!(
     recipe.writerId ||
@@ -183,7 +183,9 @@ export default function RecipeCard({
                     onClick={() => onEdit(recipe.recipeId)}
                     className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-600 transition font-medium"
                   >
-                    <Pencil className="w-3.5 h-3.5"/> 
+                    <span title="수정">
+                      <Pencil className="w-3.5 h-3.5"/>
+                    </span> 
                   </button>
                 )}
                 {onDelete && (
@@ -191,7 +193,9 @@ export default function RecipeCard({
                     onClick={() => onDelete(recipe.recipeId)}
                     className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition font-medium"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <span title="삭제">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </span>
                   </button>
                 )}
               </div>

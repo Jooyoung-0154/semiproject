@@ -156,7 +156,7 @@ export default function MyInfo() {
               />
             ) : member.profileImg ? (
               <img
-                src={`${API_BASE_URL}${member.profileImg}`}
+                src={`${API_BASE_URL}/${member.profileImg}`}
                 alt="프로필"
                 className="w-full h-full object-cover"
               />

@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.cloud.mapper.PostCommentMapper">
 
-    <insert id="insertPost" useGeneratedKeys="true" keyProperty="postId">
-        INSERT INTO post (WRITER_ID, CONTENT, POST_IMG, LIKE_COUNT)
-        VALUES (#{writerId}, #{content}, #{postImg}, 0)
+    <insert id="insertPost">
+        INSERT INTO post (POST_ID, WRITER_ID, CONTENT, POST_IMG, LIKE_COUNT)
+        VALUES (#{postId}, #{writerId}, #{content}, #{postImg}, 0)
     </insert>
 
     <update id="updatePost">

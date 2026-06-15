@@ -9,6 +9,7 @@ import LoginPage from "./components/LoginPage";
 import Signup from "./components/Signup";
 import AdminPage from "./components/AdminPage";
 import MyInfo from "./components/MyInfo";
+import TopChef from "./components/TopChef";
 
 export const router = createBrowserRouter([
   {
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([
       { path: "login", Component: LoginPage },
       { path: "signup", Component: Signup },
       { path: "admin", Component: AdminPage },
+      { path: "topchef", Component: TopChef },
     ],
   },
 ]);

@@ -79,15 +79,6 @@ export default function RecipeWrite() {
     "",
   ]);
 
-  const normalizeImageUrl = (path?: string | null) => {
-    if (!path) return "";
-    const cleanPath = String(path).trim();
-    if (!cleanPath) return "";
-    if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://"))
-      return cleanPath;
-    if (cleanPath.startsWith("/")) return `${API_BASE_URL}${cleanPath}`;
-    return `${API_BASE_URL}/uploads/${cleanPath}`;
-  };
 
   useEffect(() => {
     tagService

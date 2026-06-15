@@ -55,7 +55,7 @@ export default function RecipeDetail() {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
   const [editThumbsUp, setEditThumbsUp] = useState(true);
 
@@ -65,18 +65,6 @@ export default function RecipeDetail() {
   );
   const [reviewPage, setReviewPage] = useState(1);
 
-  const normalizeImageUrl = (path?: string | null) => {
-    if (!path) return null;
-    const cleanPath = String(path).trim();
-    if (!cleanPath) return null;
-    if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
-      return cleanPath;
-    }
-    if (cleanPath.startsWith("/")) {
-      return `${API_BASE_URL}${cleanPath}`;
-    }
-    return `${API_BASE_URL}/uploads/${cleanPath}`;
-  };
 
   const loadReviewerProfiles = async (reviewList: Review[]) => {
     const uniqueIds = [...new Set(reviewList.map((r) => r.id))];
@@ -162,15 +150,14 @@ export default function RecipeDetail() {
     setIsSubmitting(true);
     try {
       const res = await reviewService.write({
-        reviewId: 0,
+        reviewId: "",
         recipeCode: recipeId,
         id: user.id,
         reviewContent: reviewContent.trim(),
-        reviewHit: 0,
         thumbsUp: reviewThumbsUp,
         regDate: "",
       });
-      const newReviewId = res.data as number;
+      const newReviewId = res.data as string;
       if (selectedFiles.length > 0 && newReviewId) {
         await reviewService.uploadImages(newReviewId, selectedFiles);
       }
@@ -219,7 +206,7 @@ export default function RecipeDetail() {
     }
   };
 
-  const handleReviewDelete = async (reviewId: number) => {
+  const handleReviewDelete = async (reviewId: string) => {
     if (!window.confirm("리뷰를 삭제하시겠습니까?")) return;
     try {
       await reviewService.remove(reviewId);
@@ -335,7 +322,7 @@ export default function RecipeDetail() {
       {hasGallery ? (
         <div className="relative w-full h-72 md:h-96 rounded-2xl overflow-hidden shadow-lg bg-gray-100">
           <img
-            src={`${API_BASE_URL}${images[currentImageIndex].imgUrl}`}
+            src={`${API_BASE_URL}/${images[currentImageIndex].imgUrl}`}
             alt={`${info.recipeNmKo} ${currentImageIndex + 1}`}
             className="w-full h-full object-cover"
             onError={(e) => {
@@ -483,7 +470,7 @@ export default function RecipeDetail() {
         >
           {writer?.profileImg ? (
             <img
-              src={`${API_BASE_URL}${writer.profileImg}`}
+              src={`${API_BASE_URL}/${writer.profileImg}`}
               alt={writer.nickname}
               className="w-11 h-11 rounded-full object-cover shrink-0 border border-gray-200"
               onError={(e) => {
@@ -553,7 +540,7 @@ export default function RecipeDetail() {
                 step.stepImgUrl === "/resources/static/image/base.png";
               const stepImg = isDefault
                 ? null
-                : `${API_BASE_URL}${step.stepImgUrl}`;
+                : `${API_BASE_URL}/${step.stepImgUrl}`;
               return (
                 <div
                   key={step.cookingNo}
@@ -645,7 +632,7 @@ export default function RecipeDetail() {
                   className="shrink-0 w-28 h-28 rounded-xl overflow-hidden bg-gray-100"
                 >
                   <img
-                    src={`${API_BASE_URL}${img.imageUrl}`}
+                    src={`${API_BASE_URL}/${img.imageUrl}`}
                     alt="후기 사진"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -682,7 +669,7 @@ export default function RecipeDetail() {
                       >
                         {profile?.profileImg ? (
                           <img
-                            src={`${API_BASE_URL}${profile.profileImg}`}
+                            src={`${API_BASE_URL}/${profile.profileImg}`}
                             alt={profile.nickname}
                             className="w-9 h-9 rounded-full object-cover border border-gray-200 hover:ring-2 hover:ring-orange-300 transition-all"
                             onError={(e) => {
@@ -808,7 +795,7 @@ export default function RecipeDetail() {
                                 className="shrink-0 w-40 h-40 rounded-lg overflow-hidden bg-gray-100"
                               >
                                 <img
-                                  src={`${API_BASE_URL}${img.imageUrl}`}
+                                  src={`${API_BASE_URL}/${img.imageUrl}`}
                                   alt="후기 사진"
                                   className="w-full h-full object-cover"
                                   onError={(e) => {

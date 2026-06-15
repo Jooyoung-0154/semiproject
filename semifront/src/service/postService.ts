@@ -18,7 +18,7 @@ export const postService = {
       },
     }),
 
-  getDetail: (postId: number, viewerId?: string) =>
+  getDetail: (postId: string, viewerId?: string) =>
     api.get<Post>(`/posts/${postId}`, {
       params: viewerId ? { viewerId } : {},
     }),
@@ -27,13 +27,13 @@ export const postService = {
 
   writeWithImage: (formData: FormData) => api.post("/posts", formData),
 
-  modify: (postId: number, post: Post) => api.put(`/posts/${postId}`, post),
+  modify: (postId: string, post: Post) => api.put(`/posts/${postId}`, post),
 
-  modifyWithImage: (postId: number, formData: FormData) =>
+  modifyWithImage: (postId: string, formData: FormData) =>
     api.put(`/posts/${postId}/image`, formData),
 
   // 게시글 삭제: 백엔드 권한 확인용 requesterId 전달
-  deletePost: (postId: number, requesterId: string) =>
+  deletePost: (postId: string, requesterId: string) =>
     api.delete(`/posts/${postId}`, { params: { requesterId } }),
 
   addComment: (comment: PostComment) => api.post("/posts/comment", comment),
@@ -44,6 +44,6 @@ export const postService = {
   updateComment: (commentId: number, comment: PostComment) =>
     api.put(`/posts/comment/${commentId}`, comment),
 
-  toggleLike: (postId: number, userId: string) =>
+  toggleLike: (postId: string, userId: string) =>
     api.post(`/posts/${postId}/like`, null, { params: { userId } }),
 };

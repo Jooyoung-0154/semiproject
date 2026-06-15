@@ -41,7 +41,9 @@
         t.TAG_NAME as tagName
     FROM tag t
     JOIN recipe_tag rt ON t.TAG_ID = rt.TAG_ID
-    WHERE rt.RECIPE_ID = #{RECIPE_ID}  </select>
+    WHERE rt.RECIPE_ID = #{RECIPE_ID}
+    ORDER BY t.TAG_ID ASC
+    </select>
 
     <!-- 여러 레시피의 태그를 한 번에 조회 (N+1 방지용 배치 조회) -->
     <select id="selectTagsByRecipeIds" resultType="org.cloud.dto.RecipeTagRow">
@@ -59,6 +61,7 @@
                 </foreach>
             </if>
         </where>
+        ORDER BY t.TAG_ID ASC
     </select>
 
 </mapper>
