@@ -19,6 +19,20 @@ export default function TopChef() {
   const [selectedSpecialty, setSelectedSpecialty] = useState<string[]>([]);
   const [loadingMember, setLoadingMember] = useState(false);
   const [loadingRecipes, setLoadingRecipes] = useState(false);
+  const [bgIndex, setBgIndex] = useState(0);
+
+  const bgImages = chefRecipes
+    .filter((r) => r.thumbImgUrl)
+    .map((r) => `${API_BASE_URL}/${r.thumbImgUrl}`);
+
+  useEffect(() => {
+    if (bgImages.length === 0) return;
+    setBgIndex(0);
+    const timer = setInterval(() => {
+      setBgIndex((prev) => (prev + 1) % bgImages.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [chefRecipes]);
 
   // 드롭다운에서 chefId 전달받으면 즉시 로드
   useEffect(() => {
@@ -80,13 +94,20 @@ export default function TopChef() {
         <div className="h-40 bg-orange-100 rounded-2xl animate-pulse" />
       ) : chefMember ? (
         <div className="relative rounded-2xl overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-800 to-orange-400" />
-          {chefMember.profileImg && (
-            <div
-              className="absolute inset-0 bg-cover bg-center opacity-15"
-              style={{ backgroundImage: `url(${API_BASE_URL}/${chefMember.profileImg})` }}
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-600" />
+          {bgImages.map((src, i) => (
+            <img
+              key={src}
+              src={src}
+              className="absolute right-0 top-0 h-full w-2/5 object-cover transition-opacity duration-1000"
+              style={{
+                opacity: i === bgIndex ? 0.6 : 0,
+                maskImage: "linear-gradient(to right, transparent 0%, black 30%)",
+                WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 30%)",
+              }}
+              alt=""
             />
-          )}
+          ))}
           <div className="relative px-8 py-7 flex items-center gap-6">
             <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white/50 shrink-0 bg-orange-300">
               {chefMember.profileImg ? (
