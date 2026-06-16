@@ -349,6 +349,17 @@ export default function RecipeWrite() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    if (!recipeInfo.recipeNmKo.trim()) {
+      alert("레시피 제목을 입력해주세요.");
+      return;
+    }
+    const validCookingInfo = cookingInfo.filter((s) => s.cookingDc.trim() !== "");
+    if (validCookingInfo.length === 0) {
+      alert("조리 순서를 1단계 이상 입력해주세요.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -381,7 +392,9 @@ export default function RecipeWrite() {
         setIsGeneratingAi(false);
       }
 
-      const updatedCookingInfo = await uploadStepImages();
+      const updatedCookingInfo = (await uploadStepImages())
+        .filter((s) => s.cookingDc.trim() !== "")
+        .map((s, i) => ({ ...s, cookingNo: i + 1 }));
       const allIngredients = mergeIngredients();
       const recipePayload = {
         recipeInfo: {
@@ -516,7 +529,7 @@ export default function RecipeWrite() {
           {isEditMode ? "레시피 수정하기" : "레시피 등록하기"}
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} noValidate className="space-y-8">
           {/* 기본 정보 */}
           <section className="space-y-4">
             <h2 className="text-xl font-semibold border-b pb-2">기본 정보</h2>
