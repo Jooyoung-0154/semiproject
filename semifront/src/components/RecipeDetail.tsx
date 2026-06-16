@@ -528,6 +528,27 @@ export default function RecipeDetail() {
         </section>
       )}
 
+      {/* 영상 */}
+      {info.videoUrl && (() => {
+        const match = info.videoUrl.match(
+          /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+        );
+        const videoId = match ? match[1] : null;
+        return videoId ? (
+          <section>
+            <SectionTitle>요리 영상</SectionTitle>
+            <div className="rounded-2xl overflow-hidden shadow-sm aspect-video w-1/2">
+              <iframe
+                src={`https://www.youtube.com/embed/${videoId}`}
+                title="요리 영상"
+                className="w-full h-full"
+                allowFullScreen
+              />
+            </div>
+          </section>
+        ) : null;
+      })()}
+
       {/* 조리 순서 */}
       {recipe.cookingInfo?.length > 0 && (
         <section>

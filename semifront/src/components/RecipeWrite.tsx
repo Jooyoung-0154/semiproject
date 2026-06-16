@@ -69,6 +69,7 @@ export default function RecipeWrite() {
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
 
+  const [videoUrl, setVideoUrl] = useState<string>("");
   const [useAi, setUseAi] = useState(false);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
@@ -99,6 +100,7 @@ export default function RecipeWrite() {
           qnt: info.qnt.replace("인분", ""),
           pcNm: String(recipe.price ?? 0),
         });
+        setVideoUrl(info.videoUrl ?? "");
 
         const main = recipe.irdntInfo.filter((i) => i.irdntTyNm === "재료");
         const sub = recipe.irdntInfo.filter((i) => i.irdntTyNm === "부재료");
@@ -315,6 +317,13 @@ export default function RecipeWrite() {
   };
 
   // 재료 병합 공통 처리
+  const extractYouTubeId = (url: string): string | null => {
+    const match = url.match(
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    );
+    return match ? match[1] : null;
+  };
+
   const mergeIngredients = (): Irdnt_Info[] =>
     [
       ...mainIngredients.map((i) => ({ ...i, irdntTyNm: "재료" })),
@@ -403,6 +412,7 @@ export default function RecipeWrite() {
           calorie: finalCalorie,
           cookingTime: `${recipeInfo.cookingTime}분`,
           qnt: `${recipeInfo.qnt}인분`,
+          videoUrl: videoUrl.trim() || undefined,
         },
         irdntInfo: allIngredients,
         cookingInfo: updatedCookingInfo,
@@ -715,6 +725,30 @@ export default function RecipeWrite() {
               "양념",
               "양념명 (예: 간장)",
             )}
+          </section>
+
+          {/* 영상 링크 */}
+          <section className="space-y-3">
+            <h2 className="text-xl font-semibold border-b pb-2">영상 링크 (선택)</h2>
+            <div className="space-y-2">
+              <input
+                type="url"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="YouTube 링크를 입력하세요 (예: https://www.youtube.com/watch?v=...)"
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
+              {extractYouTubeId(videoUrl) && (
+                <div className="rounded-lg overflow-hidden aspect-video w-full max-w-xl">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${extractYouTubeId(videoUrl)}`}
+                    title="YouTube 미리보기"
+                    className="w-full h-full"
+                    allowFullScreen
+                  />
+                </div>
+              )}
+            </div>
           </section>
 
           {/* 조리 순서 */}
