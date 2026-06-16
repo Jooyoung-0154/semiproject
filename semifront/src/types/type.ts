@@ -160,9 +160,6 @@ export interface MemberBgImage {
   memberId: string;
   imgUrl: string;
   sortOrder: number;
-  posX?: number;   // 가로 위치 0-100 (default 50)
-  posY?: number;   // 세로 위치 0-100 (default 50)
-  bgSize?: number; // 확대 100-200 (default 120)
 }
 
 export interface Notification {

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { User } from "lucide-react";
-import { FaYoutube, FaInstagram, FaFacebook } from "react-icons/fa";
 import "./MyPage.css";
 import { Member } from "../types/type.ts";
 import { memberService } from "../service/memberService.ts";
@@ -200,7 +199,7 @@ export default function MyPage() {
                 {displayUser.intro || "아직 등록된 소개글이 없습니다."}
               </p>
               <div className="profile-stats">
-                <span>레시피 {displayUser.recipeCount || 0}개</span>
+                <span>🍳 레시피 {displayUser.recipeCount || 0}개</span>
                 <span>팔로워 {displayUser.followerCount}명</span>
                 <span>팔로잉 {displayUser.followingCount}명</span>
               </div>
@@ -208,17 +207,17 @@ export default function MyPage() {
                 <div className="profile-sns">
                   {displayUser.snsYoutube && (
                     <a href={displayUser.snsYoutube} target="_blank" rel="noopener noreferrer" className="profile-sns-link">
-                      <FaYoutube size={18} />
+                      <img src="/youtube.svg" width={18} height={18} alt="YouTube" />
                     </a>
                   )}
                   {displayUser.snsInstagram && (
                     <a href={displayUser.snsInstagram} target="_blank" rel="noopener noreferrer" className="profile-sns-link">
-                      <FaInstagram size={18} />
+                      <img src="/instagram.svg" width={18} height={18} alt="Instagram" />
                     </a>
                   )}
                   {displayUser.snsFacebook && (
                     <a href={displayUser.snsFacebook} target="_blank" rel="noopener noreferrer" className="profile-sns-link">
-                      <FaFacebook size={18} />
+                      <img src="/facebook.svg" width={18} height={18} alt="Facebook" />
                     </a>
                   )}
                 </div>

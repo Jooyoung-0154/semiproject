@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { User } from "lucide-react";
-import { FaYoutube, FaInstagram, FaFacebook } from "react-icons/fa";
 import { memberService } from "../service/memberService";
 import RecipeService from "../service/recipeService";
 import RecipeCard from "./RecipeCard";
@@ -11,6 +10,7 @@ import { CHEF_TABS } from "../exam/topChefData";
 
 export default function TopChef() {
   const location = useLocation();
+  const navigate = useNavigate();
   const stateChefId = (location.state as { chefId?: string } | null)?.chefId;
 
   const [chefMember, setChefMember] = useState<Member | null>(null);
@@ -124,7 +124,12 @@ export default function TopChef() {
             </div>
             <div className="flex-1 text-white">
               <div className="flex items-center gap-3 mb-2">
-                <span className="text-2xl font-bold">{chefMember.nickname}</span>
+                <button
+                  onClick={() => navigate(`/mypage/${selectedChefId}`)}
+                  className="text-2xl font-bold hover:underline cursor-pointer"
+                >
+                  {chefMember.nickname}
+                </button>
                 {selectedSpecialty.length > 0 && selectedSpecialty.map((s, i) => (
                   <span key={i} className="text-xs px-2.5 py-0.5 bg-white/25 rounded-full font-medium">
                     {s}
@@ -144,20 +149,20 @@ export default function TopChef() {
                 <div className="flex items-center gap-3 mt-2">
                   {chefMember.snsYoutube && (
                     <a href={chefMember.snsYoutube} target="_blank" rel="noopener noreferrer"
-                      className="text-white/80 hover:text-white transition">
-                      <FaYoutube size={20} />
+                      className="hover:opacity-80 transition">
+                      <img src="/youtube.svg" width={20} height={20} alt="YouTube" />
                     </a>
                   )}
                   {chefMember.snsInstagram && (
                     <a href={chefMember.snsInstagram} target="_blank" rel="noopener noreferrer"
-                      className="text-white/80 hover:text-white transition">
-                      <FaInstagram size={20} />
+                      className="hover:opacity-80 transition">
+                      <img src="/instagram.svg" width={20} height={20} alt="Instagram" />
                     </a>
                   )}
                   {chefMember.snsFacebook && (
                     <a href={chefMember.snsFacebook} target="_blank" rel="noopener noreferrer"
-                      className="text-white/80 hover:text-white transition">
-                      <FaFacebook size={20} />
+                      className="hover:opacity-80 transition">
+                      <img src="/facebook.svg" width={20} height={20} alt="Facebook" />
                     </a>
                   )}
                 </div>

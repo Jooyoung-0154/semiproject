@@ -14,7 +14,7 @@
 .mypage-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 1rem 1rem;
   font-family: sans-serif;
   color: var(--text-dark);
 }
@@ -26,8 +26,8 @@
   box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  padding: 2.75rem 2.5rem;
-  margin-bottom: 2rem;
+  padding: 1.5rem 2.5rem;
+  margin-bottom: 1rem;
 }
 
 .profile-flex {
@@ -181,7 +181,7 @@
 }
 .btn-following:disabled,
 .btn-follow:disabled {
-  opacity: 0.6;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
@@ -3013,13 +3013,6 @@ post-comments-title {
   }
 }
 
-/* =========================================================
-   2026-06-11 게시판 UI 마무리 수정
-   - 작성일/좋아요를 카드 최상단으로 이동
-   - 사진 없는 게시글은 사진 영역 대신 글 영역을 크게 사용
-   - 사진/글 게시글 모두 긴 내용은 스크롤 처리
-   - 댓글 모두보기 모달은 조회 전용
-   ========================================================= */
 
 .post-card-final {
   padding: 24px 24px 22px;
@@ -3085,16 +3078,6 @@ post-comments-title {
   }
 }
 
-/* =========================================================
-   2026-06-11 게시판 인스타형 UI 최종 수정
-   요구사항 1~9 반영
-   - 사진 최대 5장 등록 UI
-   - 사진 1장: 화살표 숨김 / 2장 이상: 좌우 넘김 표시
-   - 말풍선 클릭 시 오른쪽 댓글 창 표시
-   - 사진 없는 게시글은 사진 위치에 글 영역 표시
-   - 긴 글은 스크롤 처리
-   - 날짜 위쪽 여백 축소
-   ========================================================= */
 .post-board-list-insta {
   display: flex;
   flex-direction: column;
@@ -3390,12 +3373,6 @@ post-comments-title {
 }
 
 
-/* =========================================================
-   2026-06-12 게시판 댓글창 위치 수정
-   - 말풍선 버튼 클릭 시 댓글창을 중앙 팝업이 아니라 게시글 오른쪽 사이드 패널처럼 표시
-   - 기존 댓글 목록/작성/수정/삭제 기능은 그대로 유지
-   ========================================================= */
-
 .post-comment-drawer-overlay {
   position: fixed !important;
   inset: 0 !important;
@@ -3441,23 +3418,16 @@ post-comments-title {
 }
 
 
-/* =========================================================
-   프로필 배경 슬라이드쇼
-   ========================================================= */
+/* 프로필 배경 슬라이드쇼 */
 
 .profile-bg-section {
   position: relative;
   width: 100%;
-  height: 18rem;
-  border-radius: 1rem;
+  aspect-ratio: 3.2 / 1;
   overflow: hidden;
   margin-bottom: 1.5rem;
-}
-
-@media (min-width: 768px) {
-  .profile-bg-section {
-    height: 24rem;
-  }
+  display: flex;
+  gap: 2rem;
 }
 
 .profile-bg-slide {
@@ -3475,11 +3445,36 @@ post-comments-title {
   opacity: 1;
 }
 
-.profile-bg-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.25);
+.profile-bg-slot {
+  flex-shrink: 0;
+  height: 100%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  position: relative;
 }
+
+.profile-bg-slot--prev {
+  width: 28%;
+  background-position: right center;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.profile-bg-slot--main {
+  flex-grow: 1;
+}
+
+.profile-bg-slot--main.solo {
+  width: 100%;
+}
+
+.profile-bg-slot--next {
+  width: 28%;
+  background-position: left center;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
 
 .profile-bg-dots {
   position: absolute;
@@ -3506,7 +3501,11 @@ post-comments-title {
 
 /* 배경 이미지 관리 모달 */
 .bg-modal-wide {
-  max-width: 42rem !important;
+  max-width: 36rem !important;
+  width: 100vw !important;
+  height: 85vh !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 .bg-modal-footer {
@@ -3568,7 +3567,7 @@ post-comments-title {
   flex-direction: column;
   gap: 0.75rem;
   margin-bottom: 1rem;
-  max-height: 420px;
+  flex: 1;
   overflow-y: auto;
 }
 
@@ -3607,7 +3606,7 @@ post-comments-title {
 }
 
 .bg-sort-col button:disabled {
-  opacity: 0.3;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
@@ -3634,7 +3633,7 @@ post-comments-title {
 
 .bg-preview-box {
   flex: 1;
-  height: 130px;
+  height: 250px;
   border-radius: 0.5rem;
   background-repeat: no-repeat;
   border: 3px solid rgba(255, 255, 255, 0.85);
