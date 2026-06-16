@@ -39,7 +39,8 @@ export default function Signup() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-lg">
+    <div className="flex items-center justify-center min-h-[75vh]">
+    <div className="max-w-md w-full bg-white p-8 rounded-3xl shadow-lg">
       <h1 className="text-3xl font-bold text-center mb-6">회원가입</h1>
       {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -136,6 +137,7 @@ export default function Signup() {
           로그인
         </Link>
       </p>
+    </div>
     </div>
   );
 }

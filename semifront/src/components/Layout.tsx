@@ -463,7 +463,7 @@ export default function Layout() {
         </div>
       </header>
 
-      <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-0 pb-8">
+      <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-2 pb-8">
         <Outlet />
       </main>
 
