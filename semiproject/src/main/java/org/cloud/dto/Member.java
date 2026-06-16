@@ -178,5 +178,30 @@ public class Member {
 		this.status = status;
 	}
 
+	public String getSnsYoutube() {
+		return snsYoutube;
+	}
+
+	public void setSnsYoutube(String snsYoutube) {
+		this.snsYoutube = snsYoutube;
+	}
+
+	public String getSnsInstagram() {
+		return snsInstagram;
+	}
+
+	public void setSnsInstagram(String snsInstagram) {
+		this.snsInstagram = snsInstagram;
+	}
+
+	public String getSnsFacebook() {
+		return snsFacebook;
+	}
+
+	public void setSnsFacebook(String snsFacebook) {
+		this.snsFacebook = snsFacebook;
+	}
+
+	
 	
 }
