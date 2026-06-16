@@ -132,10 +132,9 @@ export default function RecipeDetail() {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
     const newFiles = [...selectedFiles, ...files].slice(0, 5);
+    const addedFiles = newFiles.slice(selectedFiles.length);
     setSelectedFiles(newFiles);
-    const urls = newFiles.map((f) => URL.createObjectURL(f));
-    previewUrls.forEach((u) => URL.revokeObjectURL(u));
-    setPreviewUrls(urls);
+    setPreviewUrls((prev) => [...prev, ...addedFiles.map((f) => URL.createObjectURL(f))]);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -217,6 +216,8 @@ export default function RecipeDetail() {
       setReviews(updated.data);
       setReviewImages(updatedImages.data ?? []);
       loadReviewerProfiles(updated.data);
+      const newTotalPages = Math.max(1, Math.ceil(updated.data.length / REVIEWS_PER_PAGE));
+      setReviewPage((prev) => Math.min(prev, newTotalPages));
     } catch {
       /* ignore */
     }
@@ -303,7 +304,7 @@ export default function RecipeDetail() {
 
   const info = recipe.recipeInfo;
   const heroImg = info?.thumbImgUrl
-    ? `${API_BASE_URL}${info.thumbImgUrl}`
+    ? `${API_BASE_URL}/${info.thumbImgUrl}`
     : null;
   const hasGallery = images.length > 0;
 

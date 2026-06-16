@@ -257,14 +257,27 @@ export default function RecipeWrite() {
     }
   };
 
+  const MAX_MAIN_IMAGES = 10;
+  const totalMainImages = existingMainImgUrls.length + mainPreviews.length;
+
   // 대표 이미지 (여러 장)
   const handleMainImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
-      setMainImages((prev) => [...prev, ...files]);
+      const remaining = MAX_MAIN_IMAGES - totalMainImages;
+      if (remaining <= 0) {
+        alert("대표 이미지는 최대 10장까지 등록할 수 있습니다.");
+        e.target.value = "";
+        return;
+      }
+      const filesToAdd = files.slice(0, remaining);
+      if (files.length > remaining) {
+        alert(`최대 10장까지만 등록할 수 있어 ${remaining}장만 추가되었습니다.`);
+      }
+      setMainImages((prev) => [...prev, ...filesToAdd]);
       setMainPreviews((prev) => [
         ...prev,
-        ...files.map((f) => URL.createObjectURL(f)),
+        ...filesToAdd.map((f) => URL.createObjectURL(f)),
       ]);
       e.target.value = "";
     }
@@ -647,9 +660,12 @@ export default function RecipeWrite() {
 
           {/* 대표 이미지 (여러 장) */}
           <section>
-            <h2 className="text-xl font-semibold border-b pb-2 mb-3">
-              대표 이미지
-            </h2>
+            <div className="flex items-center justify-between border-b pb-2 mb-3">
+              <h2 className="text-xl font-semibold">대표 이미지</h2>
+              <span className={`text-sm font-medium ${totalMainImages >= MAX_MAIN_IMAGES ? "text-red-500" : "text-gray-500"}`}>
+                ({totalMainImages}/{MAX_MAIN_IMAGES})
+              </span>
+            </div>
             <p className="text-sm text-gray-500 mb-3">
               첫 번째 사진이 썸네일로 사용됩니다. 여러 장 추가 가능합니다.
             </p>
@@ -684,21 +700,27 @@ export default function RecipeWrite() {
                 ))}
               </div>
             )}
-            <label className="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 text-gray-500 text-sm">
-              <Upload className="w-5 h-5" />
-              <span>
-                {existingMainImgUrls.length === 0 && mainPreviews.length === 0
-                  ? "클릭하여 이미지 선택"
-                  : "이미지 추가"}
-              </span>
-              <input
-                type="file"
-                className="hidden"
-                onChange={handleMainImageChange}
-                accept="image/*"
-                multiple
-              />
-            </label>
+            {totalMainImages < MAX_MAIN_IMAGES ? (
+              <label className="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 text-gray-500 text-sm">
+                <Upload className="w-5 h-5" />
+                <span>
+                  {existingMainImgUrls.length === 0 && mainPreviews.length === 0
+                    ? "클릭하여 이미지 선택"
+                    : "이미지 추가"}
+                </span>
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={handleMainImageChange}
+                  accept="image/*"
+                  multiple
+                />
+              </label>
+            ) : (
+              <p className="text-center text-sm text-red-500 py-3 border-2 border-dashed border-red-200 rounded-lg bg-red-50">
+                최대 10장을 모두 등록했습니다.
+              </p>
+            )}
           </section>
 
           {/* 재료 (3섹션) */}

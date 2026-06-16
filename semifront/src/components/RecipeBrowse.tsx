@@ -94,8 +94,12 @@ export default function RecipeBrowse() {
 
   // URL params 변경 시 검색 실행
   useEffect(() => {
+    const controller = new AbortController();
+
     const doSearch = async () => {
       setIsLoading(true);
+      setTotalPages(0);
+      setTotal(0);
       try {
         const params: BrowseParams = {
           name: debouncedName || undefined,
@@ -106,6 +110,7 @@ export default function RecipeBrowse() {
           cookingTimeFilter,
           page,
           size: PAGE_SIZE,
+          signal: controller.signal,
         };
         const result = await RecipeService.browse(params);
         let loaded = result.recipes;
@@ -113,13 +118,16 @@ export default function RecipeBrowse() {
         setRecipes(loaded);
         setTotal(result.total);
         setTotalPages(result.totalPages);
-      } catch (e) {
+      } catch (e: unknown) {
+        if (e instanceof Error && e.name === "CanceledError") return;
         console.error("검색 오류:", e);
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     };
     doSearch();
+
+    return () => controller.abort();
   }, [searchParams.toString(), userId]);
 
   const handleSearch = () => {
@@ -239,7 +247,9 @@ export default function RecipeBrowse() {
     nameInput ||
     selectedLevel ||
     selectedTagIds.length > 0 ||
-    ingredients.length > 0;
+    ingredients.length > 0 ||
+    cookingTimeFilter !== "all" ||
+    sortType !== "all";
 
   return (
     <div className="max-w-7xl mx-auto">

@@ -20,6 +20,7 @@ export interface BrowseParams {
   page?: number;
   size?: number;
   cookingTimeFilter?: string;
+  signal?: AbortSignal;
 }
 
 export interface BrowseResult {
@@ -45,8 +46,9 @@ const RecipeService = {
         size: params.size || 12,
         cookingTimeFilter: params.cookingTimeFilter || "all",
       },
+      signal: params.signal,
     });
-    console.log("🔍 browse 응답 첫번째 레시피:", response.data?.recipes?.[0]);
+    console.log("응답 첫 레시피:", response.data?.recipes?.[0]);
     return response.data;
   },
 

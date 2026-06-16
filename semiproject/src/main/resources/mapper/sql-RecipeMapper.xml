@@ -202,6 +202,16 @@
 			<if test="levelNm != null and levelNm != ''">
 				AND r.level_nm = #{levelNm}
 			</if>
+			<if test="cookingTimeFilter == 'under10'">
+				AND CAST(REGEXP_SUBSTR(r.COOKING_TIME, '[0-9]+') AS UNSIGNED) &lt;= 10
+			</if>
+			<if test="cookingTimeFilter == 'under30'">
+				AND CAST(REGEXP_SUBSTR(r.COOKING_TIME, '[0-9]+') AS UNSIGNED) &gt; 10
+				AND CAST(REGEXP_SUBSTR(r.COOKING_TIME, '[0-9]+') AS UNSIGNED) &lt;= 30
+			</if>
+			<if test="cookingTimeFilter == 'over30'">
+				AND CAST(REGEXP_SUBSTR(r.COOKING_TIME, '[0-9]+') AS UNSIGNED) &gt; 30
+			</if>
 			<if test="irdntNms != null and irdntNms.size() &gt; 0">
 				AND r.recipe_id IN (
 					SELECT recipe_id FROM IRDNT_INFO
