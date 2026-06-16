@@ -175,11 +175,23 @@ public class PostController {
         String originalName = image.getOriginalFilename();
         String ext = "";
         if (originalName != null && originalName.contains(".")) {
-            ext = originalName.substring(originalName.lastIndexOf("."));
+            String candidateExt = originalName.substring(originalName.lastIndexOf("."));
+            if (candidateExt.matches("\\.[A-Za-z0-9]{1,10}")) {
+                ext = candidateExt.toLowerCase();
+            }
         }
 
-        String savedFileName = UUID.randomUUID().toString() + ext;
-        File saveFile = new File(uploadPath + savedFileName);
+        /*
+         * POST_IMG 컬럼이 VARCHAR(255)인 환경에서도 사진 5장의 경로가
+         * 모두 저장되도록 파일명을 짧게 생성한다.
+         * 기존 UUID(36자)를 그대로 사용하면 5장 경로가 약 274~279자가 된다.
+         */
+        String shortUuid = UUID.randomUUID()
+                .toString()
+                .replace("-", "")
+                .substring(0, 24);
+        String savedFileName = shortUuid + ext;
+        File saveFile = new File(folder, savedFileName);
         image.transferTo(saveFile);
         return "uploads/posts/" + savedFileName;
     }

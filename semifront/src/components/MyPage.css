@@ -1262,19 +1262,12 @@
   overflow-y: auto;
 }
 
-.post-no-image-text-insta h4,
-.post-content-insta h4 {
-  margin: 0 0 14px 0;
-  color: #9a3412;
-  font-size: 17px;
-  font-weight: 900;
-}
-
 .post-no-image-text-insta div,
 .post-content-insta div {
-  color: #334155;
-  font-size: 15px;
-  line-height: 1.85;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.75;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -1368,6 +1361,37 @@
   color: #fff;
   font-size: 11px;
   font-weight: 900;
+}
+
+.post-write-preview-remove {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.48);
+  color: #ffffff;
+  cursor: pointer;
+  backdrop-filter: blur(2px);
+  transition:
+    background 0.16s ease,
+    transform 0.16s ease;
+}
+
+.post-write-preview-remove:hover {
+  background: rgba(220, 38, 38, 0.78);
+  transform: scale(1.06);
+}
+
+.post-write-preview-remove:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
 }
 
 .post-comment-drawer-overlay {
