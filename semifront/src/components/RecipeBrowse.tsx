@@ -81,7 +81,7 @@ export default function RecipeBrowse() {
       });
     }, 500);
     return () => clearTimeout(timer);
-  }, [nameInput, updateParams]);
+  }, [nameInput]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     tagService

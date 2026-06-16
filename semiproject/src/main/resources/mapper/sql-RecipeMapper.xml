@@ -14,6 +14,7 @@
 		r.CALORIE AS calorie,
 		r.QNT AS qnt,
 		r.LEVEL_NM AS levelNm,
+		r.VIDEO_URL AS videoUrl,
 		r.HIT AS hit,
 		r.LIKE_COUNT AS likeCount,
 		r.PRICE AS price,
@@ -77,6 +78,7 @@
 		calorie,
 		r.QNT AS qnt,
 		r.LEVEL_NM AS levelNm,
+		r.VIDEO_URL AS videoUrl,
 		r.HIT AS hit,
 		r.LIKE_COUNT
 		AS likeCount,
@@ -231,7 +233,7 @@
 		RECIPE_ID, RECIPE_NM_KO, SUMRY,
 		NATION_CODE, NATION_NM, TY_CODE, TY_NM,
 		COOKING_TIME, CALORIE, QNT,
-		LEVEL_NM,
+		LEVEL_NM, VIDEO_URL,
 		HIT, LIKE_COUNT, PRICE, WRITER_ID
 		) VALUES (
 		#{recipeCode},
@@ -245,6 +247,7 @@
 		#{recipeInfo.calorie},
 		#{recipeInfo.qnt},
 		#{recipeInfo.levelNm},
+		#{recipeInfo.videoUrl},
 		0, 0,
 		#{price},
 		#{writerId}
@@ -280,6 +283,7 @@
 		QNT =
 		#{recipeInfo.qnt},
 		LEVEL_NM = #{recipeInfo.levelNm},
+		VIDEO_URL = #{recipeInfo.videoUrl},
 		PRICE = #{price}
 		WHERE RECIPE_ID = #{recipeCode}
 	</update>

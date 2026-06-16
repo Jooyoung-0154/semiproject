@@ -25,6 +25,7 @@ public class Recipe_Info {
     private String writerId;          // 작성자 ID
     private String writerNickname;    // 작성자 닉네임 (MEMBER JOIN)
     private String writerProfileImg;  // 작성자 프로필 이미지 (MEMBER JOIN)
+    private String videoUrl;
     private List<Tag> tags = new ArrayList<>();  // 태그 목록
 
     public String getRecipeId() { return recipeId; }
@@ -86,6 +87,9 @@ public class Recipe_Info {
 
     public String getWriterProfileImg() { return writerProfileImg; }
     public void setWriterProfileImg(String writerProfileImg) { this.writerProfileImg = writerProfileImg; }
+
+    public String getVideoUrl() { return videoUrl; }
+    public void setVideoUrl(String videoUrl) { this.videoUrl = videoUrl; }
 
     public List<Tag> getTags() { return tags; }
     public void setTags(List<Tag> tags) { this.tags = tags; }
