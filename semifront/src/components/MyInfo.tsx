@@ -25,7 +25,6 @@ export default function MyInfo() {
   const [snsFacebook, setSnsFacebook] = useState("");
   const [showBgModal, setShowBgModal] = useState(false);
   const [bgImages, setBgImages] = useState<import("../types/type").MemberBgImage[]>([]);
-  const [bgLocalSettings, setBgLocalSettings] = useState<Record<number, { posX: number; posY: number; bgSize: number }>>({});
 
   useEffect(() => {
     const fetchMyInfo = async () => {
@@ -47,17 +46,7 @@ export default function MyInfo() {
           setSnsFacebook(normalized.snsFacebook ?? "");
         }
 
-        try {
-          const bgRes = await memberBgImageService.getBgImages(authUser.id);
-          setBgImages(bgRes.data);
-          const init: Record<number, { posX: number; posY: number; bgSize: number }> = {};
-          bgRes.data.forEach(img => {
-            init[img.bgImgId] = { posX: img.posX ?? 50, posY: img.posY ?? 50, bgSize: img.bgSize ?? 120 };
-          });
-          setBgLocalSettings(init);
-        } catch {
-          setBgImages([]);
-        }
+        // 배경 이미지는 모달 열릴 때 별도 로드
       } catch (error) {
         console.error("내 정보 불러오기 실패:", error);
       } finally {
@@ -67,6 +56,13 @@ export default function MyInfo() {
 
     fetchMyInfo();
   }, [authUser?.id]);
+
+  useEffect(() => {
+    if (!showBgModal || !authUser?.id) return;
+    memberBgImageService.getBgImages(authUser.id)
+      .then(res => setBgImages(res.data))
+      .catch(() => setBgImages([]));
+  }, [showBgModal]);
 
   const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -303,92 +299,69 @@ export default function MyInfo() {
                   등록된 배경 이미지가 없습니다.
                 </p>
               )}
-              {bgImages.map((img, i) => {
-                const s = bgLocalSettings[img.bgImgId] ?? { posX: img.posX ?? 50, posY: img.posY ?? 50, bgSize: img.bgSize ?? 120 };
-                return (
-                  <div key={img.bgImgId} className="bg-manage-item-v2">
-                    <div className="bg-sort-col">
+              {bgImages.map((img, i) => (
+                <div key={img.bgImgId} className="bg-manage-item-v2">
+                  <div className="bg-sort-col">
+                    <button
+                      onClick={async () => {
+                        if (i === 0) return;
+                        try {
+                          const reordered = [...bgImages];
+                          [reordered[i - 1], reordered[i]] = [reordered[i], reordered[i - 1]];
+                          const updated = reordered.map((it, idx) => ({ ...it, sortOrder: idx + 1 }));
+                          await memberBgImageService.updateSortOrders(updated);
+                          setBgImages(updated);
+                        } catch (e) {
+                          console.error(e);
+                          alert('순서 변경에 실패했습니다.');
+                        }
+                      }}
+                      disabled={i === 0}
+                    >▲</button>
+                    <span>{i + 1}</span>
+                    <button
+                      onClick={async () => {
+                        if (i === bgImages.length - 1) return;
+                        try {
+                          const reordered = [...bgImages];
+                          [reordered[i], reordered[i + 1]] = [reordered[i + 1], reordered[i]];
+                          const updated = reordered.map((it, idx) => ({ ...it, sortOrder: idx + 1 }));
+                          await memberBgImageService.updateSortOrders(updated);
+                          setBgImages(updated);
+                        } catch (e) {
+                          console.error(e);
+                          alert('순서 변경에 실패했습니다.');
+                        }
+                      }}
+                      disabled={i === bgImages.length - 1}
+                    >▼</button>
+                  </div>
+
+                  <div className="bg-manage-body">
+                    <div className="bg-preview-row">
+                      <div
+                        className="bg-preview-box"
+                        style={{
+                          backgroundImage: `url(${API_BASE_URL}/${img.imgUrl})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                        }}
+                      />
                       <button
+                        className="bg-delete-btn-v2"
                         onClick={async () => {
-                          if (i === 0) return;
                           try {
-                            const reordered = [...bgImages];
-                            [reordered[i - 1], reordered[i]] = [reordered[i], reordered[i - 1]];
-                            const updated = reordered.map((it, idx) => ({ ...it, sortOrder: idx + 1 }));
-                            await memberBgImageService.updateSortOrders(updated);
-                            setBgImages(updated);
-                          } catch (e) {
-                            console.error(e);
-                            alert('순서 변경에 실패했습니다.');
+                            await memberBgImageService.deleteBgImage(img.bgImgId);
+                            setBgImages(prev => prev.filter(it => it.bgImgId !== img.bgImgId));
+                          } catch {
+                            alert('삭제에 실패했습니다.');
                           }
                         }}
-                        disabled={i === 0}
-                      >▲</button>
-                      <span>{i + 1}</span>
-                      <button
-                        onClick={async () => {
-                          if (i === bgImages.length - 1) return;
-                          try {
-                            const reordered = [...bgImages];
-                            [reordered[i], reordered[i + 1]] = [reordered[i + 1], reordered[i]];
-                            const updated = reordered.map((it, idx) => ({ ...it, sortOrder: idx + 1 }));
-                            await memberBgImageService.updateSortOrders(updated);
-                            setBgImages(updated);
-                          } catch (e) {
-                            console.error(e);
-                            alert('순서 변경에 실패했습니다.');
-                          }
-                        }}
-                        disabled={i === bgImages.length - 1}
-                      >▼</button>
-                    </div>
-
-                    <div className="bg-manage-body">
-                      <div className="bg-preview-row">
-                        <div
-                          className="bg-preview-box"
-                          style={{
-                            backgroundImage: `url(${API_BASE_URL}/${img.imgUrl})`,
-                            backgroundPosition: `${s.posX}% ${s.posY}%`,
-                            backgroundSize: `${s.bgSize}%`,
-                          }}
-                        />
-                        <button
-                          className="bg-delete-btn-v2"
-                          onClick={async () => {
-                            try {
-                              await memberBgImageService.deleteBgImage(img.bgImgId);
-                              setBgImages(prev => prev.filter(it => it.bgImgId !== img.bgImgId));
-                            } catch {
-                              alert('삭제에 실패했습니다.');
-                            }
-                          }}
-                        >삭제</button>
-                      </div>
-
-                      <div className="bg-manage-sliders">
-                        {(["posX", "posY", "bgSize"] as const).map((key) => (
-                          <label key={key} className="bg-slider-row">
-                            <span>{key === "posX" ? "좌우" : key === "posY" ? "상하" : "확대"}</span>
-                            <input
-                              type="range"
-                              min={key === "bgSize" ? 50 : 0}
-                              max={key === "bgSize" ? 200 : 100}
-                              value={s[key]}
-                              onChange={e =>
-                                setBgLocalSettings(prev => ({
-                                  ...prev,
-                                  [img.bgImgId]: { ...prev[img.bgImgId], [key]: Number(e.target.value) },
-                                }))
-                              }
-                            />
-                          </label>
-                        ))}
-                      </div>
+                      >삭제</button>
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
 
             <div className="bg-modal-footer">
@@ -410,32 +383,9 @@ export default function MyInfo() {
                   }}
                 />
               </label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                {bgImages.length > 0 && (
-                  <button
-                    className="btn-modal-charge"
-                    onClick={async () => {
-                      try {
-                        const updated = bgImages.map(img => ({
-                          ...img,
-                          ...bgLocalSettings[img.bgImgId],
-                        }));
-                        await memberBgImageService.updateSortOrders(updated);
-                        setBgImages(updated);
-                        alert('저장되었습니다.');
-                      } catch (e) {
-                        console.error(e);
-                        alert('저장에 실패했습니다. 백엔드 콘솔을 확인해주세요.');
-                      }
-                    }}
-                  >
-                    변경사항 저장
-                  </button>
-                )}
-                <button className="btn-modal-cancel" onClick={() => setShowBgModal(false)}>
-                  닫기
-                </button>
-              </div>
+              <button className="btn-modal-cancel" onClick={() => setShowBgModal(false)}>
+                닫기
+              </button>
             </div>
           </div>
         </div>

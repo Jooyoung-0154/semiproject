@@ -8,7 +8,4 @@ public class MemberBgImage {
     private String memberId;
     private String imgUrl;
     private int sortOrder;
-    private Integer posX;
-    private Integer posY;
-    private Integer bgSize;
 }
