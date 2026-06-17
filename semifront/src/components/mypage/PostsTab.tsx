@@ -103,7 +103,6 @@ export default function PostsTab({
     setPostPage(1);
   }, [postSortType, displayUser.id]);
 
-
   const sortedPostList = useMemo(() => {
     const copied = [...postList];
 
