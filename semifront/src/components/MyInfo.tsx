@@ -365,24 +365,35 @@ export default function MyInfo() {
             </div>
 
             <div className="bg-modal-footer">
-              <label className="bg-upload-label cursor-pointer">
-                + 이미지 추가
-                <input
-                  type="file" accept="image/*" className="file-input"
-                  onChange={async e => {
-                    const file = e.target.files?.[0];
-                    if (!file || !authUser?.id) return;
-                    try {
-                      await memberBgImageService.uploadBgImage(authUser.id, file, bgImages.length + 1);
-                      const res = await memberBgImageService.getBgImages(authUser.id);
-                      setBgImages(res.data);
-                    } catch {
-                      alert('업로드에 실패했습니다.');
-                    }
-                    e.target.value = '';
-                  }}
-                />
-              </label>
+              {bgImages.length >= 10 ? (
+                <span className="bg-upload-label" style={{ opacity: 0.5, cursor: 'not-allowed' }}>
+                  + 이미지 추가 (최대 10장)
+                </span>
+              ) : (
+                <label className="bg-upload-label cursor-pointer">
+                  + 이미지 추가 ({bgImages.length}/10)
+                  <input
+                    type="file" accept="image/*" className="file-input"
+                    onChange={async e => {
+                      const file = e.target.files?.[0];
+                      if (!file || !authUser?.id) return;
+                      if (bgImages.length >= 10) {
+                        alert('배경 이미지는 최대 10장까지 등록할 수 있습니다.');
+                        e.target.value = '';
+                        return;
+                      }
+                      try {
+                        await memberBgImageService.uploadBgImage(authUser.id, file, bgImages.length + 1);
+                        const res = await memberBgImageService.getBgImages(authUser.id);
+                        setBgImages(res.data);
+                      } catch {
+                        alert('업로드에 실패했습니다.');
+                      }
+                      e.target.value = '';
+                    }}
+                  />
+                </label>
+              )}
               <button className="btn-modal-cancel" onClick={() => setShowBgModal(false)}>
                 닫기
               </button>
