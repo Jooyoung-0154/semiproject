@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, KeyboardEvent } from "react";
+import { useState, useEffect, useCallback, KeyboardEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Search,
@@ -41,7 +41,14 @@ export default function RecipeBrowse() {
   const page = Number(searchParams.get("page") ?? "1");
 
   // 로컬 UI 상태만 (입력 중인 텍스트 등)
-  const [nameInput, setNameInput] = useState(debouncedName);
+  const [nameInput, setNameInput] = useState(() => {
+    const current = new URLSearchParams(window.location.search);
+    if (!current.toString()) {
+      const saved = sessionStorage.getItem("browseParams");
+      if (saved) return new URLSearchParams(saved).get("name") ?? "";
+    }
+    return current.get("name") ?? "";
+  });
   const [ingredientInput, setIngredientInput] = useState("");
   const [tagInput, setTagInput] = useState("");
   const [recipes, setRecipes] = useState<Recipe_Info[]>([]);
@@ -51,7 +58,6 @@ export default function RecipeBrowse() {
   const [isLoading, setIsLoading] = useState(false);
 
   const PAGE_SIZE = 12;
-  const initialized = useRef(false);
 
   const updateParams = useCallback(
     (updater: (p: URLSearchParams) => void) => {
@@ -67,12 +73,9 @@ export default function RecipeBrowse() {
     [setSearchParams],
   );
 
-  // nameInput 디바운스 → URL 업데이트 (마운트 시 초기화 방지)
+  // nameInput 디바운스 → URL 업데이트
   useEffect(() => {
-    if (!initialized.current) {
-      initialized.current = true;
-      return;
-    }
+    if (nameInput === debouncedName) return;
     const timer = setTimeout(() => {
       updateParams((p) => {
         if (nameInput) p.set("name", nameInput);
@@ -89,6 +92,18 @@ export default function RecipeBrowse() {
       .then((res) => setTags(res.data))
       .catch(() => setTags([]));
   }, []);
+
+  useEffect(() => {
+    const paramsStr = searchParams.toString();
+    if (paramsStr) sessionStorage.setItem("browseParams", paramsStr);
+  }, [searchParams]);
+
+  useEffect(() => {
+    const saved = sessionStorage.getItem("browseParams");
+    if (saved && !searchParams.toString()) {
+      setSearchParams(new URLSearchParams(saved), { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const userId = user?.id;
 
@@ -225,6 +240,7 @@ export default function RecipeBrowse() {
     setNameInput("");
     setTagInput("");
     setIngredientInput("");
+    sessionStorage.removeItem("browseParams");
     setSearchParams(new URLSearchParams(), { replace: true });
   };
 

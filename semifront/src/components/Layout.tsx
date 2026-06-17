@@ -174,6 +174,11 @@ export default function Layout() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const browseHref = (() => {
+    const saved = sessionStorage.getItem("browseParams");
+    return saved ? `/browse?${saved}` : "/browse";
+  })();
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white shadow-sm sticky top-0 z-50" ref={topChefRef}>
@@ -286,7 +291,7 @@ export default function Layout() {
             <nav className="flex items-center gap-8">
               <div className="flex items-center gap-6 text-sm font-medium text-gray-600">
                 <Link
-                  to="/browse"
+                  to={browseHref}
                   className="hover:text-orange-600 transition-colors"
                 >
                   레시피 검색
