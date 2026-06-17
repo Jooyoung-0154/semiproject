@@ -29,14 +29,14 @@ export const CHEF_TABS: ChefTab[] = [
     id: "japanese",
     label: "일식",
     chefs: [
-      // { id: "멤버ID", specialty: "초밥" },
+      { id: "Jooyoung2", specialty: ["초밥"] },
     ],
   },
   {
     id: "western",
     label: "양식",
     chefs: [
-      //{ id: "멤버ID", specialty: ["파스타"] },
+      { id: "Jooyoung3", specialty: ["파스타"] },
     ],
   },
 ];
