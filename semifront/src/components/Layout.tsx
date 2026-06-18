@@ -186,7 +186,7 @@ export default function Layout() {
           <div className="flex items-center justify-between">
             <Link
               to="/"
-              className="text-2xl font-bold text-orange-600 tracking-tight"
+              className="text-2xl font-bold text-orange-500 tracking-tight"
             >
               🍳 Chef's Cuisine
             </Link>
@@ -271,7 +271,7 @@ export default function Layout() {
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              <User className="w-4 h-4 text-orange-600" />
+                              <User className="w-4 h-4 text-orange-500" />
                             )}
                           </div>
 
@@ -292,14 +292,14 @@ export default function Layout() {
               <div className="flex items-center gap-6 text-sm font-medium text-gray-600">
                 <Link
                   to={browseHref}
-                  className="hover:text-orange-600 transition-colors"
+                  className="hover:text-orange-500 transition-colors"
                 >
                   레시피 검색
                 </Link>
 
                 <Link
                   to="/write"
-                  className="hover:text-orange-600 transition-colors"
+                  className="hover:text-orange-500 transition-colors"
                 >
                   레시피 작성
                 </Link>
@@ -307,7 +307,7 @@ export default function Layout() {
                 <div ref={topChefRef}>
                   <button
                     onClick={() => setShowTopChefPanel((prev) => !prev)}
-                    className={`hover:text-orange-600 transition-colors ${showTopChefPanel ? "text-orange-600 font-semibold" : ""}`}
+                    className={`hover:text-orange-500 transition-colors ${showTopChefPanel ? "text-orange-500 font-semibold" : ""}`}
                   >
                     홈스토랑
                   </button>
@@ -376,7 +376,7 @@ export default function Layout() {
                                 !notificationEnabled ||
                                 notifications.length === 0
                               }
-                              className="text-xs text-orange-600 font-semibold hover:underline disabled:text-gray-300 disabled:no-underline"
+                              className="text-xs text-orange-500 font-semibold hover:underline disabled:text-gray-300 disabled:no-underline"
                             >
                               전체 읽음
                             </button>
@@ -427,7 +427,7 @@ export default function Layout() {
 
                     <button
                       onClick={() => navigate("/mypage")}
-                      className="flex items-center gap-2 px-5 py-2 bg-orange-600 text-white rounded-full font-semibold hover:bg-orange-700 transition-all shadow-md active:scale-95"
+                      className="flex items-center gap-2 px-5 py-2 bg-orange-500 text-white rounded-full font-semibold hover:bg-orange-700 transition-all shadow-md active:scale-95"
                     >
                       <User className="w-4 h-4" />
                       <span>{user.nickname}</span>
@@ -445,7 +445,7 @@ export default function Layout() {
                 ) : (
                   <button
                     onClick={() => navigate("/login")}
-                    className="flex items-center gap-2 px-5 py-2 bg-orange-600 text-white rounded-full font-semibold hover:bg-orange-700 transition-all shadow-md active:scale-95"
+                    className="flex items-center gap-2 px-5 py-2 bg-orange-500 text-white rounded-full font-semibold hover:bg-orange-700 transition-all shadow-md active:scale-95"
                   >
                     <LogIn className="w-4 h-4" />
                     <span>로그인</span>

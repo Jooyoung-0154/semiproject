@@ -81,7 +81,7 @@ export default function RecipesTab({ displayUser, currentUserId, isOwnPage }: Re
         {isOwnPage && (
           <button
             onClick={() => navigate("/write")}
-            className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-full text-sm font-semibold hover:bg-orange-600 transition"
+            className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-full text-sm font-semibold hover:bg-orange-500 transition"
           >
             레시피 작성하기
           </button>

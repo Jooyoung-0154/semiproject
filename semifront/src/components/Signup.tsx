@@ -122,7 +122,7 @@ export default function Signup() {
 
         <button
           type="submit"
-          className="w-full bg-orange-600 text-white rounded-2xl py-3 font-semibold hover:bg-orange-700 transition-colors"
+          className="w-full bg-orange-500 text-white rounded-2xl py-3 font-semibold hover:bg-orange-700 transition-colors"
         >
           회원가입
         </button>
@@ -132,7 +132,7 @@ export default function Signup() {
         이미 계정이 있으신가요?{" "}
         <Link
           to="/login"
-          className="text-orange-600 font-semibold hover:underline"
+          className="text-orange-500 font-semibold hover:underline"
         >
           로그인
         </Link>

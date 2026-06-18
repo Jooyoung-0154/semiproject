@@ -180,7 +180,7 @@ export default function AdminPage() {
           <button
             onClick={handleAddTag}
             disabled={tagLoading || !newTagName.trim()}
-            className="flex items-center gap-1.5 px-5 py-2.5 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            className="flex items-center gap-1.5 px-5 py-2.5 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
             <Plus className="w-4 h-4" />
             추가
@@ -245,7 +245,7 @@ export default function AdminPage() {
           <button
             onClick={handleSearchMember}
             disabled={memberSearching || !memberKeyword.trim()}
-            className="flex items-center gap-1.5 px-5 py-2.5 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            className="flex items-center gap-1.5 px-5 py-2.5 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
             {memberSearching ? "검색 중..." : "검색"}
           </button>

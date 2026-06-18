@@ -108,7 +108,7 @@ export default function TopChef() {
         <div className="h-40 bg-orange-100 rounded-2xl animate-pulse" />
       ) : chefMember ? (
         <div className="relative rounded-2xl overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-600" />
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500" />
           {bgImages.map((src, i) => (
             <img
               key={src}

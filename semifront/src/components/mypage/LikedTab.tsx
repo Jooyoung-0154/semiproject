@@ -69,7 +69,7 @@ export default function LikedTab({ currentUserId, isOwnPage, displayUser }: Like
         <p className="font-medium">스크랩한 레시피가 없습니다.</p>
         <button
           onClick={() => navigate("/browse")}
-          className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-full text-sm font-semibold hover:bg-orange-600 transition"
+          className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-full text-sm font-semibold hover:bg-orange-500 transition"
         >
           레시피 둘러보기
         </button>
