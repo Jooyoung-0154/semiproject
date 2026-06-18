@@ -234,7 +234,7 @@
 		LEFT JOIN member m ON r.WRITER_ID = m.ID
 		WHERE r.writer_id
 		= #{writerId}
-		ORDER BY r.recipe_id DESC
+		ORDER BY r.created_at DESC
 	</select>
 
 	<insert id="insertFullRecipe"

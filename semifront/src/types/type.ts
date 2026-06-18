@@ -110,6 +110,7 @@ export interface Recipe_Info {
   likeCount?: number; // 좋아요 수
   liked?: boolean;   // 현재 유저 좋아요 여부
   videoUrl?: string; // YouTube 영상 링크
+  createdAt?: string; // 등록일시
 }
 
 //레시피 객체
