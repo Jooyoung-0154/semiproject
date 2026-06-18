@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.tsx";
 import axios from "axios";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
@@ -17,7 +18,8 @@ export default function LoginPage() {
 
     try {
       await login({ id, password });
-      navigate("/");
+      const from = (location.state as { from?: string })?.from ?? "/";
+      navigate(from, { replace: true });
     } catch (err) {
       console.error(err);
       let message = "로그인에 실패했습니다. 다시 시도해주세요.";
@@ -72,7 +74,7 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          className="w-full bg-orange-600 text-white rounded-2xl py-3 font-semibold hover:bg-orange-700 transition-colors"
+          className="w-full bg-orange-500 text-white rounded-2xl py-3 font-semibold hover:bg-orange-700 transition-colors"
         >
           로그인
         </button>
@@ -82,7 +84,7 @@ export default function LoginPage() {
         계정이 없으신가요?{" "}
         <Link
           to="/signup"
-          className="text-orange-600 font-semibold hover:underline"
+          className="text-orange-500 font-semibold hover:underline"
         >
           회원가입
         </Link>

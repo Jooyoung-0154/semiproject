@@ -10,6 +10,7 @@ import Signup from "./components/Signup";
 import AdminPage from "./components/AdminPage";
 import MyInfo from "./components/MyInfo";
 import TopChef from "./components/TopChef";
+import PrivateRoute from "./components/PrivateRoute";
 
 export const router = createBrowserRouter([
   {
@@ -18,8 +19,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, Component: Home },
       { path: "browse", Component: RecipeBrowse },
-      { path: "write", Component: RecipeWrite },
-      { path: "recipe/:recipeId", Component: RecipeDetail },
+      { path: "write", element: <PrivateRoute><RecipeWrite /></PrivateRoute> },
+      { path: "recipe/:recipeId", element: <PrivateRoute><RecipeDetail /></PrivateRoute> },
       { path: "mypage/:userId?", Component: MyPage },
       { path: "mypage/info", Component: MyInfo },
       { path: "login", Component: LoginPage },

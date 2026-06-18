@@ -186,7 +186,7 @@ export default function MyInfo() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <User className="w-12 h-12 text-orange-600" />
+              <User className="w-12 h-12 text-orange-500" />
             )}
           </div>
         </label>
@@ -281,7 +281,7 @@ export default function MyInfo() {
           </button>
           <button
             onClick={handleSave}
-            className="bg-orange-600 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-orange-700"
+            className="bg-orange-500 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-orange-700"
           >
             저장
           </button>

@@ -249,8 +249,6 @@ export default function RecipeBrowse() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">레시피 검색</h1>
-
       <div className="bg-white rounded-2xl shadow-md p-6 mb-2 space-y-4">
         <div className="flex gap-2">
           <div className="relative flex-1">
@@ -266,7 +264,7 @@ export default function RecipeBrowse() {
           </div>
           <button
             onClick={handleSearch}
-            className="px-6 py-3 bg-orange-600 text-white rounded-xl font-semibold hover:bg-orange-700 transition-colors flex items-center gap-2"
+            className="px-6 py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-700 transition-colors flex items-center gap-2"
           >
             <Search className="w-4 h-4" />
             검색
@@ -286,7 +284,7 @@ export default function RecipeBrowse() {
                 <button
                   key={lv}
                   onClick={() => setSelectedLevel(lv)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${selectedLevel === lv ? "bg-orange-600 text-white border-orange-600" : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"}`}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${selectedLevel === lv ? "bg-orange-500 text-white border-orange-500" : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"}`}
                 >
                   {LEVEL_LABELS[lv]}
                 </button>
@@ -312,7 +310,7 @@ export default function RecipeBrowse() {
                     onClick={() => setCookingTimeFilter(item.value)}
                     className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                       cookingTimeFilter === item.value
-                        ? "bg-orange-600 text-white border-orange-600"
+                        ? "bg-orange-500 text-white border-orange-500"
                         : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"
                     }`}
                   >
@@ -332,7 +330,7 @@ export default function RecipeBrowse() {
             <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
               <button
                 onClick={clearTags}
-                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${selectedTagIds.length === 0 ? "bg-orange-600 text-white border-orange-600" : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"}`}
+                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${selectedTagIds.length === 0 ? "bg-orange-500 text-white border-orange-500" : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"}`}
               >
                 전체
               </button>
@@ -340,7 +338,7 @@ export default function RecipeBrowse() {
                 <button
                   key={tag.tagId}
                   onClick={() => toggleTag(tag)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${selectedTagIds.includes(tag.tagId) ? "bg-orange-600 text-white border-orange-600" : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"}`}
+                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${selectedTagIds.includes(tag.tagId) ? "bg-orange-500 text-white border-orange-500" : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"}`}
                 >
                   {tag.tagName}
                 </button>
@@ -366,7 +364,7 @@ export default function RecipeBrowse() {
               <button
                 type="button"
                 onClick={addIngredient}
-                className="px-3 py-2 bg-orange-100 text-orange-600 rounded-xl hover:bg-orange-200 transition-colors"
+                className="px-3 py-2 bg-orange-100 text-orange-500 rounded-xl hover:bg-orange-200 transition-colors"
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -404,13 +402,13 @@ export default function RecipeBrowse() {
         )}
       </div>
 
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <p className="text-gray-600 text-sm">
           {isLoading ? (
             "검색 중..."
           ) : (
             <>
-              총 <span className="font-bold text-orange-600">{total}</span>개의
+              총 <span className="font-bold text-orange-500">{total}</span>개의
               레시피
             </>
           )}
@@ -493,7 +491,7 @@ export default function RecipeBrowse() {
               className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-all ${
                 p === page
                   ? "bg-orange-500 text-white"
-                  : "border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-500"
+                  : "border border-gray-200 text-gray-600 hover:border-orange-500 hover:text-orange-500"
               }`}
             >
               {p}

@@ -53,7 +53,7 @@ export default function TopChefNav({ onClose }: Props) {
               onClick={() => setActiveTab(tab)}
               className={`w-full text-left px-4 py-2.5 text-sm transition-all border-l-2 ${
                 activeTab.id === tab.id
-                  ? "border-l-orange-500 text-orange-600 font-semibold bg-orange-50"
+                  ? "border-l-orange-500 text-orange-500 font-semibold bg-orange-50"
                   : "border-l-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               }`}
             >

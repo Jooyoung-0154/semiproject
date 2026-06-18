@@ -86,7 +86,7 @@ export default function Home() {
           </p>
           <button
             onClick={() => navigate("/browse")}
-            className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full shadow-lg transition-all active:scale-95 text-base"
+            className="px-8 py-3 bg-orange-500 hover:bg-orange-500 text-white font-bold rounded-full shadow-lg transition-all active:scale-95 text-base"
           >
             레시피 둘러보기 &rarr;
           </button>

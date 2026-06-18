@@ -510,7 +510,7 @@ export default function RecipeWrite() {
               onChange={(e) =>
                 updateIngredient(setter, index, "irdntNm", e.target.value)
               }
-              onBlur={() => handleIngredientBlur(setter, items, index, tyNm)}
+              onBlur={() => setTimeout(() => handleIngredientBlur(setter, items, index, tyNm), 0)}
               className="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-orange-400 bg-white"
             />
             <input
@@ -535,7 +535,7 @@ export default function RecipeWrite() {
         <button
           type="button"
           onClick={() => addIngredient(setter, tyNm)}
-          className="text-orange-600 flex items-center gap-1 text-sm font-bold hover:text-orange-700"
+          className="text-orange-500 flex items-center gap-1 text-sm font-bold hover:text-orange-700"
         >
           <Plus className="w-4 h-4" /> 추가
         </button>
@@ -552,7 +552,7 @@ export default function RecipeWrite() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="bg-white rounded-lg shadow-md p-8">
-        <h1 className="text-3xl font-bold mb-8 text-orange-600">
+        <h1 className="text-3xl font-bold mb-8 text-orange-500">
           {isEditMode ? "레시피 수정하기" : "레시피 등록하기"}
         </h1>
 
@@ -788,7 +788,7 @@ export default function RecipeWrite() {
                 className="p-4 bg-gray-50 rounded-lg space-y-3 border border-gray-200"
               >
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-orange-600 text-lg">
+                  <span className="font-bold text-orange-500 text-lg">
                     Step {step.cookingNo}
                   </span>
                   <button
@@ -804,13 +804,10 @@ export default function RecipeWrite() {
                   value={step.cookingDc}
                   onChange={(e) => {
                     const newArr = [...cookingInfo];
-                    newArr[index] = {
-                      ...newArr[index],
-                      cookingDc: e.target.value,
-                    };
+                    newArr[index] = { ...newArr[index], cookingDc: e.target.value };
                     setCookingInfo(newArr);
                   }}
-                  onBlur={() => handleStepBlur(index)}
+                  onBlur={() => setTimeout(() => handleStepBlur(index), 0)}
                   className="w-full px-3 py-2 border rounded-md min-h-[80px] resize-none focus:outline-none focus:ring-1 focus:ring-orange-400"
                   required
                 />
@@ -819,10 +816,7 @@ export default function RecipeWrite() {
                   value={step.stepTip}
                   onChange={(e) => {
                     const newArr = [...cookingInfo];
-                    newArr[index] = {
-                      ...newArr[index],
-                      stepTip: e.target.value,
-                    };
+                    newArr[index] = { ...newArr[index], stepTip: e.target.value };
                     setCookingInfo(newArr);
                   }}
                   className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-orange-400"
@@ -869,7 +863,7 @@ export default function RecipeWrite() {
               <button
                 type="button"
                 onClick={addStep}
-                className="text-orange-600 flex items-center gap-1 text-sm font-bold hover:text-orange-700"
+                className="text-orange-500 flex items-center gap-1 text-sm font-bold hover:text-orange-700"
               >
                 <Plus className="w-4 h-4" /> 단계 추가
               </button>
@@ -961,7 +955,7 @@ export default function RecipeWrite() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 bg-orange-600 text-white py-3 rounded-xl font-bold hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-orange-500 text-white py-3 rounded-xl font-bold hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isGeneratingAi
                 ? "AI 분석 중..."

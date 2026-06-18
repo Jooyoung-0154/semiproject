@@ -1,5 +1,5 @@
 :root {
-  --primary-color: #ea580c; /* orange-600 */
+  --primary-color: #ea580c; /* orange-500 */
   --primary-hover: #c2410c; /* orange-700 */
   --primary-light: #fff7ed; /* orange-50 */
   --primary-bg: #fed7aa; /* orange-200 */
@@ -1265,8 +1265,8 @@
 .post-no-image-text-insta div,
 .post-content-insta div {
   color: #111827;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 430;
   line-height: 1.75;
   white-space: pre-wrap;
   word-break: break-word;
@@ -1278,7 +1278,7 @@
   gap: 18px;
   margin-top: 16px;
   padding-bottom: 14px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #babcbedc;
 }
 
 .post-like-insta,
