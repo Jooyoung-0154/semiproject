@@ -62,7 +62,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() { // ★ 안전하게 public 추가
         CorsConfiguration configuration = new CorsConfiguration();
         
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173")); 
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        // TODO [배포] 위 localhost 대신 실제 프론트엔드 도메인으로 교체
+        // 예) "https://내도메인.com" 또는 CloudFront URL "https://xxxx.cloudfront.net"
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
