@@ -1,11 +1,11 @@
 package org.cloud.control;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 import org.cloud.dto.MemberBgImage;
 import org.cloud.service.MemberBgImageService;
+import org.cloud.service.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +18,9 @@ public class MemberBgImageController {
 
     @Autowired
     private MemberBgImageService memberBgImageService;
+
+    @Autowired
+    private S3Service s3Service;
 
     // 배경 이미지 업로드
     @PostMapping("/{memberId}/upload")
@@ -66,18 +69,7 @@ public class MemberBgImageController {
         return ResponseEntity.ok("순서 변경 성공");
     }
 
-    private String saveFile(MultipartFile file) throws Exception {
-        String uploadDir = "C:/upload/uploads/profilebackground/";
-        File dir = new File(uploadDir);
-        if (!dir.exists()) dir.mkdirs();
-
-        String originalName = file.getOriginalFilename();
-        String ext = (originalName != null && originalName.contains("."))
-                ? originalName.substring(originalName.lastIndexOf(".")) : "";
-
-        String savedName = UUID.randomUUID().toString() + ext;
-        file.transferTo(new File(uploadDir + savedName));
-
-        return "uploads/profilebackground/" + savedName;
+    private String saveFile(MultipartFile file) throws IOException {
+        return s3Service.upload(file, "profilebackground");
     }
 }
