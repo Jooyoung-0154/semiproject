@@ -1,12 +1,12 @@
 package org.cloud.control;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.cloud.dto.ReviewImage;
 import org.cloud.service.ReviewImageService;
+import org.cloud.service.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +19,9 @@ public class ReviewImageController {
 
     @Autowired
     private ReviewImageService reviewImageService;
+
+    @Autowired
+    private S3Service s3Service;
 
     @PostMapping("/{reviewId}/upload")
     public ResponseEntity<?> uploadImages(@PathVariable String reviewId,
@@ -49,15 +52,7 @@ public class ReviewImageController {
         return reviewImageService.getImagesByReviewId(reviewId);
     }
 
-    private String saveFile(MultipartFile file) throws Exception {
-        String uploadDir = "C:/upload/uploads/reviews/";
-        File dir = new File(uploadDir);
-        if (!dir.exists()) dir.mkdirs();
-        String originalName = file.getOriginalFilename();
-        String ext = (originalName != null && originalName.contains("."))
-                ? originalName.substring(originalName.lastIndexOf(".")) : "";
-        String savedName = UUID.randomUUID().toString() + ext;
-        file.transferTo(new File(uploadDir + savedName));
-        return "uploads/reviews/" + savedName;
+    private String saveFile(MultipartFile file) throws IOException {
+        return s3Service.upload(file, "reviews");
     }
 }

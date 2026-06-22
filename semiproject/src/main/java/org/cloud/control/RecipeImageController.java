@@ -1,12 +1,12 @@
 package org.cloud.control;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.cloud.dto.RECIPE_IMAGE;
 import org.cloud.service.RecipeImageService;
+import org.cloud.service.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +19,9 @@ public class RecipeImageController {
 
     @Autowired
     private RecipeImageService recipeImageService;
+
+    @Autowired
+    private S3Service s3Service;
 
     // 레시피 대표 이미지 업로드
     @PostMapping("/{recipeCode}/upload")
@@ -124,19 +127,7 @@ public class RecipeImageController {
         }
     }
 
-    private String saveFile(MultipartFile file, String subDir) throws Exception {
-        String uploadDir = "C:/upload/uploads/" + subDir + "/";
-        File dir = new File(uploadDir);
-        if (!dir.exists()) dir.mkdirs();
-
-        String originalName = file.getOriginalFilename();
-        String ext = (originalName != null && originalName.contains("."))
-                ? originalName.substring(originalName.lastIndexOf(".")) : "";
-
-        String savedName = UUID.randomUUID().toString() + ext;
-        File saveTarget = new File(uploadDir + savedName);
-        file.transferTo(saveTarget);
-
-        return "uploads/" + subDir + "/" + savedName;
+    private String saveFile(MultipartFile file, String subDir) throws IOException {
+        return s3Service.upload(file, subDir);
     }
 }
