@@ -2,7 +2,7 @@ FROM gradle:8-jdk17 AS build
 WORKDIR /app
 COPY . .
 RUN chmod +x gradlew
-RUN ./gradlew build -x test
+RUN gradle build -x test
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
