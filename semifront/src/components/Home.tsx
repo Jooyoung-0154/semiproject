@@ -5,7 +5,7 @@ import { tagService } from "../service/tagService";
 import { useAuth } from "../context/AuthContext";
 import { Recipe_Info, Tag } from "../types/type";
 import RecipeCard from "./RecipeCard";
-import { API_BASE_URL } from "../config/api";
+
 import { applyLikedStatus } from "../utils/likeUtils";
 
 export default function Home() {
@@ -71,7 +71,7 @@ export default function Home() {
       <section
         className="relative h-72 md:h-96 rounded-2xl overflow-hidden shadow-lg"
         style={{
-          backgroundImage: `url('${API_BASE_URL}/image/home-bg.jpg')`,
+          backgroundImage: `url('/home-bg.jpg')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}

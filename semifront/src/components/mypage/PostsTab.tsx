@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Post, Member } from "../../types/type";
 import { postService } from "../../service/postService";
-import { API_BASE_URL } from "../../config/api";
+import { IMG_BASE_URL } from "../../config/api";
 
 interface PostsTabProps {
   displayUser: Member;
@@ -37,8 +37,8 @@ const normalizeImageUrl = (path?: string | null) => {
   if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
     return cleanPath;
   }
-  if (cleanPath.startsWith("/")) return `${API_BASE_URL}${cleanPath}`;
-  return `${API_BASE_URL}/${cleanPath}`;
+  if (cleanPath.startsWith("/")) return `${IMG_BASE_URL}${cleanPath}`;
+  return `${IMG_BASE_URL}/${cleanPath}`;
 };
 
 const getPostImages = (postImg?: string | null) => {

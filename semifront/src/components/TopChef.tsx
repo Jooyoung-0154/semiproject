@@ -5,7 +5,7 @@ import { memberService } from "../service/memberService";
 import RecipeService from "../service/recipeService";
 import RecipeCard from "./RecipeCard";
 import type { Member, Recipe_Info } from "../types/type";
-import { API_BASE_URL } from "../config/api";
+import { IMG_BASE_URL } from "../config/api";
 import { CHEF_TABS } from "../exam/topChefData";
 import { useAuth } from "../context/AuthContext";
 import { applyLikedStatus } from "../utils/likeUtils";
@@ -34,7 +34,7 @@ export default function TopChef() {
 
   const bgImages = chefRecipes
     .filter((r) => r.thumbImgUrl)
-    .map((r) => `${API_BASE_URL}/${r.thumbImgUrl}`);
+    .map((r) => `${IMG_BASE_URL}/${r.thumbImgUrl}`);
 
   useEffect(() => {
     if (bgImages.length === 0) return;
@@ -126,7 +126,7 @@ export default function TopChef() {
             <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white/50 shrink-0 bg-orange-300">
               {chefMember.profileImg ? (
                 <img
-                  src={`${API_BASE_URL}/${chefMember.profileImg}`}
+                  src={`${IMG_BASE_URL}/${chefMember.profileImg}`}
                   alt={chefMember.nickname}
                   className="w-full h-full object-cover"
                 />
