@@ -1,15 +1,14 @@
 package org.cloud.control;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.cloud.dto.Post;
 import org.cloud.dto.PostComment;
 import org.cloud.service.PostCommentService;
+import org.cloud.service.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -27,13 +26,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/posts")
-@CrossOrigin(origins = "http://localhost:5173")
 public class PostController {
 
     @Autowired
     private PostCommentService postService;
 
-    private final String uploadPath = "C:/upload/uploads/posts/";
+    @Autowired
+    private S3Service s3Service;
 
     @GetMapping
     public Object getList(
@@ -169,30 +168,6 @@ public class PostController {
     }
 
     private String saveImage(MultipartFile image) throws IOException {
-        File folder = new File(uploadPath);
-        if (!folder.exists()) folder.mkdirs();
-
-        String originalName = image.getOriginalFilename();
-        String ext = "";
-        if (originalName != null && originalName.contains(".")) {
-            String candidateExt = originalName.substring(originalName.lastIndexOf("."));
-            if (candidateExt.matches("\\.[A-Za-z0-9]{1,10}")) {
-                ext = candidateExt.toLowerCase();
-            }
-        }
-
-        /*
-         * POST_IMG 컬럼이 VARCHAR(255)인 환경에서도 사진 5장의 경로가
-         * 모두 저장되도록 파일명을 짧게 생성한다.
-         * 기존 UUID(36자)를 그대로 사용하면 5장 경로가 약 274~279자가 된다.
-         */
-        String shortUuid = UUID.randomUUID()
-                .toString()
-                .replace("-", "")
-                .substring(0, 24);
-        String savedFileName = shortUuid + ext;
-        File saveFile = new File(folder, savedFileName);
-        image.transferTo(saveFile);
-        return "uploads/posts/" + savedFileName;
+        return s3Service.upload(image, "posts");
     }
 }
