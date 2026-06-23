@@ -1,15 +1,14 @@
 package org.cloud.control;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import jakarta.servlet.http.HttpSession;
 import org.cloud.dto.Member;
 import org.cloud.service.MemberService;
 import org.cloud.service.RecipeService;
+import org.cloud.service.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,6 +31,8 @@ public class MemberController {
     @Autowired
     private MemberService memberService;
 
+    @Autowired
+    private S3Service s3Service;
 
     MemberController(RecipeService recipeService) {
         this.recipeService = recipeService;
@@ -57,24 +58,13 @@ public class MemberController {
     }
 
     @PostMapping("/{id}/profile-image")
-    public ResponseEntity<String> updateProfileImage(@PathVariable String id, 
+    public ResponseEntity<String> updateProfileImage(@PathVariable String id,
                                                      @RequestParam("file") MultipartFile file) {
         try {
-            String uploadDir = "C:/upload/uploads/profile/";
-            File dir = new File(uploadDir);
-            if (!dir.exists()) dir.mkdirs();
+            String key = s3Service.upload(file, "profile");
+            boolean success = memberService.updateProfileImage(id, key);
 
-            String originalName = file.getOriginalFilename();
-            String ext = (originalName != null && originalName.contains("."))
-                    ? originalName.substring(originalName.lastIndexOf(".")) : "";
-            String savedName = UUID.randomUUID().toString() + ext;
-
-            file.transferTo(new File(uploadDir + savedName));
-
-            String webPath = "uploads/profile/" + savedName;
-            boolean success = memberService.updateProfileImage(id, webPath);
-            
-            return success ? ResponseEntity.ok(webPath) : ResponseEntity.status(500).body("DB 업데이트 실패");
+            return success ? ResponseEntity.ok(key) : ResponseEntity.status(500).body("DB 업데이트 실패");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("이미지 저장 중 오류: " + e.getMessage());
         }
