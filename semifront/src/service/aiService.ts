@@ -1,5 +1,7 @@
+import { API_BASE_URL } from '../config/api';
+
 const askGemini = async (userPrompt: any): Promise<string> => {
-  const response = await fetch('http://localhost:8080/api/ai/chat', {
+  const response = await fetch(`${API_BASE_URL}/api/ai/chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
