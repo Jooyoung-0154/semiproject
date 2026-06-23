@@ -6,7 +6,7 @@ import { Recipe_Info, Cooking_Info, Irdnt_Info, Tag } from "../types/type";
 import { useAuth } from "../context/AuthContext";
 import { tagService } from "../service/tagService";
 import RecipeService from "../service/recipeService";
-import { API_BASE_URL } from "../config/api";
+import { IMG_BASE_URL } from "../config/api";
 import askGemini from "../service/aiService";
 
 export default function RecipeWrite() {
@@ -676,7 +676,7 @@ export default function RecipeWrite() {
             {(existingMainImgUrls.length > 0 || mainPreviews.length > 0) && (
               <div className="grid grid-cols-3 gap-3 mb-3">
                 {[
-                  ...existingMainImgUrls.map((url) => `${API_BASE_URL}/${url}`),
+                  ...existingMainImgUrls.map((url) => `${IMG_BASE_URL}/${url}`),
                   ...mainPreviews,
                 ].map((preview, index) => (
                   <div
@@ -827,7 +827,7 @@ export default function RecipeWrite() {
                       <img
                         src={
                           stepPreviews[index] ||
-                          `${API_BASE_URL}/${existingStepImgUrls[index]}`
+                          `${IMG_BASE_URL}/${existingStepImgUrls[index]}`
                         }
                         alt={`Step ${index + 1} 이미지`}
                         className="w-full h-full object-cover"

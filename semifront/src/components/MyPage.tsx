@@ -7,7 +7,7 @@ import { socialService } from "../service/socialService.ts";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth, normalizeMember } from "../context/AuthContext.tsx";
 import { authService } from "../service/authService.ts";
-import { API_BASE_URL } from "../config/api";
+import { IMG_BASE_URL } from "../config/api";
 import PostsTab from "./mypage/PostsTab";
 import RecipesTab from "./mypage/RecipesTab";
 import LikedTab from "./mypage/LikedTab";
@@ -185,7 +185,7 @@ export default function MyPage() {
             <div className="profile-avatar">
               {displayUser.profileImg ? (
                 <img
-                  src={`${API_BASE_URL}/${displayUser.profileImg}`}
+                  src={`${IMG_BASE_URL}/${displayUser.profileImg}`}
                   alt="프로필"
                   className="profile-avatar-img"
                 />

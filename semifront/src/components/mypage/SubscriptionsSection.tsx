@@ -3,7 +3,7 @@ import { Users, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Member } from "../../types/type";
 import { socialService } from "../../service/socialService";
-import { API_BASE_URL } from "../../config/api";
+import { IMG_BASE_URL } from "../../config/api";
 
 interface SubscriptionsSectionProps {
   displayUser: Member;
@@ -51,7 +51,7 @@ export default function SubscriptionsSection({ displayUser }: SubscriptionsSecti
                 <div className="sub-profile-flex">
                   {sub.profileImg ? (
                     <img
-                      src={`${API_BASE_URL}/${sub.profileImg}`}
+                      src={`${IMG_BASE_URL}/${sub.profileImg}`}
                       alt={sub.nickname}
                       className="sub-avatar-img"
                       onError={(e) => {

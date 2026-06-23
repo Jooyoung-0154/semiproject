@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { MemberBgImage } from '../types/type';
 import { memberBgImageService } from '../service/memberBgImageService';
-import { API_BASE_URL } from '../config/api';
+import { IMG_BASE_URL } from '../config/api';
 
 interface Props {
   memberId: string;
@@ -51,7 +51,7 @@ export default function ProfileBgSlideshow({ memberId }: Props) {
       {count > 1 && (
         <div
           className="profile-bg-slot profile-bg-slot--prev"
-          style={{ backgroundImage: `url(${API_BASE_URL}/${prevImg.imgUrl})` }}
+          style={{ backgroundImage: `url(${IMG_BASE_URL}/${prevImg.imgUrl})` }}
           onClick={() => setCurrentIndex(prevIndex)}
         />
       )}
@@ -62,7 +62,7 @@ export default function ProfileBgSlideshow({ memberId }: Props) {
           <div
             key={img.bgImgId}
             className={`profile-bg-slide${i === currentIndex ? ' active' : ''}`}
-            style={{ backgroundImage: `url(${API_BASE_URL}/${img.imgUrl})` }}
+            style={{ backgroundImage: `url(${IMG_BASE_URL}/${img.imgUrl})` }}
           />
         ))}
         {count > 1 && (
@@ -82,7 +82,7 @@ export default function ProfileBgSlideshow({ memberId }: Props) {
       {count > 1 && (
         <div
           className="profile-bg-slot profile-bg-slot--next"
-          style={{ backgroundImage: `url(${API_BASE_URL}/${nextImg.imgUrl})` }}
+          style={{ backgroundImage: `url(${IMG_BASE_URL}/${nextImg.imgUrl})` }}
           onClick={() => setCurrentIndex(nextIndex)}
         />
       )}
