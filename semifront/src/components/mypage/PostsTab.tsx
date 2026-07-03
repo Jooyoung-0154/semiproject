@@ -66,6 +66,10 @@ const formatPostDate = (value?: string | null) => {
   return `${year}-${month}-${day} ${hour}:${minute}`;
 };
 
+const revokePreviewUrls = (urls: string[]) => {
+  urls.forEach((url) => URL.revokeObjectURL(url));
+};
+
 export default function PostsTab({
   displayUser,
   currentUserId,
@@ -157,13 +161,34 @@ export default function PostsTab({
     }
 
     setNewPostImages(files);
-    setNewPostImagePreviews(files.map((file) => URL.createObjectURL(file)));
+    setNewPostImagePreviews((previousPreviews) => {
+      revokePreviewUrls(previousPreviews);
+      return files.map((file) => URL.createObjectURL(file));
+    });
+
+    // 같은 파일을 삭제한 뒤 다시 선택해도 change 이벤트가 발생하도록 초기화
+    e.target.value = "";
+  };
+
+  const handleRemovePostImage = (indexToRemove: number) => {
+    setNewPostImages((previousImages) =>
+      previousImages.filter((_, index) => index !== indexToRemove),
+    );
+    setNewPostImagePreviews((previousPreviews) => {
+      const previewToRemove = previousPreviews[indexToRemove];
+      if (previewToRemove) URL.revokeObjectURL(previewToRemove);
+
+      return previousPreviews.filter((_, index) => index !== indexToRemove);
+    });
   };
 
   const clearPostForm = () => {
     setNewPostContent("");
     setNewPostImages([]);
-    setNewPostImagePreviews([]);
+    setNewPostImagePreviews((previousPreviews) => {
+      revokePreviewUrls(previousPreviews);
+      return [];
+    });
     setEditingPostId(null);
     setEditingPostImg("");
   };
@@ -543,6 +568,15 @@ export default function PostsTab({
                   <div key={preview} className="post-write-preview-item">
                     <img src={preview} alt={`미리보기 ${index + 1}`} />
                     <span>{index + 1}</span>
+                    <button
+                      type="button"
+                      className="post-write-preview-remove"
+                      onClick={() => handleRemovePostImage(index)}
+                      aria-label={`${index + 1}번 사진 삭제`}
+                      title="사진 삭제"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -662,7 +696,6 @@ export default function PostsTab({
                   </div>
                 ) : (
                   <section className="post-no-image-text-insta">
-                    <h4>게시글</h4>
                     <div>{post.content}</div>
                   </section>
                 )}
@@ -694,7 +727,6 @@ export default function PostsTab({
 
                 {hasImages && (
                   <section className="post-content-insta">
-                    <h4>게시글</h4>
                     <div>{post.content}</div>
                   </section>
                 )}

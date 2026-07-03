@@ -92,7 +92,7 @@ export default function RecipeWrite() {
     if (!editRecipeId) return;
     setIsLoadingEdit(true);
     RecipeService.getById(editRecipeId)
-      .then((recipe) => {
+      .then(async (recipe) => {
         const info = recipe.recipeInfo;
         setRecipeInfo({
           ...info,
@@ -141,7 +141,11 @@ export default function RecipeWrite() {
         setExistingStepImgUrls(steps.map((s) => s.stepImgUrl || ""));
 
         setSelectedTagIds(recipe.tags.map((t) => t.tagId));
-        if (info.thumbImgUrl) setExistingMainImgUrls([info.thumbImgUrl]);
+
+        const imagesRes = await api.get(`/recipe-images/${editRecipeId}`);
+        console.log("recipe-images 응답:", imagesRes.data);
+        const imgUrls: string[] = (imagesRes.data ?? []).map((img: import("../types/type").RECIPE_IMAGE) => img.imgUrl);
+        setExistingMainImgUrls(imgUrls.length > 0 ? imgUrls : (info.thumbImgUrl ? [info.thumbImgUrl] : []));
       })
       .catch(() => alert("레시피 정보를 불러오지 못했습니다."))
       .finally(() => setIsLoadingEdit(false));
@@ -672,7 +676,7 @@ export default function RecipeWrite() {
             {(existingMainImgUrls.length > 0 || mainPreviews.length > 0) && (
               <div className="grid grid-cols-3 gap-3 mb-3">
                 {[
-                  ...existingMainImgUrls.map((url) => `${API_BASE_URL}${url}`),
+                  ...existingMainImgUrls.map((url) => `${API_BASE_URL}/${url}`),
                   ...mainPreviews,
                 ].map((preview, index) => (
                   <div
@@ -825,14 +829,14 @@ export default function RecipeWrite() {
                 />
                 <div>
                   {stepPreviews[index] || existingStepImgUrls[index] ? (
-                    <div className="relative rounded-md overflow-hidden">
+                    <div className="relative rounded-lg overflow-hidden aspect-square border border-gray-200 w-64">
                       <img
                         src={
                           stepPreviews[index] ||
-                          `${API_BASE_URL}${existingStepImgUrls[index]}`
+                          `${API_BASE_URL}/${existingStepImgUrls[index]}`
                         }
                         alt={`Step ${index + 1} 이미지`}
-                        className="w-full max-h-48 object-cover"
+                        className="w-full h-full object-cover"
                       />
                       <label className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/30 cursor-pointer transition-all group">
                         <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100">
