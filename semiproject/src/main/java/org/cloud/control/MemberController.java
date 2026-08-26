@@ -1,17 +1,26 @@
 package org.cloud.control;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.cloud.dto.Member;
 import org.cloud.service.MemberService;
 import org.cloud.service.RecipeService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.cloud.storage.FileStorageService;
+import org.cloud.storage.ImageType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,13 +37,22 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberController {
 
     private final RecipeService recipeService;
+    private final MemberService memberService;
+    private final FileStorageService fileStorageService;
+    private final AuthenticationManager authenticationManager;
+    private final SecurityContextRepository securityContextRepository;
 
-    @Autowired
-    private MemberService memberService;
-
-
-    MemberController(RecipeService recipeService) {
+    public MemberController(
+            RecipeService recipeService,
+            MemberService memberService,
+            FileStorageService fileStorageService,
+            AuthenticationManager authenticationManager,
+            SecurityContextRepository securityContextRepository) {
         this.recipeService = recipeService;
+        this.memberService = memberService;
+        this.fileStorageService = fileStorageService;
+        this.authenticationManager = authenticationManager;
+        this.securityContextRepository = securityContextRepository;
     }
 
     
@@ -56,23 +74,13 @@ public class MemberController {
         }
     }
 
-    @PostMapping("/{id}/profile-image")
-    public ResponseEntity<String> updateProfileImage(@PathVariable String id, 
-                                                     @RequestParam("file") MultipartFile file) {
+    @PostMapping("/me/profile-image")
+    public ResponseEntity<String> updateProfileImage(
+            Authentication authentication,
+            @RequestParam("file") MultipartFile file) {
         try {
-            String uploadDir = "C:/upload/uploads/profile/";
-            File dir = new File(uploadDir);
-            if (!dir.exists()) dir.mkdirs();
-
-            String originalName = file.getOriginalFilename();
-            String ext = (originalName != null && originalName.contains("."))
-                    ? originalName.substring(originalName.lastIndexOf(".")) : "";
-            String savedName = UUID.randomUUID().toString() + ext;
-
-            file.transferTo(new File(uploadDir + savedName));
-
-            String webPath = "uploads/profile/" + savedName;
-            boolean success = memberService.updateProfileImage(id, webPath);
+            String webPath = fileStorageService.save(file, ImageType.PROFILE);
+            boolean success = memberService.updateProfileImage(authentication.getName(), webPath);
             
             return success ? ResponseEntity.ok(webPath) : ResponseEntity.status(500).body("DB 업데이트 실패");
         } catch (Exception e) {
@@ -80,36 +88,21 @@ public class MemberController {
         }
     }
 
-    @GetMapping("/{id}/balance")
-    public int getBalance(@PathVariable String id) {
-        return memberService.checkBalance(id);
+    @PutMapping("/me/nickname")
+    public boolean updateNickname(Authentication authentication, @RequestParam String newNickname) {
+        return memberService.updateNickname(authentication.getName(), newNickname);
     }
 
-    @PutMapping("/{id}/nickname")
-    public boolean updateNickname(@PathVariable String id, @RequestParam String newNickname) {
-        return memberService.updateNickname(id, newNickname);
-    }
-
-    @PutMapping("/{id}/password")
-    public boolean updatePassword(@PathVariable String id, 
+    @PutMapping("/me/password")
+    public boolean updatePassword(Authentication authentication,
                                   @RequestParam String oldPw, 
                                   @RequestParam String newPw) {
-        return memberService.updatePassword(id, oldPw, newPw);
+        return memberService.updatePassword(authentication.getName(), oldPw, newPw);
     }
 
-    @PostMapping("/{id}/balance/charge")
-    public boolean chargeBalance(@PathVariable String id, @RequestParam int amount) {
-        return memberService.chargeBalance(id, amount);
-    }
-
-    @PostMapping("/{id}/purchase")
-    public boolean purchase(@PathVariable String id, @RequestParam int price) {
-        return memberService.processPurchase(id, price);
-    }
-
-    @DeleteMapping("/{id}")
-    public boolean deleteMember(@PathVariable String id) {
-        return memberService.deleteMember(id);
+    @DeleteMapping("/me")
+    public boolean deleteMember(Authentication authentication) {
+        return memberService.deleteMember(authentication.getName());
     }
 
     @GetMapping("/search")
@@ -118,7 +111,7 @@ public class MemberController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Member> getMemberById(@PathVariable("id") String id) {
+    public ResponseEntity<Member> getMemberById(@PathVariable String id) {
         
         Member member = memberService.selectMemberById(id);
         
@@ -132,18 +125,31 @@ public class MemberController {
     
     // 멤버 로그인
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Member member, HttpSession session) {
-        boolean loginSuccess = memberService.login(member.getId(), member.getPassword());
-
+    public ResponseEntity<?> login(
+            @RequestBody Member member,
+            HttpServletRequest request,
+            HttpServletResponse httpResponse) {
         Map<String, Object> response = new HashMap<>();
-        if (loginSuccess) {
-            session.setAttribute("userId", member.getId());
+
+        try {
+            Authentication authenticationRequest =
+                    UsernamePasswordAuthenticationToken.unauthenticated(
+                            member.getId(), member.getPassword());
+            Authentication authentication =
+                    authenticationManager.authenticate(authenticationRequest);
+
+            SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+            securityContext.setAuthentication(authentication);
+            SecurityContextHolder.setContext(securityContext);
+            securityContextRepository.saveContext(securityContext, request, httpResponse);
+
+            request.getSession().setAttribute("userId", authentication.getName());
             response.put("success", true);
             response.put("message", "로그인 성공");
-            Member loginUser = memberService.selectMemberById(member.getId());
+            Member loginUser = memberService.selectMemberById(authentication.getName());
             response.put("user", loginUser);
             return ResponseEntity.ok(response);
-        } else {
+        } catch (AuthenticationException exception) {
             response.put("success", false);
             response.put("message", "아이디 또는 비밀번호가 일치하지 않습니다.");
             return ResponseEntity.badRequest().body(response);
@@ -151,27 +157,47 @@ public class MemberController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpSession session) {
-        session.invalidate();
+    public ResponseEntity<Void> logout(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authentication) {
+        new SecurityContextLogoutHandler().logout(request, response, authentication);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<Member> getCurrentMember(Authentication authentication) {
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
+            return ResponseEntity.status(401).build();
+        }
+
+        Member member = memberService.selectMemberById(authentication.getName());
+        if (member == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(member);
+    }
     
-    @PutMapping("/{id}/intro")
-    public boolean updateIntro(@PathVariable String id, @RequestParam String intro) {
-        return memberService.updateIntro(id, intro);
+    @PutMapping("/me/intro")
+    public boolean updateIntro(Authentication authentication, @RequestParam String intro) {
+        return memberService.updateIntro(authentication.getName(), intro);
     }
 
-    @PutMapping("/{id}/scrap-public")
-    public boolean updateScrapPublic(@PathVariable String id, @RequestParam boolean scrapPublic) {
-        return memberService.updateScrapPublic(id, scrapPublic);
+    @PutMapping("/me/scrap-public")
+    public boolean updateScrapPublic(Authentication authentication, @RequestParam boolean scrapPublic) {
+        return memberService.updateScrapPublic(authentication.getName(), scrapPublic);
     }
 
-    @PutMapping("/{id}/sns")
+    @PutMapping("/me/sns")
     public boolean updateSnsSocial(
-            @PathVariable String id,
+            Authentication authentication,
             @RequestParam(required = false) String youtube,
             @RequestParam(required = false) String instagram,
             @RequestParam(required = false) String facebook) {
-        return memberService.updateSnsSocial(id, youtube, instagram, facebook);
+        return memberService.updateSnsSocial(
+                authentication.getName(), youtube, instagram, facebook);
     }
 }

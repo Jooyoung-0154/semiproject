@@ -30,9 +30,9 @@
 
 	<!-- 비밀번호 확인 및 변경 -->
 	<update id="updatePassword">
-		UPDATE member SET PASSWORD = #{newPassword} WHERE ID
-		= #{ID} AND PASSWORD =
-		#{oldPassword}
+		UPDATE member
+		SET PASSWORD = #{newPassword}
+		WHERE ID = #{ID}
 	</update>
 
 	<!-- 프로필 이미지 변경 -->
@@ -126,6 +126,7 @@
         PROFILE_IMG as profileImg,
         INTRO as intro,
         STATUS AS status,
+        ROLE AS role,
         FOLLOWING_COUNT as followingCount,
         FOLLOWER_COUNT as followerCount,
         SCRAP_PUBLIC as scrapPublic,

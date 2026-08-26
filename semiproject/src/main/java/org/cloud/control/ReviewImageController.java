@@ -1,24 +1,24 @@
 package org.cloud.control;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.cloud.dto.ReviewImage;
 import org.cloud.service.ReviewImageService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.cloud.storage.FileStorageService;
+import org.cloud.storage.ImageType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 @RestController
 @RequestMapping("/api/review-images")
+@lombok.RequiredArgsConstructor
 public class ReviewImageController {
 
-    @Autowired
-    private ReviewImageService reviewImageService;
+    private final ReviewImageService reviewImageService;
+
+    private final FileStorageService fileStorageService;
 
     @PostMapping("/{reviewId}/upload")
     public ResponseEntity<?> uploadImages(@PathVariable String reviewId,
@@ -26,7 +26,7 @@ public class ReviewImageController {
         try {
             List<ReviewImage> imageList = new ArrayList<>();
             for (MultipartFile file : files) {
-                String savedUrl = saveFile(file);
+                String savedUrl = fileStorageService.save(file, ImageType.REVIEW);
                 ReviewImage img = new ReviewImage();
                 img.setReviewId(reviewId);
                 img.setImageUrl(savedUrl);
@@ -49,15 +49,4 @@ public class ReviewImageController {
         return reviewImageService.getImagesByReviewId(reviewId);
     }
 
-    private String saveFile(MultipartFile file) throws Exception {
-        String uploadDir = "C:/upload/uploads/reviews/";
-        File dir = new File(uploadDir);
-        if (!dir.exists()) dir.mkdirs();
-        String originalName = file.getOriginalFilename();
-        String ext = (originalName != null && originalName.contains("."))
-                ? originalName.substring(originalName.lastIndexOf(".")) : "";
-        String savedName = UUID.randomUUID().toString() + ext;
-        file.transferTo(new File(uploadDir + savedName));
-        return "uploads/reviews/" + savedName;
-    }
 }

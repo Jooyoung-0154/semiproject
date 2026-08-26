@@ -110,7 +110,7 @@ export default function AdminPage() {
   const handleDeleteMember = async (member: Member) => {
     if (!window.confirm(`"${member.nickname}" (${member.id}) 회원을 삭제하시겠습니까?`)) return;
     try {
-      await memberService.deleteMember(member.id);
+      await adminService.deleteMember(member.id);
       setMemberResults((prev) => prev.filter((m) => m.id !== member.id));
       setMemberMsg({ ok: true, msg: `"${member.nickname}" 회원이 삭제되었습니다.` });
     } catch {

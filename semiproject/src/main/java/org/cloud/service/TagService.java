@@ -4,15 +4,15 @@ import java.util.List;
 
 import org.cloud.dto.Tag;
 import org.cloud.mapper.TagMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class TagService {
 
-    @Autowired
-    private TagMapper tagMapper;
+    private final TagMapper tagMapper;
 
     public boolean createTag(Tag tag) { return tagMapper.insertTag(tag) > 0; }
     public boolean modifyTag(Tag tag) { return tagMapper.updateTag(tag) > 0; }

@@ -4,17 +4,16 @@ import java.util.List;
 
 import org.cloud.dto.Guestbook;
 import org.cloud.mapper.GuestbookMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class GuestbookService {
 
-    @Autowired
-    private GuestbookMapper guestbookMapper;
+    private final GuestbookMapper guestbookMapper;
 
-    @Autowired
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
 
     public boolean writeGuestbook(Guestbook guestbook) {
         if (guestbook == null

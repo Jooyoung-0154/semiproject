@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.tsx";
 import { Eye, EyeOff } from "lucide-react";
+import axios from "axios";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -30,10 +31,12 @@ export default function Signup() {
       navigate("/login");
     } catch (err) {
       console.error(err);
-      const message =
-        err instanceof Error
-          ? err.message
-          : "회원가입에 실패했습니다. 입력 정보를 확인해주세요.";
+      let message = "회원가입에 실패했습니다. 입력 정보를 확인해주세요.";
+      if (axios.isAxiosError(err) && err.response) {
+        message = err.response.data?.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
       setError(message);
     }
   };

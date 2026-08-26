@@ -4,14 +4,14 @@ import java.util.List;
 
 import org.cloud.dto.Notification;
 import org.cloud.mapper.NotificationMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class NotificationService {
 
-    @Autowired
-    private NotificationMapper notificationMapper;
+    private final NotificationMapper notificationMapper;
 
     public boolean createNotification(String receiverId, String senderId, String type, String targetId, String message) {
         if (receiverId == null || receiverId.isBlank()) return false;

@@ -5,16 +5,15 @@ import java.util.Map;
 
 import org.cloud.dto.Guestbook;
 import org.cloud.service.GuestbookService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 
 @RestController
 @RequestMapping("/api/guestbook") // 방명록 관련 요청은 모두 이 주소로 시작해요.
+@lombok.RequiredArgsConstructor
 public class GuestbookController {
 
-    @Autowired
-    private GuestbookService guestbookService;
+    private final GuestbookService guestbookService;
 
     // 1. 방명록 작성
     @PostMapping("")

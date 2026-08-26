@@ -17,13 +17,7 @@ public interface MemberMapper {
 
     int updateNickname(@Param("ID") String ID, @Param("NICKNAME") String NICKNAME);
 
-    int updatePassword(@Param("ID") String ID, 
-                       @Param("oldPassword") String oldPassword, 
-                       @Param("newPassword") String newPassword);
-
-    int getBalance(String ID);
-
-    int updateBalance(@Param("ID") String ID, @Param("amount") int amount);
+    int updatePassword(@Param("ID") String ID, @Param("newPassword") String newPassword);
 
     int updateProfileImg(@Param("ID") String ID, @Param("PROFILE_IMG") String PROFILE_IMG);
 

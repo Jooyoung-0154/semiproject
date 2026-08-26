@@ -19,6 +19,7 @@ export interface Member {
   snsYoutube?: string;
   snsInstagram?: string;
   snsFacebook?: string;
+  role?: "USER" | "ADMIN";
 }
 
 //방명록

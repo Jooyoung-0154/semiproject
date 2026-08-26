@@ -1,17 +1,17 @@
 package org.cloud.control;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.cloud.dto.Post;
 import org.cloud.dto.PostComment;
 import org.cloud.service.PostCommentService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.cloud.storage.FileStorageService;
+import org.cloud.storage.ImageType;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,34 +28,35 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/posts")
 @CrossOrigin(origins = "http://localhost:5173")
+@lombok.RequiredArgsConstructor
 public class PostController {
 
-    @Autowired
-    private PostCommentService postService;
+    private final PostCommentService postService;
 
-    private final String uploadPath = "C:/upload/uploads/posts/";
+    private final FileStorageService fileStorageService;
 
     @GetMapping
     public Object getList(
             @RequestParam(required = false) String writerId,
-            @RequestParam(required = false) String viewerId
+            Authentication authentication
     ) {
         if (writerId != null && !writerId.isBlank()) {
-            return postService.getPostsByWriter(writerId, viewerId);
+            return postService.getPostsByWriter(writerId, authentication.getName());
         }
-        return postService.getAllPosts(viewerId);
+        return postService.getAllPosts(authentication.getName());
     }
 
     @GetMapping("/{postId}")
     public Post getDetail(
             @PathVariable String postId,
-            @RequestParam(required = false) String viewerId
+            Authentication authentication
     ) {
-        return postService.getPost(postId, viewerId);
+        return postService.getPost(postId, authentication.getName());
     }
 
     @PostMapping("/json")
-    public boolean writeJson(@RequestBody Post post) {
+    public boolean writeJson(@RequestBody Post post, Authentication authentication) {
+        post.setWriterId(authentication.getName());
         return postService.writePost(post);
     }
 
@@ -63,8 +64,10 @@ public class PostController {
     public boolean write(
             @ModelAttribute Post post,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
-            @RequestParam(value = "image", required = false) MultipartFile image
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            Authentication authentication
     ) throws IOException {
+        post.setWriterId(authentication.getName());
         List<MultipartFile> uploadImages = normalizeUploadImages(images, image);
 
         if (uploadImages.size() > 5) {
@@ -79,9 +82,12 @@ public class PostController {
     }
 
     @PutMapping("/{postId}")
-    public boolean modify(@PathVariable String postId, @RequestBody Post post) {
+    public boolean modify(
+            @PathVariable String postId,
+            @RequestBody Post post,
+            Authentication authentication) {
         post.setPostId(postId);
-        return postService.modifyPost(post);
+        return postService.modifyPost(post, authentication.getName());
     }
 
     @PutMapping(value = "/{postId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -89,9 +95,11 @@ public class PostController {
             @PathVariable String postId,
             @ModelAttribute Post post,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
-            @RequestParam(value = "image", required = false) MultipartFile image
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            Authentication authentication
     ) throws IOException {
         post.setPostId(postId);
+        postService.validatePostOwner(postId, authentication.getName());
         List<MultipartFile> uploadImages = normalizeUploadImages(images, image);
 
         if (uploadImages.size() > 5) {
@@ -102,42 +110,47 @@ public class PostController {
             post.setPostImg(saveImages(uploadImages));
         }
 
-        return postService.modifyPost(post);
+        return postService.modifyPost(post, authentication.getName());
     }
 
     @DeleteMapping("/{postId}")
     public boolean deletePost(
             @PathVariable String postId,
-            @RequestParam String requesterId
+            Authentication authentication
     ) {
-        return postService.removePost(postId, requesterId);
+        return postService.removePost(postId, authentication.getName(), isAdmin(authentication));
     }
 
     @PostMapping("/comment")
-    public boolean addComment(@RequestBody PostComment comment) {
+    public boolean addComment(@RequestBody PostComment comment, Authentication authentication) {
+        comment.setWriterId(authentication.getName());
         return postService.writeComment(comment);
     }
 
     @PutMapping("/comment/{commentId}")
-    public boolean updateComment(@PathVariable int commentId, @RequestBody PostComment comment) {
+    public boolean updateComment(
+            @PathVariable int commentId,
+            @RequestBody PostComment comment,
+            Authentication authentication) {
         comment.setCommentId(commentId);
-        return postService.modifyComment(comment);
+        return postService.modifyComment(comment, authentication.getName());
     }
 
     @DeleteMapping("/comment/{commentId}")
     public boolean deleteComment(
             @PathVariable int commentId,
-            @RequestParam String requesterId
+            Authentication authentication
     ) {
-        return postService.removeComment(commentId, requesterId);
+        return postService.removeComment(
+                commentId, authentication.getName(), isAdmin(authentication));
     }
 
     @PostMapping("/{postId}/like")
     public Map<String, Object> togglePostLike(
             @PathVariable String postId,
-            @RequestParam String userId
+            Authentication authentication
     ) {
-        return postService.toggleLike(postId, userId);
+        return postService.toggleLike(postId, authentication.getName());
     }
 
     private List<MultipartFile> normalizeUploadImages(List<MultipartFile> images, MultipartFile image) {
@@ -162,37 +175,15 @@ public class PostController {
         List<String> savedNames = new ArrayList<>();
 
         for (MultipartFile image : images) {
-            savedNames.add(saveImage(image));
+            savedNames.add(fileStorageService.save(image, ImageType.POST));
         }
 
         return String.join(",", savedNames);
     }
 
-    private String saveImage(MultipartFile image) throws IOException {
-        File folder = new File(uploadPath);
-        if (!folder.exists()) folder.mkdirs();
-
-        String originalName = image.getOriginalFilename();
-        String ext = "";
-        if (originalName != null && originalName.contains(".")) {
-            String candidateExt = originalName.substring(originalName.lastIndexOf("."));
-            if (candidateExt.matches("\\.[A-Za-z0-9]{1,10}")) {
-                ext = candidateExt.toLowerCase();
-            }
-        }
-
-        /*
-         * POST_IMG 컬럼이 VARCHAR(255)인 환경에서도 사진 5장의 경로가
-         * 모두 저장되도록 파일명을 짧게 생성한다.
-         * 기존 UUID(36자)를 그대로 사용하면 5장 경로가 약 274~279자가 된다.
-         */
-        String shortUuid = UUID.randomUUID()
-                .toString()
-                .replace("-", "")
-                .substring(0, 24);
-        String savedFileName = shortUuid + ext;
-        File saveFile = new File(folder, savedFileName);
-        image.transferTo(saveFile);
-        return "uploads/posts/" + savedFileName;
+    private boolean isAdmin(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
     }
+
 }

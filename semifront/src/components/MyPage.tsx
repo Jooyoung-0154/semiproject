@@ -124,7 +124,7 @@ export default function MyPage() {
     const next = !scrapPublic;
     setScrapPublic(next);
     try {
-      await memberService.updateScrapPublic(authUser.id, next);
+      await memberService.updateScrapPublic(next);
     } catch {
       setScrapPublic(!next);
       alert("설정 변경에 실패했습니다.");
@@ -291,6 +291,7 @@ export default function MyPage() {
               <PostsTab
                 displayUser={displayUser}
                 currentUserId={currentUserId}
+                currentUserRole={authUser.role}
                 isOwnPage={isOwnPage}
               />
             )}

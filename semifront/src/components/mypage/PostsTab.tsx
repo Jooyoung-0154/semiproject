@@ -22,6 +22,7 @@ import { API_BASE_URL } from "../../config/api";
 interface PostsTabProps {
   displayUser: Member;
   currentUserId: string;
+  currentUserRole?: "USER" | "ADMIN";
   isOwnPage: boolean;
 }
 
@@ -73,6 +74,7 @@ const revokePreviewUrls = (urls: string[]) => {
 export default function PostsTab({
   displayUser,
   currentUserId,
+  currentUserRole,
   isOwnPage,
 }: PostsTabProps) {
   const [postList, setPostList] = useState<Post[]>([]);
@@ -137,10 +139,7 @@ export default function PostsTab({
   const fetchPosts = async () => {
     try {
       setIsLoadingPosts(true);
-      const response = await postService.getByWriter(
-        displayUser.id,
-        currentUserId,
-      );
+      const response = await postService.getByWriter(displayUser.id);
       setPostList(Array.isArray(response.data) ? response.data : []);
       setPostPage(1);
     } catch (error) {
@@ -215,7 +214,6 @@ export default function PostsTab({
 
     try {
       const formData = new FormData();
-      formData.append("writerId", currentUserId);
       formData.append("content", content);
 
       if (
@@ -258,7 +256,7 @@ export default function PostsTab({
     if (!window.confirm("정말 이 게시글을 삭제하시겠습니까?")) return;
 
     try {
-      await postService.deletePost(postId, currentUserId);
+      await postService.deletePost(postId);
       await fetchPosts();
     } catch (error) {
       console.error("게시글 삭제 실패:", error);
@@ -273,7 +271,7 @@ export default function PostsTab({
     }
 
     try {
-      const response = await postService.toggleLike(post.postId, currentUserId);
+      const response = await postService.toggleLike(post.postId);
       const { liked, likeCount } = response.data as {
         liked: boolean;
         likeCount: number;
@@ -306,10 +304,7 @@ export default function PostsTab({
 
   const reloadPosts = async () => {
     try {
-      const response = await postService.getByWriter(
-        displayUser.id,
-        currentUserId,
-      );
+      const response = await postService.getByWriter(displayUser.id);
       const nextPosts = Array.isArray(response.data) ? response.data : [];
       setPostList(nextPosts);
       syncModalPost(nextPosts);
@@ -335,7 +330,6 @@ export default function PostsTab({
       const response = await postService.addComment({
         commentId: 0,
         postId,
-        writerId: currentUserId,
         content,
         regDate: new Date().toISOString(),
       });
@@ -395,10 +389,7 @@ export default function PostsTab({
     if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
 
     try {
-      const response = await postService.deleteComment(
-        commentId,
-        currentUserId,
-      );
+      const response = await postService.deleteComment(commentId);
 
       if (response.data === false) {
         alert("댓글 삭제에 실패했습니다. 다시 시도해주세요.");
@@ -458,8 +449,7 @@ export default function PostsTab({
                   </div>
 
                   {(comment.writerId === currentUserId ||
-                    currentUserId === "Admin" ||
-                    currentUserId === "admin") && (
+                    currentUserRole === "ADMIN") && (
                     <div className="post-comment-modal-actions">
                       {comment.writerId === currentUserId && (
                         <button
@@ -619,8 +609,7 @@ export default function PostsTab({
             const canEditPost = post.writerId === currentUserId;
             const canDeletePost =
               post.writerId === currentUserId ||
-              currentUserId === "Admin" ||
-              currentUserId === "admin";
+              currentUserRole === "ADMIN";
 
             return (
               <article key={post.postId} className="post-card-insta">

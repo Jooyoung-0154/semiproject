@@ -8,7 +8,7 @@ export const reviewService = {
   remove: (reviewId: string) => api.delete(`/reviews/${reviewId}`),
   getRecipeReviews: (recipeCode: string) =>
     api.get<Review[]>(`/reviews/recipe/${recipeCode}`),
-  getMyReviews: (userId: string) => api.get<Review[]>(`/reviews/my/${userId}`),
+  getMyReviews: () => api.get<Review[]>("/reviews/me"),
 
   uploadImages: (reviewId: string, files: File[]) => {
     const formData = new FormData();

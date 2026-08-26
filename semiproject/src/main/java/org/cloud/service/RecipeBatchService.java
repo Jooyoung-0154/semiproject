@@ -8,7 +8,6 @@ import org.cloud.dto.Irdnt_Info;
 import org.cloud.dto.Recipe;
 import org.cloud.dto.Recipe_Info;
 import org.cloud.mapper.CookingMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -16,18 +15,17 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class RecipeBatchService {
 
-    @Autowired
-    private CookingMapper cookingMapper;
+    private final CookingMapper cookingMapper;
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
     @Value("${api.recipe.key}")//properties에 저장해놨음
     private String apiKey;
@@ -121,9 +119,8 @@ public class RecipeBatchService {
             String rawLevel = node.path("LEVEL_NM").asText(); 
             info.setLevelNm(convertLevelNm(rawLevel));
 
-            r.setRecipeInfo(info); 
-            
-            
+            r.setRecipeInfo(info);
+
             list.add(r);
         }
         if (!list.isEmpty()) cookingMapper.insertRecipeList(list);

@@ -78,19 +78,18 @@ export default function MyInfo() {
 
     try {
       if (nickname !== member.nickname) {
-        await memberService.updateNickname(authUser.id, nickname);
+        await memberService.updateNickname(nickname);
       }
 
       if (intro !== member.intro) {
-        await memberService.updateIntro(authUser.id, intro);
+        await memberService.updateIntro(intro);
       }
 
       if (selectedFile) {
-        await memberService.updateProfileImage(authUser.id, selectedFile);
+        await memberService.updateProfileImage(selectedFile);
       }
 
       await memberService.updateSnsSocial(
-        authUser.id,
         snsYoutube.trim(),
         snsInstagram.trim(),
         snsFacebook.trim()
@@ -138,7 +137,7 @@ export default function MyInfo() {
     }
 
     try {
-      await memberService.deleteMember(authUser.id);
+      await memberService.deleteCurrentMember();
 
       alert("회원 탈퇴가 완료되었습니다.");
 

@@ -1,11 +1,12 @@
 package org.cloud.service;
 
 import org.cloud.dto.*;
+import org.cloud.exception.ResourceNotFoundException;
 import org.cloud.mapper.RecipeMapper;
 import org.cloud.mapper.TagMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,13 +15,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class RecipeService {
 
-    @Autowired
-    private RecipeMapper recipeMapper;
+    private final RecipeMapper recipeMapper;
 
-    @Autowired
-    private TagMapper tagMapper;
+    private final TagMapper tagMapper;
 
     // 1. 간단 조회
     public List<Recipe_Info> searchRecipes(String name, Integer tagId) {
@@ -65,10 +65,14 @@ public class RecipeService {
     // 2. 등록 — UUID 생성 후 RECIPE 테이블에 한 번에 INSERT
     @Transactional
     public String registerRecipe(Recipe recipe) {
+        validateRecipe(recipe);
+
         String newId = UUID.randomUUID().toString().replace("-", "").substring(0, 20).toUpperCase();
         recipe.setRecipeCode(newId);
 
-        recipeMapper.insertFullRecipe(recipe);
+        if (recipeMapper.insertFullRecipe(recipe) == 0) {
+            throw new IllegalStateException("레시피 등록에 실패했습니다.");
+        }
         saveIngredients(newId, recipe.getIrdntInfo());
         saveCookingSteps(newId, recipe.getCookingInfo());
         assignTags(newId, recipe.getTags());
@@ -116,7 +120,9 @@ public class RecipeService {
     // 3. 단건 상세 조회
     public Recipe getRecipeById(String recipeId) {
         Recipe_Info info = recipeMapper.selectRecipeInfoById(recipeId);
-        if (info == null) return null;
+        if (info == null) {
+            throw new ResourceNotFoundException("레시피를 찾을 수 없습니다.");
+        }
 
         Recipe recipe = new Recipe();
         recipe.setRecipeCode(recipeId);
@@ -134,9 +140,12 @@ public class RecipeService {
     // 4. 수정 (delete-insert 방식)
     @Transactional
     public void updateRecipe(Recipe recipe) {
+        validateRecipe(recipe);
         String recipeId = recipe.getRecipeCode();
 
-        recipeMapper.updateFullRecipe(recipe);
+        if (recipeMapper.updateFullRecipe(recipe) == 0) {
+            throw new ResourceNotFoundException("레시피를 찾을 수 없습니다.");
+        }
 
         recipeMapper.deleteIrdntInfo(recipeId);
         saveIngredients(recipeId, recipe.getIrdntInfo());
@@ -151,11 +160,22 @@ public class RecipeService {
     // 5. 삭제
     @Transactional
     public boolean removeRecipe(String recipeId) {
-        return recipeMapper.deleteRecipe(recipeId) > 0;
+        if (recipeMapper.deleteRecipe(recipeId) == 0) {
+            throw new ResourceNotFoundException("레시피를 찾을 수 없습니다.");
+        }
+        return true;
     }
 
     // 6. 조회수 증가
     public void incrementHit(String recipeId) {
-        recipeMapper.incrementHit(recipeId);
+        if (recipeMapper.incrementHit(recipeId) == 0) {
+            throw new ResourceNotFoundException("레시피를 찾을 수 없습니다.");
+        }
+    }
+
+    private void validateRecipe(Recipe recipe) {
+        if (recipe == null || recipe.getRecipeInfo() == null) {
+            throw new IllegalArgumentException("레시피 기본 정보가 필요합니다.");
+        }
     }
 }

@@ -3,16 +3,15 @@ package org.cloud.control;
 import java.util.List;
 import org.cloud.dto.Tag;
 import org.cloud.service.TagService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 
 @RestController
 @RequestMapping("/api/tags")
+@lombok.RequiredArgsConstructor
 public class TagController {
 
-    @Autowired
-    private TagService tagService;
+    private final TagService tagService;
 
     // 2. 새로운 태그 생성 (관리자용)
     @PostMapping("")

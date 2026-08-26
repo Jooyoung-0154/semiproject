@@ -89,6 +89,7 @@ export function normalizeMember(data: any): Member | null {
     snsYoutube: member.snsYoutube ?? undefined,
     snsInstagram: member.snsInstagram ?? undefined,
     snsFacebook: member.snsFacebook ?? undefined,
+    role: member.role === "ADMIN" ? "ADMIN" : "USER",
   };
 }
 

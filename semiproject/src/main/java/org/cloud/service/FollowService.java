@@ -6,21 +6,19 @@ import org.cloud.dto.Follow;
 import org.cloud.dto.Member;
 import org.cloud.mapper.FollowMapper;
 import org.cloud.mapper.MemberMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class FollowService {
 
-    @Autowired
-    private FollowMapper followMapper;
+    private final FollowMapper followMapper;
 
-    @Autowired
-    private MemberMapper memberMapper;
+    private final MemberMapper memberMapper;
 
-    @Autowired
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
 
     @Transactional
     public boolean follow(Follow follow) {

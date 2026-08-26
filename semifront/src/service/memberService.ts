@@ -19,27 +19,24 @@ export const memberService = {
   register: (member: RegisterParams) =>
     api.post<RegisterResponse>("/member/register", member),
 
-  updateProfileImage: (id: string, file: File) => {
+  updateProfileImage: (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
-    return api.post(`/member/${id}/profile-image`, formData);
+    return api.post("/member/me/profile-image", formData);
   },
 
   // 소개글
-  updateIntro: (id: string, intro: string) =>
-    api.put(`/member/${id}/intro`, null, {
+  updateIntro: (intro: string) =>
+    api.put("/member/me/intro", null, {
       params: { intro },
     }),
 
-  // 잔액 조회
-  getBalance: (id: string) => api.get<number>(`/member/${id}/balance`),
-
   // 닉네임 수정 (RequestParam 방식)
-  updateNickname: (id: string, newNickname: string) =>
-    api.put(`/member/${id}/nickname`, null, { params: { newNickname } }),
+  updateNickname: (newNickname: string) =>
+    api.put("/member/me/nickname", null, { params: { newNickname } }),
 
   // 회원 탈퇴
-  deleteMember: (id: string) => api.delete(`/member/${id}`),
+  deleteCurrentMember: () => api.delete("/member/me"),
 
   // 회원 조회 by ID
   getMemberById: (id: string) => api.get<Member>(`/member/${id}`),
@@ -49,10 +46,10 @@ export const memberService = {
     api.get<Member[]>(`/member/search`, { params: { keyword } }),
 
   // 스크랩 공개 여부 변경
-  updateScrapPublic: (id: string, scrapPublic: boolean) =>
-    api.put(`/member/${id}/scrap-public`, null, { params: { scrapPublic } }),
+  updateScrapPublic: (scrapPublic: boolean) =>
+    api.put("/member/me/scrap-public", null, { params: { scrapPublic } }),
 
   // SNS 링크 변경
-  updateSnsSocial: (id: string, youtube: string, instagram: string, facebook: string) =>
-    api.put(`/member/${id}/sns`, null, { params: { youtube, instagram, facebook } }),
+  updateSnsSocial: (youtube: string, instagram: string, facebook: string) =>
+    api.put("/member/me/sns", null, { params: { youtube, instagram, facebook } }),
 };

@@ -24,7 +24,7 @@ export default function LoginPage() {
       console.error(err);
       let message = "로그인에 실패했습니다. 다시 시도해주세요.";
       if (axios.isAxiosError(err) && err.response) {
-        if (err.response.status === 400) {
+        if (err.response.status === 401) {
           message = "잘못된 회원정보입니다. 아이디와 비밀번호를 확인해주세요.";
         } else {
           message = err.response.data?.message || message;

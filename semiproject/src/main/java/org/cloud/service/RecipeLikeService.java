@@ -1,22 +1,21 @@
 package org.cloud.service;
 
 import org.cloud.mapper.RecipeLikeMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.cloud.dto.Recipe_Info;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class RecipeLikeService {
 
-    @Autowired
-    private RecipeLikeMapper recipeLikeMapper;
+    private final RecipeLikeMapper recipeLikeMapper;
 
-    @Autowired
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
 
     @Transactional
     public Map<String, Object> toggleLike(String userId, String recipeCode) {

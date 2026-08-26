@@ -4,15 +4,15 @@ import java.util.List;
 
 import org.cloud.dto.MemberBgImage;
 import org.cloud.mapper.MemberBgImageMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class MemberBgImageService {
 
-    @Autowired
-    private MemberBgImageMapper memberBgImageMapper;
+    private final MemberBgImageMapper memberBgImageMapper;
 
     @Transactional
     public void addBgImage(MemberBgImage bgImage) {

@@ -4,15 +4,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.servlet.http.HttpSession;
 import org.cloud.dto.Recipe;
 import org.cloud.dto.RecipeSearchParams;
 import org.cloud.dto.Recipe_Info;
 import org.cloud.dto.Tag;
 import org.cloud.mapper.TagMapper;
 import org.cloud.service.RecipeService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,12 +25,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/recipe")
+@lombok.RequiredArgsConstructor
 public class RecipeController {
 
-    @Autowired
-    private RecipeService recipeService;
-    @Autowired
-    private TagMapper tagMapper;
+    private final RecipeService recipeService;
+    private final TagMapper tagMapper;
 
     // 조회: /api/recipe/list?name=김치찌개&tagId=1
     @GetMapping("/list")
@@ -58,6 +57,13 @@ public class RecipeController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "12") int size) {
 
+        if (page < 1) {
+            throw new IllegalArgumentException("페이지 번호는 1 이상이어야 합니다.");
+        }
+        if (size < 1 || size > 100) {
+            throw new IllegalArgumentException("페이지 크기는 1 이상 100 이하여야 합니다.");
+        }
+
         RecipeSearchParams params = new RecipeSearchParams();
         params.setRecipeNmKo(name);
         params.setLevelNm(level);
@@ -67,12 +73,16 @@ public class RecipeController {
         params.setSize(size);
 
         if (tagIds != null && !tagIds.isBlank()) {
-            List<Integer> tagIdList = Arrays.stream(tagIds.split(","))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .map(Integer::parseInt)
-                .toList();
-            params.setTagIds(tagIdList);
+            try {
+                List<Integer> tagIdList = Arrays.stream(tagIds.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .map(Integer::parseInt)
+                    .toList();
+                params.setTagIds(tagIdList);
+            } catch (NumberFormatException exception) {
+                throw new IllegalArgumentException("태그 ID는 숫자로 입력해야 합니다.");
+            }
         }
 
         if (ingredients != null && !ingredients.isBlank()) {
@@ -100,7 +110,8 @@ public class RecipeController {
 
     // 등록: /api/recipe/register → 생성된 RECIPE_ID(String) 반환
     @PostMapping("/register")
-    public String register(@RequestBody Recipe recipe) {
+    public String register(@RequestBody Recipe recipe, Authentication authentication) {
+        recipe.setWriterId(authentication.getName());
         return recipeService.registerRecipe(recipe);
     }
 
@@ -109,14 +120,10 @@ public class RecipeController {
     public ResponseEntity<Void> update(
             @PathVariable String recipeId,
             @RequestBody Recipe recipe,
-            HttpSession session) {
-        String sessionUserId = (String) session.getAttribute("userId");
-        if (sessionUserId == null) return ResponseEntity.status(401).build();
-
+            Authentication authentication) {
         Recipe existing = recipeService.getRecipeById(recipeId);
-        if (existing == null) return ResponseEntity.status(404).build();
-        if (!sessionUserId.equals(existing.getWriterId()) && !"Admin".equals(sessionUserId)) {
-            return ResponseEntity.status(403).build();
+        if (!authentication.getName().equals(existing.getWriterId()) && !isAdmin(authentication)) {
+            throw new AccessDeniedException("레시피를 수정할 권한이 없습니다.");
         }
 
         recipe.setRecipeCode(recipeId);
@@ -126,14 +133,12 @@ public class RecipeController {
 
     // 삭제: DELETE /api/recipe/{recipeId}
     @DeleteMapping("/{recipeId}")
-    public ResponseEntity<Boolean> delete(@PathVariable("recipeId") String recipeId, HttpSession session) {
-        String sessionUserId = (String) session.getAttribute("userId");
-        if (sessionUserId == null) return ResponseEntity.status(401).build();
-
+    public ResponseEntity<Boolean> delete(
+            @PathVariable String recipeId,
+            Authentication authentication) {
         Recipe existing = recipeService.getRecipeById(recipeId);
-        if (existing == null) return ResponseEntity.status(404).build();
-        if (!sessionUserId.equals(existing.getWriterId()) && !"Admin".equals(sessionUserId)) {
-            return ResponseEntity.status(403).build();
+        if (!authentication.getName().equals(existing.getWriterId()) && !isAdmin(authentication)) {
+            throw new AccessDeniedException("레시피를 삭제할 권한이 없습니다.");
         }
 
         return ResponseEntity.ok(recipeService.removeRecipe(recipeId));
@@ -143,6 +148,11 @@ public class RecipeController {
     @PutMapping("/{recipeId}/hit")
     public void incrementHit(@PathVariable String recipeId) {
         recipeService.incrementHit(recipeId);
+    }
+
+    private boolean isAdmin(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
     }
 
 }

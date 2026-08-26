@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.cloud.dto.Recipe_Info;
 import org.cloud.service.RecipeLikeService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,10 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/like")
+@lombok.RequiredArgsConstructor
 public class RecipeLikeController {
 
-    @Autowired
-    private RecipeLikeService recipeLikeService;
+    private final RecipeLikeService recipeLikeService;
 
     /**
      * 좋아요 토글

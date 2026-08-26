@@ -133,4 +133,15 @@ docs/
 # Java heap dump
 *.hprof
 
+# Local editor settings
+.vscode/
+
+# Local Gradle cache created by Codex
+**/.gradle-codex/
+
+# Local environment variables
+.env
+.env.*
+!.env.example
+
 # End of https://www.toptal.com/developers/gitignore/api/react,eclipse,gradle,visualstudiocode

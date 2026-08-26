@@ -5,7 +5,6 @@ import java.util.List;
 import org.cloud.dto.Follow;
 import org.cloud.dto.Member;
 import org.cloud.service.FollowService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,10 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/social")
+@lombok.RequiredArgsConstructor
 public class SocialController {
 
-    @Autowired
-    private FollowService followService;
+    private final FollowService followService;
 
 
     @PostMapping("/follow")

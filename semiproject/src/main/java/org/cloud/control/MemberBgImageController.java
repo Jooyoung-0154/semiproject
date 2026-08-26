@@ -1,12 +1,11 @@
 package org.cloud.control;
 
-import java.io.File;
 import java.util.List;
-import java.util.UUID;
 
 import org.cloud.dto.MemberBgImage;
 import org.cloud.service.MemberBgImageService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.cloud.storage.FileStorageService;
+import org.cloud.storage.ImageType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,10 +13,12 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 @RestController
 @RequestMapping("/api/member-bg-images")
+@lombok.RequiredArgsConstructor
 public class MemberBgImageController {
 
-    @Autowired
-    private MemberBgImageService memberBgImageService;
+    private final MemberBgImageService memberBgImageService;
+
+    private final FileStorageService fileStorageService;
 
     // 배경 이미지 업로드
     @PostMapping("/{memberId}/upload")
@@ -31,7 +32,7 @@ public class MemberBgImageController {
                 return ResponseEntity.badRequest().body("업로드할 이미지 파일이 없습니다.");
             }
 
-            String savedUrl = saveFile(file);
+            String savedUrl = fileStorageService.save(file, ImageType.PROFILE_BACKGROUND);
 
             MemberBgImage bgImage = new MemberBgImage();
             bgImage.setMemberId(memberId);
@@ -66,18 +67,4 @@ public class MemberBgImageController {
         return ResponseEntity.ok("순서 변경 성공");
     }
 
-    private String saveFile(MultipartFile file) throws Exception {
-        String uploadDir = "C:/upload/uploads/profilebackground/";
-        File dir = new File(uploadDir);
-        if (!dir.exists()) dir.mkdirs();
-
-        String originalName = file.getOriginalFilename();
-        String ext = (originalName != null && originalName.contains("."))
-                ? originalName.substring(originalName.lastIndexOf(".")) : "";
-
-        String savedName = UUID.randomUUID().toString() + ext;
-        file.transferTo(new File(uploadDir + savedName));
-
-        return "uploads/profilebackground/" + savedName;
-    }
 }
