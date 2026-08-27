@@ -415,7 +415,7 @@ export default function Layout() {
                       )}
                     </div>
 
-                    {user.id === "Admin" && (
+                    {user.role === "ADMIN" && (
                       <button
                         onClick={() => navigate("/admin")}
                         className="flex items-center justify-center w-10 h-10 rounded-full bg-red-500 hover:bg-red-600 transition-all active:scale-95"

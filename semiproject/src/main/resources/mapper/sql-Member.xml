@@ -110,7 +110,7 @@
 		SELECT ID, NICKNAME, PROFILE_IMG
 		FROM member
 		WHERE CONCAT(ID, ' ', NICKNAME) LIKE CONCAT('%', #{keyword}, '%')
-		AND ID != 'Admin'
+		AND ROLE != 'ADMIN'
 		AND STATUS = 'ACTIVE'
 		LIMIT 20
 	</select>

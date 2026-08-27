@@ -9,11 +9,11 @@ const PAGE_SIZE = 4;
 
 interface RecipesTabProps {
   displayUser: Member;
-  currentUserId: string;
+  currentUserRole?: "USER" | "ADMIN";
   isOwnPage: boolean;
 }
 
-export default function RecipesTab({ displayUser, currentUserId, isOwnPage }: RecipesTabProps) {
+export default function RecipesTab({ displayUser, currentUserRole, isOwnPage }: RecipesTabProps) {
   const navigate = useNavigate();
   const [myRecipes, setMyRecipes] = useState<Recipe_Info[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -97,7 +97,7 @@ export default function RecipesTab({ displayUser, currentUserId, isOwnPage }: Re
           <RecipeCard
             key={recipe.recipeId}
             recipe={recipe}
-            onDelete={isOwnPage || currentUserId === "Admin" ? handleDeleteRecipe : undefined}
+            onDelete={isOwnPage || currentUserRole === "ADMIN" ? handleDeleteRecipe : undefined}
             onEdit={isOwnPage ? (id) => navigate(`/write?edit=${id}`) : undefined}
           />
         ))}

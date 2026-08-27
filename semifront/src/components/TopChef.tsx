@@ -241,7 +241,7 @@ export default function TopChef() {
                         )
                       }
                       onDelete={
-                        user?.id === recipe.writerId || user?.id === "Admin"
+                        user?.id === recipe.writerId || user?.role === "ADMIN"
                           ? async (recipeId) => {
                               if (!window.confirm("정말 이 레시피를 삭제하시겠습니까?")) return;
                               const ok = await RecipeService.deleteRecipe(recipeId);
@@ -251,7 +251,7 @@ export default function TopChef() {
                           : undefined
                       }
                       onEdit={
-                        user?.id === recipe.writerId || user?.id === "Admin"
+                        user?.id === recipe.writerId || user?.role === "ADMIN"
                           ? (recipeId) => navigate(`/write?edit=${recipeId}`)
                           : undefined
                       }

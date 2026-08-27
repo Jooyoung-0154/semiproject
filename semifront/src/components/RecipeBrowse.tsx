@@ -461,12 +461,12 @@ export default function RecipeBrowse() {
                 )
               }
               onDelete={
-                user?.id === recipe.writerId || user?.id === "Admin"
+                user?.id === recipe.writerId || user?.role === "ADMIN"
                   ? handleDeleteRecipe
                   : undefined
               }
               onEdit={
-                user?.id === recipe.writerId || user?.id === "Admin"
+                user?.id === recipe.writerId || user?.role === "ADMIN"
                   ? (id) => navigate(`/write?edit=${id}`)
                   : undefined
               }

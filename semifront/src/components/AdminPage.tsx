@@ -13,7 +13,7 @@ export default function AdminPage() {
 
   // 관리자가 아니면 홈으로 리다이렉트
   useEffect(() => {
-    if (!user || user.id !== "Admin") {
+    if (!user || user.role !== "ADMIN") {
       navigate("/");
     }
   }, [user, navigate]);
@@ -118,7 +118,7 @@ export default function AdminPage() {
     }
   };
 
-  if (!user || user.id !== "Admin") return null;
+  if (!user || user.role !== "ADMIN") return null;
 
   return (
     <div className="max-w-3xl mx-auto space-y-10">

@@ -152,12 +152,12 @@ export default function Home() {
                   )
                 }
                 onDelete={
-                  user?.id === "Admin" || user?.id === recipe.writerId
+                  user?.role === "ADMIN" || user?.id === recipe.writerId
                     ? handleDeleteRecipe
                     : undefined
                 }
                 onEdit={
-                  user?.id === "Admin" ||user?.id === recipe.writerId 
+                  user?.role === "ADMIN" || user?.id === recipe.writerId
                   ? handleEditRecipe : undefined
                 }
               />

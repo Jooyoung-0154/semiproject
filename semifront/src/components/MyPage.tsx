@@ -298,7 +298,7 @@ export default function MyPage() {
             {activeTab === "recipes" && (
               <RecipesTab
                 displayUser={displayUser}
-                currentUserId={currentUserId}
+                currentUserRole={authUser.role}
                 isOwnPage={isOwnPage}
               />
             )}
@@ -306,6 +306,7 @@ export default function MyPage() {
               <LikedTab
                 displayUser={displayUser}
                 currentUserId={currentUserId}
+                currentUserRole={authUser.role}
                 isOwnPage={isOwnPage}
               />
             )}

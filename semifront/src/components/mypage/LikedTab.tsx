@@ -10,11 +10,12 @@ const PAGE_SIZE = 4;
 
 interface LikedTabProps {
   currentUserId: string;
+  currentUserRole?: "USER" | "ADMIN";
   isOwnPage: boolean;
   displayUser: Member;
 }
 
-export default function LikedTab({ currentUserId, isOwnPage, displayUser }: LikedTabProps) {
+export default function LikedTab({ currentUserId, currentUserRole, isOwnPage, displayUser }: LikedTabProps) {
   const navigate = useNavigate();
   const [likedRecipes, setLikedRecipes] = useState<Recipe_Info[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -93,7 +94,7 @@ export default function LikedTab({ currentUserId, isOwnPage, displayUser }: Like
                   prev.map(r => r.recipeId === recipeId ? { ...r, liked, likeCount } : r)
                 )
               }
-              onDelete={isMyRecipe || currentUserId === "Admin" ? handleDeleteRecipe : undefined}
+              onDelete={isMyRecipe || currentUserRole === "ADMIN" ? handleDeleteRecipe : undefined}
               onEdit={isMyRecipe ? (id) => navigate(`/write?edit=${id}`) : undefined}
             />
           );
