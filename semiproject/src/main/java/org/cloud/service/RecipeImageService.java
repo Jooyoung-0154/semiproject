@@ -16,7 +16,18 @@ public class RecipeImageService {
 
     @Transactional
     public void addRecipeImages(List<RECIPE_IMAGE> imageList) {
+        if (imageList == null || imageList.isEmpty()) {
+            return;
+        }
+
+        String recipeCode = imageList.get(0).getRecipeCode();
+        int nextSortOrder = recipeImageMapper.getImagesByRecipeCode(recipeCode).stream()
+                .mapToInt(RECIPE_IMAGE::getSortOrder)
+                .max()
+                .orElse(0) + 1;
+
         for (RECIPE_IMAGE img : imageList) {
+            img.setSortOrder(nextSortOrder++);
             if (recipeImageMapper.insertRecipeImage(img) == 0) {
                 throw new IllegalStateException("레시피 이미지 등록에 실패했습니다.");
             }

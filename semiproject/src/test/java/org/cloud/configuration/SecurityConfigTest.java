@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -12,7 +13,7 @@ import org.springframework.security.web.context.SecurityContextRepository;
 
 class SecurityConfigTest {
 
-    private final SecurityConfig securityConfig = new SecurityConfig();
+    private final SecurityConfig securityConfig = new SecurityConfig(new ObjectMapper());
 
     @Test
     void authenticationManagerIsProvidedBySpringSecurityConfiguration() throws Exception {
