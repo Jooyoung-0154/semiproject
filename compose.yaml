@@ -1,0 +1,53 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: afterproject-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: cloud
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p\"$${MYSQL_ROOT_PASSWORD}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./semiproject
+    container_name: afterproject-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD}
+      FILE_UPLOAD_DIR: ${FILE_UPLOAD_DIR:-/app/uploads}
+      RECIPE_API_KEY: ${RECIPE_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    expose:
+      - "8080"
+    volumes:
+      - upload-data:/app/uploads
+
+  frontend:
+    build:
+      context: ./semifront
+    container_name: afterproject-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  mysql-data:
+  upload-data:

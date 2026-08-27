@@ -1,0 +1,7 @@
+.gradle
+.gradle-codex
+build
+out
+.idea
+.vscode
+*.iml
